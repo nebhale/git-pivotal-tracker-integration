@@ -27,9 +27,4 @@ class Base
     PivotalTracker::Client.use_ssl = true
     @project = PivotalTracker::Project.find configuration.project_id
   end
-
-  def run
-
-  end
-
 end
