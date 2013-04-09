@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby -wU
+
+require "git-pivotal-tracker-integration/info"
+
+Info.new(ARGV).run

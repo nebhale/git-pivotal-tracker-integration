@@ -18,7 +18,7 @@ In order to use `git-pivotal-tracker-integration`, two Git client configuration 
 
 | Name | Description
 | ---- | -----------
-| `pivotal.api-token` | Your Pivotal Tracker API Token.  This can be found in [your profile](profile) and should be set globally.
+| `pivotal.api-token` | Your Pivotal Tracker API Token.  This can be found in [your profile][profile] and should be set globally.
 | `pivotal.project-id` | The Pivotal Tracker project id for the repository your are working in.  This can be found in the project's URL and should be set.
 
 [profile]: https://www.pivotaltracker.com/profile
