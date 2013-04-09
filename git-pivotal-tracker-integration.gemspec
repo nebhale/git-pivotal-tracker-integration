@@ -31,7 +31,9 @@ Gem::Specification.new do |s|
 
   s.required_ruby_version = ">= 2.0.0"
 
-  s.add_dependency "rugged", "~> 0.17.0.b8"
+  s.add_dependency "highline",        "~> 1.6.16"
+  s.add_dependency "pivotal-tracker", "~> 0.5.10"
+  s.add_dependency "rugged",          "~> 0.17.0.b8"
 
   s.add_development_dependency "bundler", "~> 1.3"
   s.add_development_dependency "rake"
