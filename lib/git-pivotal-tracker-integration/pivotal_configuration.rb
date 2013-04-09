@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "highline/import"
+require "pivotal-tracker"
 require "rugged"
 
 class PivotalConfiguration
@@ -28,8 +30,7 @@ class PivotalConfiguration
 
   def api_token
     if !@global_config[@@KEY_API_TOKEN]
-      print "Pivotal API Key (Found at https://www.pivotaltracker.com/profile): "
-      @global_config[@@KEY_API_TOKEN] = gets.strip
+      @global_config[@@KEY_API_TOKEN] = ask("Pivotal API Key (found at https://www.pivotaltracker.com/profile): ")
     end
 
     @global_config[@@KEY_API_TOKEN]
@@ -37,8 +38,13 @@ class PivotalConfiguration
 
   def project_id
     if !@local_config[@@KEY_PROJECT_ID]
-      print "Pivotal Project ID (Found in project URI): "
-      @local_config[@@KEY_PROJECT_ID] = gets.strip
+      @local_config[@@KEY_PROJECT_ID] = choose do |menu|
+        menu.prompt = "Project associated with this repository: "
+
+        PivotalTracker::Project.all.sort_by { |project| project.name }.each do |project|
+          menu.choice("#{project.name} (#{project.id})") { project.id }
+        end
+      end
     end
 
     @local_config[@@KEY_PROJECT_ID]
