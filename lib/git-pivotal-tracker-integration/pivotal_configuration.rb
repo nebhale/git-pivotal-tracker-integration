@@ -31,6 +31,7 @@ class PivotalConfiguration
   def api_token
     if !@global_config[@@KEY_API_TOKEN]
       @global_config[@@KEY_API_TOKEN] = ask("Pivotal API Key (found at https://www.pivotaltracker.com/profile): ")
+      puts
     end
 
     @global_config[@@KEY_API_TOKEN]
@@ -39,12 +40,14 @@ class PivotalConfiguration
   def project_id
     if !@local_config[@@KEY_PROJECT_ID]
       @local_config[@@KEY_PROJECT_ID] = choose do |menu|
-        menu.prompt = "Project associated with this repository: "
+        menu.prompt = "Choose project associated with this repository: "
 
         PivotalTracker::Project.all.sort_by { |project| project.name }.each do |project|
-          menu.choice("#{project.name} (#{project.id})") { project.id }
+          menu.choice(project.name) { project.id }
         end
       end
+
+      puts
     end
 
     @local_config[@@KEY_PROJECT_ID]

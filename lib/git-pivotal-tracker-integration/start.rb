@@ -14,11 +14,57 @@
 # limitations under the License.
 
 require "git-pivotal-tracker-integration/base"
+require "highline/import"
+require "rugged"
 
 class Start < Base
   def initialize(args)
     super()
+
+    if args[0] =~ /[[:digit:]]/
+      @story = @project.stories.find(args[0].to_i)
+    elsif args[0] =~ /[[:alpha:]]/
+      @story = choose do |menu|
+        menu.prompt = "Choose story to start: "
+
+        @project.stories.all(
+          :story_type => args[0],
+          :current_state => ["unstarted", "unscheduled"],
+          :limit => 5
+        ).each do |story|
+          menu.choice(story.name) { story }
+        end
+      end
+
+      puts
+    else
+      @story = choose do |menu|
+        menu.prompt = "Choose story to start: "
+
+        @project.stories.all(
+          :current_state => ["unstarted", "unscheduled"],
+          :limit => 5
+        ).each do |story|
+          menu.choice("%-7s %s" % [story.story_type.upcase, story.name]) { story }
+        end
+      end
+
+      puts
+    end
   end
 
+  def run
+    puts "      Title: #{@story.name}"
+    puts "Description: #{@story.description}"
+    puts
+
+    branch = "#{@story.id}-" + ask("Enter branch name (#{@story.id}-<branch-name>): ")
+    puts
+
+    puts branch
+    Rugged::Remote.each(@repository) do |remote|
+      puts remote
+    end
+  end
 
 end
