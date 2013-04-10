@@ -108,3 +108,10 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 ```
 
 ### `git finish`
+This command finishes a story by merging and cleaning up it's branch and then pushing the changes to a remote server.  This command can only be run one way.
+
+```plain
+$ git finish
+
+# TODO Add example after you've done it once.
+```

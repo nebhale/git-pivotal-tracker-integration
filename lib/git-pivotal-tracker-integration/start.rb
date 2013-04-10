@@ -101,10 +101,10 @@ class Start < Base
     branch
   end
 
-  def create_branch(story, new_name)
-    old_branch = `git branch`.scan(/\* (.*)/)[0][0]
+  def create_branch(story, development_branch)
+    merge_target_branch = current_branch
 
-    print "Pulling #{old_branch}... "
+    print "Pulling #{merge_target_branch}... "
     `git pull --quiet --ff-only`
     if $?.to_i != 0
       abort "FAIL"
@@ -112,18 +112,18 @@ class Start < Base
       puts "OK"
     end
 
-    print "Creating and checking out #{new_name}... "
-    `git checkout --quiet -b #{new_name}`
+    print "Creating and checking out #{development_branch}... "
+    `git checkout --quiet -b #{development_branch}`
     if $?.to_i != 0
       abort "FAIL"
     end
 
-    `git config --local branch.#{new_name}.pivotal-merge-target #{old_branch}`
+    PivotalConfiguration.merge_target = merge_target_branch
     if $?.to_i != 0
       abort "FAIL"
     end
 
-    `git config --local branch.#{new_name}.pivotal-story-id #{story.id}`
+    PivotalConfiguration.story_id = story.id
     if $?.to_i != 0
       abort "FAIL"
     else

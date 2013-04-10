@@ -19,10 +19,13 @@ require "pivotal-tracker"
 class Base
 
   def initialize
-    configuration = PivotalConfiguration.new
-    PivotalTracker::Client.token = configuration.api_token
+    PivotalTracker::Client.token = PivotalConfiguration.api_token
     PivotalTracker::Client.use_ssl = true
-    @project = PivotalTracker::Project.find configuration.project_id
+    @project = PivotalTracker::Project.find PivotalConfiguration.project_id
+  end
+
+  def current_branch
+    `git branch`.scan(/\* (.*)/)[0][0]
   end
 
 end
