@@ -4,7 +4,6 @@ PATH
     git-pivotal-tracker-integration (1.0.0)
       highline (~> 1.6.16)
       pivotal-tracker (~> 0.5.10)
-      rugged (~> 0.17.0.b8)
 
 GEM
   remote: https://rubygems.org/
@@ -32,7 +31,6 @@ GEM
     rake (0.9.6)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    rugged (0.17.0.b8)
 
 PLATFORMS
   ruby
