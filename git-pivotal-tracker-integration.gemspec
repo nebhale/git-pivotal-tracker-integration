@@ -26,14 +26,13 @@ Gem::Specification.new do |s|
   s.license     = 'Apache-2.0'
 
   s.extra_rdoc_files = %w(README.md LICENSE NOTICE)
-  s.files            = %w(LICENSE NOTICE README.md) + Dir["lib/**/*.rb"] + Dir["bin/*"]
+  s.files            = %w(LICENSE NOTICE README.md) + Dir["lib/**/*.rb"] + Dir["lib/**/*.sh"] + Dir["bin/*"]
   s.executables      = Dir["bin/*"].map { |f| File.basename f }
 
   s.required_ruby_version = ">= 2.0.0"
 
   s.add_dependency "highline",        "~> 1.6.16"
   s.add_dependency "pivotal-tracker", "~> 0.5.10"
-  s.add_dependency "rugged",          "~> 0.17.0.b8"
 
   s.add_development_dependency "bundler", "~> 1.3"
   s.add_development_dependency "rake"

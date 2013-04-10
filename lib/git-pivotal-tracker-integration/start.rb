@@ -15,9 +15,9 @@
 
 require "git-pivotal-tracker-integration/base"
 require "highline/import"
-require "rugged"
 
 class Start < Base
+
   def initialize(args)
     super()
 
@@ -54,17 +54,103 @@ class Start < Base
   end
 
   def run
-    puts "      Title: #{@story.name}"
-    puts "Description: #{@story.description}"
-    puts
+    print_info @story
+    branch_name = branch_name @story
+    create_branch @story, branch_name
+    add_commit_hook
+  end
 
-    branch = "#{@story.id}-" + ask("Enter branch name (#{@story.id}-<branch-name>): ")
-    puts
+  private
 
-    puts branch
-    Rugged::Remote.each(@repository) do |remote|
-      puts remote
+  @@LABEL_WIDTH = 13
+
+  @@CONTENT_WIDTH = HighLine.new.output_cols - @@LABEL_WIDTH
+
+  def print_info(story)
+    print_label "Title"
+    print_value story.name
+
+    print_label "Description"
+    print_value story.description
+
+    PivotalTracker::Note.all(story).sort_by { |note| note.noted_at }.each_with_index do |note, index|
+      print_label "Note #{index}"
+      print_value note.text
+    end
+
+    puts
+  end
+
+  def print_label(label)
+    print "%#{@@LABEL_WIDTH}s" % ["#{label}: "]
+  end
+
+  def print_value(value)
+    value.scan(/\S.{0,#{@@CONTENT_WIDTH - 2}}\S(?=\s|$)|\S+/).each_with_index do |line, index|
+      if index == 0
+        puts line
+      else
+        puts "%#{@@LABEL_WIDTH}s%s" % ["", line]
+      end
     end
   end
 
+  def branch_name(story)
+    branch = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
+    puts
+    branch
+  end
+
+  def create_branch(story, new_name)
+    old_branch = `git branch`.scan(/\* (.*)/)[0][0]
+
+    print "Pulling #{old_branch}... "
+    `git pull --quiet --ff-only`
+    if $?.to_i != 0
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+
+    print "Creating and checking out #{new_name}... "
+    `git checkout --quiet -b #{new_name}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    `git config --local branch.#{new_name}.pivotal-merge-target #{old_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    `git config --local branch.#{new_name}.pivotal-story-id #{story.id}`
+    if $?.to_i != 0
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+  end
+
+  def add_commit_hook
+    repository_root = File.expand_path Dir.pwd
+
+    until Dir.entries(repository_root).any? { |child| child =~ /.git/ }
+      repository_root = File.expand_path("..", repository_root)
+    end
+
+    commit_hook = File.join(repository_root, ".git", "hooks", "prepare-commit-msg")
+    if !File.exist? commit_hook
+      print "Creating commit hook... "
+
+      File.open(File.join(File.dirname(__FILE__), "prepare-commit-msg.sh"), "r") do |source|
+        File.open(commit_hook, "w") do |target|
+          target.write(source.read)
+          target.chmod(0755)
+        end
+      end
+
+      puts "OK"
+    end
+
+  end
 end

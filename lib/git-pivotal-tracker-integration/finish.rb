@@ -14,9 +14,9 @@
 # limitations under the License.
 
 class Finish < Base
-  def initialize(args)
-    super
-  end
 
+  def initialize(args)
+    super()
+  end
 
 end

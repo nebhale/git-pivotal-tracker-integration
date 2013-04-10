@@ -6,25 +6,23 @@ This project provides a set of additional Git commands to help developers when w
 
 
 ## Installation
-The `git-pivotal-tracker-integration` requires at least Ruby 2.0.0 in order to run.  It also, unfortunately, depends on a beta version of the [Rugged][rugged] library.  In order to install the proper version of Rugged, do the following:
-
-```plain
-$ gem install bundler
-$ git clone https://github.com/libgit2/rugged.git
-$ cd rugged
-$ bundle install
-$ rake compile
-$ gem build rugged.gemspec
-$ gem install rugged-*.gem
-```
-
-Once the beta version of Rugged is installed, installation of `git-pivotal-tracker-integration` is as follows:
+The `git-pivotal-tracker-integration` requires at least **Ruby 2.0.0** and **Git 1.8.2.1** in order to run.  In order to install it, do the following:
 
 ```plain
 $ gem install git-pivotal-tracker-integration
 ```
 
-[rugged]: https://github.com/libgit2/rugged
+
+## Usage
+`git-pivotal-tracker-integration` is intended to be a very lightweight tool, meaning that it won't affect your day to day workflow very much.  To be more specific, it is intended to automate branch creation and destruction as well as story state changes, but will not affect when you commit, when development branches are pushed to origin, etc.  The typical workflow looks something like the following:
+
+```plain
+$ git start       # Creates branch and starts story
+$ git commit ...
+$ git commit ...  # Your existing development process
+$ git commit ...
+$ git finish      # Merges and destroys branch, pushes to origin, and finishes story
+```
 
 
 ## Configuration
@@ -85,12 +83,28 @@ Once a story has been selected by one of the three methods, the command then pro
 
 ```plain
 $ git start 12345678
-      Title: Lorem ipsum dolor sit amet, consectetur adipiscing elitattributes
-Description: Ut consequat sapien ut erat volutpat egestas. Integer venenatis lacinia facilisis.
+        Title: Lorem ipsum dolor sit amet, consectetur adipiscing elitattributes
+  Description: Ut consequat sapien ut erat volutpat egestas. Integer venenatis lacinia facilisis.
 
 Enter branch name (12345678-<branch-name>):
 ```
 
-The value entered here will be prepended with the story id such that the branch name is `<project-id>-<branch-name>`.
+The value entered here will be prepended with the story id such that the branch name is `<project-id>-<branch-name>`.  This branch is then created and checked out.
+
+If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your repository.  This commit hook augments the existing commit messsage pattern by appending the story id to the message automatically.
+
+```plain
+
+
+[#12345678]
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch 12345678-lorem-ipsum
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	new file:   dolor.txt
+#
+```
 
 ### `git finish`

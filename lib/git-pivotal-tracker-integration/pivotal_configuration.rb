@@ -15,31 +15,26 @@
 
 require "highline/import"
 require "pivotal-tracker"
-require "rugged"
 
 class PivotalConfiguration
 
-  @@KEY_API_TOKEN = "pivotal.api-token"
-
-  @@KEY_PROJECT_ID = "pivotal.project-id"
-
-  def initialize(repository)
-    @global_config = Rugged::Config.global
-    @local_config = repository.config
-  end
-
   def api_token
-    if !@global_config[@@KEY_API_TOKEN]
-      @global_config[@@KEY_API_TOKEN] = ask("Pivotal API Key (found at https://www.pivotaltracker.com/profile): ")
+    api_token = `git config #{@@KEY_API_TOKEN}`
+
+    if api_token.nil? || api_token.empty?
+      api_token = ask("Pivotal API Key (found at https://www.pivotaltracker.com/profile): ")
+      `git config --global #{@@KEY_API_TOKEN} #{api_token}`
       puts
     end
 
-    @global_config[@@KEY_API_TOKEN]
+    api_token
   end
 
   def project_id
-    if !@local_config[@@KEY_PROJECT_ID]
-      @local_config[@@KEY_PROJECT_ID] = choose do |menu|
+    project_id = `git config #{@@KEY_PROJECT_ID}`
+
+    if project_id.nil? || project_id.empty?
+      project_id = choose do |menu|
         menu.prompt = "Choose project associated with this repository: "
 
         PivotalTracker::Project.all.sort_by { |project| project.name }.each do |project|
@@ -47,10 +42,17 @@ class PivotalConfiguration
         end
       end
 
+      `git config --local #{@@KEY_PROJECT_ID} #{project_id}`
       puts
     end
 
-    @local_config[@@KEY_PROJECT_ID]
+    project_id
   end
+
+  private
+
+  @@KEY_API_TOKEN = "pivotal.api-token"
+
+  @@KEY_PROJECT_ID = "pivotal.project-id"
 
 end

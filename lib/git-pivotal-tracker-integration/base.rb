@@ -13,18 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-require "pivotal-tracker"
-require "rugged"
 require "git-pivotal-tracker-integration/pivotal_configuration"
+require "pivotal-tracker"
 
 class Base
-  def initialize
-    @repository = Rugged::Repository.new Rugged::Repository.discover(Dir.pwd)
 
-    configuration = PivotalConfiguration.new @repository
+  def initialize
+    configuration = PivotalConfiguration.new
     PivotalTracker::Client.token = configuration.api_token
     PivotalTracker::Client.use_ssl = true
     @project = PivotalTracker::Project.find configuration.project_id
   end
+
 end
