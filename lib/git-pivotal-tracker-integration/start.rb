@@ -87,11 +87,15 @@ class Start < Base
   end
 
   def print_value(value)
-    value.scan(/\S.{0,#{@@CONTENT_WIDTH - 2}}\S(?=\s|$)|\S+/).each_with_index do |line, index|
-      if index == 0
-        puts line
-      else
-        puts "%#{@@LABEL_WIDTH}s%s" % ["", line]
+    if value.nil? || value.empty?
+      puts ""
+    else
+      value.scan(/\S.{0,#{@@CONTENT_WIDTH - 2}}\S(?=\s|$)|\S+/).each_with_index do |line, index|
+        if index == 0
+          puts line
+        else
+          puts "%#{@@LABEL_WIDTH}s%s" % ["", line]
+        end
       end
     end
   end
