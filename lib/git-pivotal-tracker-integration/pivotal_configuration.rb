@@ -18,7 +18,7 @@ require "pivotal-tracker"
 
 class PivotalConfiguration
 
-  def api_token
+  def self.api_token
     api_token = `git config #{@@KEY_API_TOKEN}`
 
     if api_token.nil? || api_token.empty?
@@ -27,10 +27,32 @@ class PivotalConfiguration
       puts
     end
 
-    api_token
+    api_token.strip
   end
 
-  def project_id
+  def self.merge_remote
+    `git config branch.#{merge_target}.#{@@KEY_REMOTE}`.strip
+  end
+
+  def self.merge_target
+    `git config branch.#{branch_name}.#{@@KEY_MERGE_TARGET}`.strip
+  end
+
+  def self.merge_target=(value)
+    `git config --local branch.#{branch_name}.#{@@KEY_MERGE_TARGET} #{value}`
+    $? != 0
+  end
+
+  def self.story_id
+    `git config branch.#{branch_name}.#{@@KEY_STORY_ID}`.strip
+  end
+
+  def self.story_id=(value)
+    `git config --local branch.#{branch_name}.#{@@KEY_STORY_ID} #{value}`
+    $? != 0
+  end
+
+  def self.project_id
     project_id = `git config #{@@KEY_PROJECT_ID}`
 
     if project_id.nil? || project_id.empty?
@@ -46,13 +68,23 @@ class PivotalConfiguration
       puts
     end
 
-    project_id
+    project_id.strip
   end
 
   private
 
   @@KEY_API_TOKEN = "pivotal.api-token"
 
+  @@KEY_MERGE_TARGET = "pivotal-merge-target"
+
   @@KEY_PROJECT_ID = "pivotal.project-id"
+
+  @@KEY_REMOTE = "remote"
+
+  @@KEY_STORY_ID = "pivotal-story-id"
+
+  def self.branch_name
+    `git branch`.scan(/\* (.*)/)[0][0]
+  end
 
 end

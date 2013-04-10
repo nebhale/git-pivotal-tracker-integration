@@ -13,10 +13,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "git-pivotal-tracker-integration/base"
+
 class Finish < Base
 
-  def initialize(args)
-    super()
+  def run
+    development_branch = current_branch
+    merge_target_branch = PivotalConfiguration.merge_target
+    merge_remote = PivotalConfiguration.merge_remote
+    story_id = PivotalConfiguration.story_id
+
+    check_trivial_merge development_branch, merge_target_branch, merge_remote
+    merge_branch development_branch, merge_target_branch, story_id
+    delete_branch development_branch
+    push merge_remote
   end
 
+  private
+
+  def check_trivial_merge(development_branch, merge_target_branch, merge_remote)
+
+    print "Checking trivial merge from #{development_branch} to #{merge_target_branch}... "
+    `git fetch #{merge_remote}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    remote_tip = `git rev-parse #{merge_remote}/#{merge_target_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    local_tip = `git rev-parse #{merge_target_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    if remote_tip != local_tip
+      abort "FAIL"
+    end
+
+    common_ancestor = `git merge-base #{merge_target_branch} #{development_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    if local_tip != common_ancestor
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+
+  end
+
+  def merge_branch(development_branch, merge_target_branch, story_id)
+    print "Merging #{development_branch} to #{merge_target_branch}... "
+
+    `git checkout --quiet #{merge_target_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    end
+
+    `git merge --quiet --no-ff --m "[Completes ##{story_id}]" #{development_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+
+  end
+
+  def delete_branch(development_branch)
+    print "Deleting #{development_branch}... "
+
+    `git branch -D #{development_branch}`
+    if $?.to_i != 0
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+  end
+
+  def push(merge_remote)
+    print "Pushing to #{merge_remote}... "
+    `git push #{merge_remote}`
+    if $?.to_i != 0
+      abort "FAIL"
+    else
+      puts "OK"
+    end
+  end
 end

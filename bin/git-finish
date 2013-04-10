@@ -2,4 +2,4 @@
 
 require "git-pivotal-tracker-integration/finish"
 
-Finish.new(ARGV).run
+Finish.new().run
