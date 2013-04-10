@@ -33,7 +33,7 @@ class Finish < Base
 
   def check_trivial_merge(development_branch, merge_target_branch, merge_remote)
 
-    print "Checking trivial merge from #{development_branch} to #{merge_target_branch}... "
+    print "Checking for trivial merge from #{development_branch} to #{merge_target_branch}... "
     `git fetch #{merge_remote}`
     if $?.to_i != 0
       abort "FAIL"
@@ -74,7 +74,7 @@ class Finish < Base
       abort "FAIL"
     end
 
-    `git merge --quiet --no-ff --m "[Completes ##{story_id}]" #{development_branch}`
+    `git merge --quiet --no-ff --m "Merge #{development_branch} to #{merge_target_branch}\n\n[Completes ##{story_id}]" #{development_branch}`
     if $?.to_i != 0
       abort "FAIL"
     else
@@ -96,7 +96,7 @@ class Finish < Base
 
   def push(merge_remote)
     print "Pushing to #{merge_remote}... "
-    `git push #{merge_remote}`
+    `git push --quiet #{merge_remote}`
     if $?.to_i != 0
       abort "FAIL"
     else

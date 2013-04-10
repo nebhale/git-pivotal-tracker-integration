@@ -58,6 +58,7 @@ class Start < Base
     branch_name = branch_name @story
     create_branch @story, branch_name
     add_commit_hook
+    @story.update(:current_state => "started")
   end
 
   private
@@ -153,4 +154,5 @@ class Start < Base
     end
 
   end
+
 end

@@ -1,12 +1,12 @@
 # Git Pivotal Tracker Integration
 
-This project provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
+`git-pivotal-tracker-integration` provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
 
 [pivotal-tracker]: http://www.pivotaltracker.com
 
 
 ## Installation
-The `git-pivotal-tracker-integration` requires at least **Ruby 2.0.0** and **Git 1.8.2.1** in order to run.  In order to install it, do the following:
+`git-pivotal-tracker-integration` requires at least **Ruby 2.0.0** and **Git 1.8.2.1** in order to run.  In order to install it, do the following:
 
 ```plain
 $ gem install git-pivotal-tracker-integration
@@ -39,7 +39,7 @@ In order to use `git-pivotal-tracker-integration`, two Git client configuration 
 
 
 ### Git Server
-In order to take advantage of automatic issue completion, the [Pivotal Tracker Source Code Integration][integration] must be enabled.  If you are using GitHub, this integration is easy to enable by navgating to your project's 'Service Hooks' settings and configuration it with the proper credentials.
+In order to take advantage of automatic issue completion, the [Pivotal Tracker Source Code Integration][integration] must be enabled.  If you are using GitHub, this integration is easy to enable by navgating to your project's 'Service Hooks' settings and configuring it with the proper credentials.
 
 [integration]: https://www.pivotaltracker.com/help/integrations?version=v3#scm
 
@@ -53,7 +53,7 @@ This command starts a story by creating a Git branch and changing the story's st
 $ git start 12345678
 ```
 
-The second way to run it is by specyifying the type of story that you would like to start.  In this case it will then offer you a the first five stories of that type (based on the backlog's order) to choose from.
+The second way to run the command is by specyifying the type of story that you would like to start.  In this case it will then offer you the first five stories (based on the backlog's order) of that type to choose from.
 
 ```plain
 $ git start feature
@@ -66,7 +66,7 @@ $ git start feature
 Choose story to start:
 ```
 
-Finally it can be run without specifying anything.  In this case, it will then offer the first five stories of any type (based on the backlog's order) to choose from.
+Finally the command can be run without specifying anything.  In this case, it will then offer the first five stories (based on the backlog's order) of any type to choose from.
 
 ```plain
 $ git start
@@ -108,10 +108,28 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 ```
 
 ### `git finish`
-This command finishes a story by merging and cleaning up it's branch and then pushing the changes to a remote server.  This command can only be run one way.
+This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can only be run one way.
 
 ```plain
 $ git finish
-
-# TODO Add example after you've done it once.
+Checking for trivial merge from 12345678-lorem-ipsum to master... OK
+Merging 12345678-lorem-ipsum to master... OK
+Deleting 12345678-lorem-ipsum... OK
+Pushing to origin... OK
 ```
+
+The command checks that it will be able to do a trivial merge from the development branch to the target branch before it does anything.  The check has the following constraints
+
+1.  The local repository must be up to date with the remote repository (e.g. `origin`)
+2.  The local merge target branch (e.g. `master`) must be up to date with the remote merge target branch (e.g. `origin/master`)
+3.  The common ancestor (i.e. the branch point) of the development branch (e.g. `12345678-lorem-ipsum`) must be tip of the local merge target branch (e.g. `master`)
+
+If all of these conditions are met, the development branch will be merged into the target branch with a message of:
+
+```plain
+Merge 12345678-lorem-ipsum to master
+
+[Completes #12345678]
+```
+
+After merging, the development branch is deleted and the changes are pushed to the remote repository.
