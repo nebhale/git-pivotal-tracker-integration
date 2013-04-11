@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.name        = "git-pivotal-tracker-integration"
   s.version     = "1.1.0.dev"
   s.summary     = "Git commands for integration with Pivotal Tracker"
-  s.description = File.read("README.md")
+  s.description = "Provides a set of additional Git commands to help developers when working with Pivotal Tracker"
   s.authors     = ["Ben Hale"]
   s.email       = "nebhale@nebhale.com"
   s.homepage    = "https://github.com/nebhale/git-pivotal-tracker-integration"
