@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# -*- encoding: utf-8 -*-
-
 Gem::Specification.new do |s|
   s.name        = "git-pivotal-tracker-integration"
   s.version     = "1.2.0.dev"
@@ -28,13 +26,15 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = %w(README.md LICENSE NOTICE)
   s.files            = %w(LICENSE NOTICE README.md) + Dir["lib/**/*.rb"] + Dir["lib/**/*.sh"] + Dir["bin/*"]
   s.executables      = Dir["bin/*"].map { |f| File.basename f }
+  s.test_files       = Dir["spec/**/*_spec.rb"]
 
-  s.required_ruby_version = ">= 2.0.0"
+  s.required_ruby_version = ">= 1.8.7"
 
   s.add_dependency "highline",        "~> 1.6.16"
   s.add_dependency "pivotal-tracker", "~> 0.5.10"
 
   s.add_development_dependency "bundler", "~> 1.3"
   s.add_development_dependency "rake"
+  s.add_development_dependency "rspec", "~> 2.13.0"
 
 end
