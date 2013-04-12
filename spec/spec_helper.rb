@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby -U
 # Git Pivotal Tracker Integration
 # Copyright (c) 2013 the original author or authors.
 #
@@ -14,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/start"
+RSpec.configure do |config|
+  config.treat_symbols_as_metadata_keys_with_true_values = true
+  config.run_all_when_everything_filtered = true
+  config.filter_run :focus
 
-Start.new(ARGV).run
+  config.order = 'random'
+end

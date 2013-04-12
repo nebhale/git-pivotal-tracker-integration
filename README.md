@@ -1,5 +1,6 @@
 # Git Pivotal Tracker Integration
 [![Gem Version](https://badge.fury.io/rb/git-pivotal-tracker-integration.png)](http://badge.fury.io/rb/git-pivotal-tracker-integration)
+[![Build Status](https://travis-ci.org/nebhale/git-pivotal-tracker-integration.png?branch=master)](https://travis-ci.org/nebhale/git-pivotal-tracker-integration)
 
 `git-pivotal-tracker-integration` provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
 
@@ -7,7 +8,7 @@
 
 
 ## Installation
-`git-pivotal-tracker-integration` requires at least **Ruby 2.0.0** and **Git 1.8.2.1** in order to run.  In order to install it, do the following:
+`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.  In order to install it, do the following:
 
 ```plain
 $ gem install git-pivotal-tracker-integration
