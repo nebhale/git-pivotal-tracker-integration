@@ -120,22 +120,19 @@ describe PivotalConfiguration do
 
   it "should populate a menu with all projects" do
     PivotalConfiguration.should_receive(:`).with("git config pivotal.project-id").and_return("")
-    PivotalConfiguration.should_receive(:choose) do |&arg|
-      PivotalTracker::Project.should_receive(:all).and_return([
-        PivotalTracker::Project.new(:id => "id-2", :name => "name-2"),
-        PivotalTracker::Project.new(:id => "id-1", :name => "name-1")])
+    PivotalTracker::Project.should_receive(:all).and_return([
+      PivotalTracker::Project.new(:id => "id-2", :name => "name-2"),
+      PivotalTracker::Project.new(:id => "id-1", :name => "name-1")])
 
-      menu = double("menu")
-      menu.should_receive(:prompt=)
-      menu.should_receive(:choice).with("name-1")
-      menu.should_receive(:choice).with("name-2")
+    menu = double("menu")
+    menu.should_receive(:prompt=)
+    menu.should_receive(:choice).with("name-1")
+    menu.should_receive(:choice).with("name-2")
 
-      arg.call menu
-
-    end.and_return("test_project_id")
+    PivotalConfiguration.should_receive(:choose) { |&arg| arg.call menu }.and_return("test_project_id")
     PivotalConfiguration.should_receive(:`).with("git config --local pivotal.project-id test_project_id")
 
-    project_id = PivotalConfiguration.project_id
+    PivotalConfiguration.project_id
 
   end
 
