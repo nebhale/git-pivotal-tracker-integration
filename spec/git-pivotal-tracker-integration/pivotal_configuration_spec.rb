@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/pivotal_configuration"
 require "spec_helper"
+require "git-pivotal-tracker-integration/pivotal_configuration"
 
 describe PivotalConfiguration do
   before do
-    PivotalConfiguration.stub!(:puts)
+    $stdout = StringIO.new
   end
 
   it "should not prompt the user for the API token if it is already configured" do
@@ -116,6 +116,27 @@ describe PivotalConfiguration do
     project_id = PivotalConfiguration.project_id
 
     expect(project_id).to eq("test_project_id")
+  end
+
+  it "should populate a menu with all projects" do
+    PivotalConfiguration.should_receive(:`).with("git config pivotal.project-id").and_return("")
+    PivotalConfiguration.should_receive(:choose) do |&arg|
+      PivotalTracker::Project.should_receive(:all).and_return([
+        PivotalTracker::Project.new(:id => "id-2", :name => "name-2"),
+        PivotalTracker::Project.new(:id => "id-1", :name => "name-1")])
+
+      menu = double("menu")
+      menu.should_receive(:prompt=)
+      menu.should_receive(:choice).with("name-1")
+      menu.should_receive(:choice).with("name-2")
+
+      arg.call menu
+
+    end.and_return("test_project_id")
+    PivotalConfiguration.should_receive(:`).with("git config --local pivotal.project-id test_project_id")
+
+    project_id = PivotalConfiguration.project_id
+
   end
 
 end

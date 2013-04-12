@@ -21,7 +21,6 @@ class Base
   def initialize
     PivotalTracker::Client.token = PivotalConfiguration.api_token
     PivotalTracker::Client.use_ssl = true
-    @project = PivotalTracker::Project.find PivotalConfiguration.project_id
   end
 
   protected

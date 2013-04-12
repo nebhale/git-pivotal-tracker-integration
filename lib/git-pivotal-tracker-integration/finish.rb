@@ -19,8 +19,8 @@ class Finish < Base
 
   def run
     development_branch = current_branch
-    merge_target_branch = PivotalConfiguration.merge_target
     merge_remote = PivotalConfiguration.merge_remote
+    merge_target_branch = PivotalConfiguration.merge_target
     story_id = PivotalConfiguration.story_id
 
     check_trivial_merge development_branch, merge_target_branch, merge_remote
@@ -35,17 +35,17 @@ class Finish < Base
 
     print "Checking for trivial merge from #{development_branch} to #{merge_target_branch}... "
     `git fetch #{merge_remote}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
     remote_tip = `git rev-parse #{merge_remote}/#{merge_target_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
     local_tip = `git rev-parse #{merge_target_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
@@ -54,7 +54,7 @@ class Finish < Base
     end
 
     common_ancestor = `git merge-base #{merge_target_branch} #{development_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
@@ -70,12 +70,12 @@ class Finish < Base
     print "Merging #{development_branch} to #{merge_target_branch}... "
 
     `git checkout --quiet #{merge_target_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
-    `git merge --quiet --no-ff --m "Merge #{development_branch} to #{merge_target_branch}\n\n[Completes ##{story_id}]" #{development_branch}`
-    if $?.to_i != 0
+    `git merge --quiet --no-ff -m "Merge #{development_branch} to #{merge_target_branch}\n\n[Completes ##{story_id}]" #{development_branch}`
+    if $?.exitstatus != 0
       abort "FAIL"
     else
       puts "OK"
@@ -87,7 +87,7 @@ class Finish < Base
     print "Deleting #{development_branch}... "
 
     `git branch -D #{development_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     else
       puts "OK"
@@ -97,7 +97,7 @@ class Finish < Base
   def push(merge_remote)
     print "Pushing to #{merge_remote}... "
     `git push --quiet #{merge_remote}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     else
       puts "OK"

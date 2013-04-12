@@ -13,15 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/base"
 require "spec_helper"
+require "git-pivotal-tracker-integration/base"
 
 describe Base do
   before do
     PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
-    PivotalConfiguration.should_receive(:project_id).and_return("test_project_id")
     PivotalTracker::Client.stub!(:token, :use_ssl)
-    PivotalTracker::Project.stub!(:find)
   end
 
   it "should return the current branch" do

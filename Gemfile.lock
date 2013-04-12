@@ -2,8 +2,8 @@ PATH
   remote: .
   specs:
     git-pivotal-tracker-integration (1.2.0.dev)
-      highline (~> 1.6.16)
-      pivotal-tracker (~> 0.5.10)
+      highline (~> 1.6)
+      pivotal-tracker (~> 0.5)
 
 GEM
   remote: https://rubygems.org/
@@ -16,10 +16,12 @@ GEM
     highline (1.6.16)
     libxml-ruby (2.6.0)
     mime-types (1.22)
+    multi_json (1.7.2)
     nokogiri (1.5.9)
     nokogiri-happymapper (0.5.7)
       nokogiri (~> 1.5)
     pivotal-tracker (0.5.10)
+      builder
       builder
       crack
       happymapper (>= 0.3.2)
@@ -27,7 +29,8 @@ GEM
       nokogiri (>= 1.5.5)
       nokogiri-happymapper (>= 0.5.4)
       rest-client (~> 1.6.0)
-    rake (0.9.6)
+      rest-client (~> 1.6.0)
+    rake (10.0.4)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rspec (2.13.0)
@@ -38,6 +41,10 @@ GEM
     rspec-expectations (2.13.0)
       diff-lcs (>= 1.1.3, < 2.0)
     rspec-mocks (2.13.1)
+    simplecov (0.7.1)
+      multi_json (~> 1.0)
+      simplecov-html (~> 0.7.1)
+    simplecov-html (0.7.1)
 
 PLATFORMS
   ruby
@@ -45,5 +52,6 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.3)
   git-pivotal-tracker-integration!
-  rake
-  rspec (~> 2.13.0)
+  rake (~> 10.0)
+  rspec (~> 2.13)
+  simplecov (~> 0.7)

@@ -14,3 +14,4 @@
 # limitations under the License.
 
 require "spec_helper"
+require "git-pivotal-tracker-integration/start"
