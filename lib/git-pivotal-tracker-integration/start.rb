@@ -21,13 +21,15 @@ class Start < Base
   def initialize(args)
     super()
 
+    project = PivotalTracker::Project.find PivotalConfiguration.project_id
+
     if args[0] =~ /[[:digit:]]/
-      @story = @project.stories.find(args[0].to_i)
+      @story = project.stories.find(args[0].to_i)
     elsif args[0] =~ /[[:alpha:]]/
       @story = choose do |menu|
         menu.prompt = "Choose story to start: "
 
-        @project.stories.all(
+        project.stories.all(
           :story_type => args[0],
           :current_state => ["unstarted", "unscheduled"],
           :limit => 5
@@ -41,7 +43,7 @@ class Start < Base
       @story = choose do |menu|
         menu.prompt = "Choose story to start: "
 
-        @project.stories.all(
+        project.stories.all(
           :current_state => ["unstarted", "unscheduled"],
           :limit => 5
         ).each do |story|
@@ -111,7 +113,7 @@ class Start < Base
 
     print "Pulling #{merge_target_branch}... "
     `git pull --quiet --ff-only`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     else
       puts "OK"
@@ -119,17 +121,17 @@ class Start < Base
 
     print "Creating and checking out #{development_branch}... "
     `git checkout --quiet -b #{development_branch}`
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
     PivotalConfiguration.merge_target = merge_target_branch
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     end
 
     PivotalConfiguration.story_id = story.id
-    if $?.to_i != 0
+    if $?.exitstatus != 0
       abort "FAIL"
     else
       puts "OK"

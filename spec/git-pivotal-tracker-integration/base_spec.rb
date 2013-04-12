@@ -14,3 +14,28 @@
 # limitations under the License.
 
 require "spec_helper"
+require "git-pivotal-tracker-integration/base"
+
+describe Base do
+  before do
+    PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
+    PivotalTracker::Client.stub!(:token, :use_ssl)
+  end
+
+  it "should return the current branch" do
+    base = Stub.new()
+    base.should_receive(:`).with("git branch").and_return("   master\n * test_branch")
+
+    current_branch = base.current_branch_stub
+
+    expect(current_branch).to eq("test_branch")
+  end
+end
+
+class Stub < Base
+
+  def current_branch_stub
+    current_branch
+  end
+
+end

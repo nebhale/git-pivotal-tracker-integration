@@ -22,7 +22,7 @@ class PivotalConfiguration
     api_token = `git config #{@@KEY_API_TOKEN}`
 
     if api_token.nil? || api_token.empty?
-      api_token = ask("Pivotal API Key (found at https://www.pivotaltracker.com/profile): ")
+      api_token = ask("Pivotal API Token (found at https://www.pivotaltracker.com/profile): ")
       `git config --global #{@@KEY_API_TOKEN} #{api_token}`
       puts
     end
@@ -40,7 +40,6 @@ class PivotalConfiguration
 
   def self.merge_target=(value)
     `git config --local branch.#{branch_name}.#{@@KEY_MERGE_TARGET} #{value}`
-    $? != 0
   end
 
   def self.story_id
@@ -49,7 +48,6 @@ class PivotalConfiguration
 
   def self.story_id=(value)
     `git config --local branch.#{branch_name}.#{@@KEY_STORY_ID} #{value}`
-    $? != 0
   end
 
   def self.project_id
