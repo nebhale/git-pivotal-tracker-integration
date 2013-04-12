@@ -13,4 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require "git-pivotal-tracker-integration/base"
 require "spec_helper"
+
+describe Base do
+  before do
+    PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
+    PivotalConfiguration.stub!(:token, :use_ssl)
+  end
+
+
+  it "should description" do
+
+  end
+end
