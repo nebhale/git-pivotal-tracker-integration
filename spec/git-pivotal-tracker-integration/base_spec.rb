@@ -19,11 +19,25 @@ require "spec_helper"
 describe Base do
   before do
     PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
-    PivotalConfiguration.stub!(:token, :use_ssl)
+    PivotalConfiguration.should_receive(:project_id).and_return("test_project_id")
+    PivotalTracker::Client.stub!(:token, :use_ssl)
+    PivotalTracker::Project.stub!(:find)
   end
 
+  it "should return the current branch" do
+    base = Stub.new()
+    base.should_receive(:`).with("git branch").and_return("   master\n * test_branch")
 
-  it "should description" do
+    current_branch = base.current_branch_stub
 
+    expect(current_branch).to eq("test_branch")
   end
+end
+
+class Stub < Base
+
+  def current_branch_stub
+    current_branch
+  end
+
 end

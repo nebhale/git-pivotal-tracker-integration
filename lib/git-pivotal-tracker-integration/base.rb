@@ -24,6 +24,8 @@ class Base
     @project = PivotalTracker::Project.find PivotalConfiguration.project_id
   end
 
+  protected
+
   def current_branch
     `git branch`.scan(/\* (.*)/)[0][0]
   end
