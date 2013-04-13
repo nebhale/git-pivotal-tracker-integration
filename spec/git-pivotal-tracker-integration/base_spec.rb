@@ -20,15 +20,36 @@ describe Base do
   before do
     PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
     PivotalTracker::Client.stub!(:token, :use_ssl)
+
+    $stdout = StringIO.new
+    $stderr = StringIO.new
+    @base = Stub.new()
   end
 
   it "should return the current branch" do
-    base = Stub.new()
-    base.should_receive(:`).with("git branch").and_return("   master\n * test_branch")
+    @base.should_receive(:exec).with("git branch").and_return("   master\n * dev_branch")
 
-    current_branch = base.current_branch_stub
+    current_branch = @base.current_branch_stub
 
-    expect(current_branch).to eq("test_branch")
+    expect(current_branch).to eq("dev_branch")
+  end
+
+  it "should return result when exit code is 0" do
+    @base.should_receive(:`).with("test_command").and_return("test_result")
+    $?.should_receive(:exitstatus).and_return(0)
+
+    result = @base.exec_stub "test_command"
+
+    expect(result).to eq("test_result")
+  end
+
+  it "should abort with 'FAIL' when the exit code is not 0" do
+    @base.should_receive(:`).with("test_command")
+    $?.should_receive(:exitstatus).and_return(-1)
+
+    lambda { @base.exec_stub "test_command" }.should raise_error(SystemExit)
+
+    expect($stderr.string).to match(/FAIL/)
   end
 end
 
@@ -36,6 +57,10 @@ class Stub < Base
 
   def current_branch_stub
     current_branch
+  end
+
+  def exec_stub(command)
+    exec(command)
   end
 
 end

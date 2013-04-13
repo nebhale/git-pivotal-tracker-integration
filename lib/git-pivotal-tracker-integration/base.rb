@@ -26,7 +26,16 @@ class Base
   protected
 
   def current_branch
-    `git branch`.scan(/\* (.*)/)[0][0]
+    exec("git branch").scan(/\* (.*)/)[0][0]
+  end
+
+  def exec(command)
+    result = `#{command}`
+    if $?.exitstatus != 0
+      abort "FAIL"
+    end
+
+    result
   end
 
 end

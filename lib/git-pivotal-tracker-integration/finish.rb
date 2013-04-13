@@ -32,75 +32,43 @@ class Finish < Base
   private
 
   def check_trivial_merge(development_branch, merge_target_branch, merge_remote)
-
     print "Checking for trivial merge from #{development_branch} to #{merge_target_branch}... "
-    `git fetch #{merge_remote}`
-    if $?.exitstatus != 0
+
+    exec "git fetch #{merge_remote}"
+
+    remote_tip = exec "git rev-parse #{merge_remote}/#{merge_target_branch}"
+    local_tip = exec "git rev-parse #{merge_target_branch}"
+    common_ancestor = exec "git merge-base #{merge_target_branch} #{development_branch}"
+
+    if remote_tip != local_tip || local_tip != common_ancestor
       abort "FAIL"
     end
 
-    remote_tip = `git rev-parse #{merge_remote}/#{merge_target_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
-
-    local_tip = `git rev-parse #{merge_target_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
-
-    if remote_tip != local_tip
-      abort "FAIL"
-    end
-
-    common_ancestor = `git merge-base #{merge_target_branch} #{development_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
-
-    if local_tip != common_ancestor
-      abort "FAIL"
-    else
-      puts "OK"
-    end
-
+    puts "OK"
   end
 
   def merge_branch(development_branch, merge_target_branch, story_id)
     print "Merging #{development_branch} to #{merge_target_branch}... "
 
-    `git checkout --quiet #{merge_target_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
+    exec "git checkout --quiet #{merge_target_branch}"
+    exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{merge_target_branch}\n\n[Completes ##{story_id}]\" #{development_branch}"
 
-    `git merge --quiet --no-ff -m "Merge #{development_branch} to #{merge_target_branch}\n\n[Completes ##{story_id}]" #{development_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    else
-      puts "OK"
-    end
-
+    puts "OK"
   end
 
   def delete_branch(development_branch)
     print "Deleting #{development_branch}... "
 
-    `git branch -D #{development_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    else
-      puts "OK"
-    end
+    exec "git branch -D #{development_branch}"
+
+    puts "OK"
   end
 
   def push(merge_remote)
     print "Pushing to #{merge_remote}... "
-    `git push --quiet #{merge_remote}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    else
-      puts "OK"
-    end
+
+    exec "git push --quiet #{merge_remote}"
+
+    puts "OK"
   end
 end
