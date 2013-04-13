@@ -133,7 +133,6 @@ describe PivotalConfiguration do
     PivotalConfiguration.should_receive(:`).with("git config --local pivotal.project-id test_project_id")
 
     PivotalConfiguration.project_id
-
   end
 
 end

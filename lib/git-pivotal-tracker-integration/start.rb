@@ -18,49 +18,15 @@ require "highline/import"
 
 class Start < Base
 
-  def initialize(args)
-    super()
-
+  def run(arg)
     project = PivotalTracker::Project.find PivotalConfiguration.project_id
+    story = story project, arg
 
-    if args[0] =~ /[[:digit:]]/
-      @story = project.stories.find(args[0].to_i)
-    elsif args[0] =~ /[[:alpha:]]/
-      @story = choose do |menu|
-        menu.prompt = "Choose story to start: "
-
-        project.stories.all(
-          :story_type => args[0],
-          :current_state => ["unstarted", "unscheduled"],
-          :limit => 5
-        ).each do |story|
-          menu.choice(story.name) { story }
-        end
-      end
-
-      puts
-    else
-      @story = choose do |menu|
-        menu.prompt = "Choose story to start: "
-
-        project.stories.all(
-          :current_state => ["unstarted", "unscheduled"],
-          :limit => 5
-        ).each do |story|
-          menu.choice("%-7s %s" % [story.story_type.upcase, story.name]) { story }
-        end
-      end
-
-      puts
-    end
-  end
-
-  def run
-    print_info @story
-    branch_name = branch_name @story
-    create_branch @story, branch_name
+    print_info story
+    branch_name = branch_name story
+    create_branch story, branch_name
     add_commit_hook
-    start_on_tracker @story
+    start_on_tracker story
   end
 
   private
@@ -68,6 +34,51 @@ class Start < Base
   @@LABEL_WIDTH = 13
 
   @@CONTENT_WIDTH = HighLine.new.output_cols - @@LABEL_WIDTH
+
+  def story(project, arg)
+    story = nil
+
+    if arg =~ /[[:digit:]]/
+      story = project.stories.find(arg.to_i)
+    elsif arg =~ /[[:alpha:]]/
+      story = select_story_of_type project, arg
+    else
+      story = select_story project
+    end
+
+    story
+  end
+
+  def select_story_of_type(project, type)
+    choose do |menu|
+      menu.prompt = "Choose story to start: "
+
+      project.stories.all(
+        :story_type => type,
+        :current_state => ["unstarted", "unscheduled"],
+        :limit => 5
+      ).each do |story|
+        menu.choice(story.name) { story }
+      end
+    end
+
+    puts
+  end
+
+  def select_story(project)
+    choose do |menu|
+      menu.prompt = "Choose story to start: "
+
+      project.stories.all(
+        :current_state => ["unstarted", "unscheduled"],
+        :limit => 5
+      ).each do |story|
+        menu.choice("%-7s %s" % [story.story_type.upcase, story.name]) { story }
+      end
+    end
+
+    puts
+  end
 
   def print_info(story)
     print_label "Title"
@@ -77,7 +88,7 @@ class Start < Base
     print_value story.description
 
     PivotalTracker::Note.all(story).sort_by { |note| note.noted_at }.each_with_index do |note, index|
-      print_label "Note #{index}"
+      print_label "Note #{index + 1}"
       print_value note.text
     end
 
@@ -103,39 +114,25 @@ class Start < Base
   end
 
   def branch_name(story)
-    branch = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
+    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
     puts
-    branch
+    branch_name
   end
 
-  def create_branch(story, development_branch)
+  def create_branch(story, branch_name)
     merge_target_branch = current_branch
 
     print "Pulling #{merge_target_branch}... "
-    `git pull --quiet --ff-only`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    else
-      puts "OK"
-    end
+    exec "git pull --quiet --ff-only"
+    puts "OK"
 
-    print "Creating and checking out #{development_branch}... "
-    `git checkout --quiet -b #{development_branch}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
+    print "Creating and checking out #{branch_name}... "
 
+    exec "git checkout --quiet -b #{branch_name}"
     PivotalConfiguration.merge_target = merge_target_branch
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
-
     PivotalConfiguration.story_id = story.id
-    if $?.exitstatus != 0
-      abort "FAIL"
-    else
-      puts "OK"
-    end
+
+    puts "OK"
   end
 
   def add_commit_hook
