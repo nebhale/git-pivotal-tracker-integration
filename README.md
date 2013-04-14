@@ -135,3 +135,34 @@ Merge 12345678-lorem-ipsum to master
 ```
 
 After merging, the development branch is deleted and the changes are pushed to the remote repository.
+
+### `git release [issue]`
+This command creates a release for a story.  It does this by updating the version string in the project and creating a tag.  This command can be run in two ways.  First it can be run specifying the release that you want to create.
+
+```plain
+$ git release 12345678
+```
+The other way the command can be run without specifying anything.  In this case, it will select the first release story (based on the backlog's order).
+
+```plain
+$ git release
+      Title: Lorem ipsum dolor sit amet, consectetur adipiscing elitattributes
+```
+
+Once a story has been selected by one of the two methods, the command then prompts for the release version and next development version.
+
+```plain
+$ git release
+      Title: Lorem ipsum dolor sit amet, consectetur adipiscing elitattributes
+
+Enter release version (current: 1.0.0.BUILD-SNAPSHOT): 1.0.0.M1
+Enter next development version (current: 1.0.0.BUILD-SNAPSHOT): 1.1.0.BUILD-SNAPSHOT
+Creating tag v1.0.0.M1... OK
+Pushing to origin... OK
+```
+
+Once these have been entered, the version string for the current project is updated to the release version and a tag is created.  Then the version string for the current project is updated to the next development version and a new commit along the original branch is created.  Finally the tag and changes are pushed to the remote sever.
+
+Version update is currently supported for the following kinds of projects.  If you do not see a project type that you would like supported, please open an issue or submit a pull request.
+
+* Gradle

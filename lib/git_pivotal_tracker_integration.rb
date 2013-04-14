@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby -U
 # Git Pivotal Tracker Integration
 # Copyright (c) 2013 the original author or authors.
 #
@@ -14,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/command/start"
-
-GitPivotalTrackerIntegration::Command::Start.new().run ARGV[0]
+# The root module for the project
+module GitPivotalTrackerIntegration
+end

@@ -13,29 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/pivotal_configuration"
-require "pivotal-tracker"
+require "git_pivotal_tracker_integration"
 
-class Base
-
-  def initialize
-    PivotalTracker::Client.token = PivotalConfiguration.api_token
-    PivotalTracker::Client.use_ssl = true
-  end
-
-  protected
-
-  def current_branch
-    exec("git branch").scan(/\* (.*)/)[0][0]
-  end
-
-  def exec(command)
-    result = `#{command}`
-    if $?.exitstatus != 0
-      abort "FAIL"
-    end
-
-    result
-  end
-
+# A module encapsulating version update implementations
+module GitPivotalTrackerIntegration::VersionUpdate
 end

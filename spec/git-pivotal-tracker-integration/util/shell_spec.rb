@@ -14,53 +14,32 @@
 # limitations under the License.
 
 require "spec_helper"
-require "git-pivotal-tracker-integration/base"
+require "git-pivotal-tracker-integration/util/shell"
 
-describe Base do
+describe GitPivotalTrackerIntegration::Util::Shell do
+
   before do
-    PivotalConfiguration.should_receive(:api_token).and_return("test_api_token")
-    PivotalTracker::Client.stub!(:token, :use_ssl)
-
     $stdout = StringIO.new
     $stderr = StringIO.new
-    @base = Stub.new()
-  end
-
-  it "should return the current branch" do
-    @base.should_receive(:exec).with("git branch").and_return("   master\n * dev_branch")
-
-    current_branch = @base.current_branch_stub
-
-    expect(current_branch).to eq("dev_branch")
   end
 
   it "should return result when exit code is 0" do
-    @base.should_receive(:`).with("test_command").and_return("test_result")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command").and_return("test_result")
     $?.should_receive(:exitstatus).and_return(0)
 
-    result = @base.exec_stub "test_command"
+    result = GitPivotalTrackerIntegration::Util::Shell.exec "test_command"
 
     expect(result).to eq("test_result")
   end
 
   it "should abort with 'FAIL' when the exit code is not 0" do
-    @base.should_receive(:`).with("test_command")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command")
     $?.should_receive(:exitstatus).and_return(-1)
 
-    lambda { @base.exec_stub "test_command" }.should raise_error(SystemExit)
+    lambda { GitPivotalTrackerIntegration::Util::Shell.exec "test_command" }.should raise_error(SystemExit)
 
     expect($stderr.string).to match(/FAIL/)
   end
-end
 
-class Stub < Base
-
-  def current_branch_stub
-    current_branch
-  end
-
-  def exec_stub(command)
-    exec(command)
-  end
 
 end
