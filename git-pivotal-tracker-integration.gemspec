@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/nebhale/git-pivotal-tracker-integration"
   s.license     = 'Apache-2.0'
 
-  s.extra_rdoc_files = %w(README.md LICENSE NOTICE)
   s.files            = %w(LICENSE NOTICE README.md) + Dir["lib/**/*.rb"] + Dir["lib/**/*.sh"] + Dir["bin/*"]
   s.executables      = Dir["bin/*"].map { |f| File.basename f }
   s.test_files       = Dir["spec/**/*_spec.rb"]
@@ -35,7 +34,9 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "bundler", "~>1.3"
   s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "redcarpet", "~> 2.2.2"
   s.add_development_dependency "rspec", "~> 2.13"
   s.add_development_dependency "simplecov", "~> 0.7"
+  s.add_development_dependency "yard", "~> 0.8.6.1"
 
 end

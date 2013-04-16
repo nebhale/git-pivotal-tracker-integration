@@ -16,6 +16,13 @@
 require "bundler/gem_tasks"
 
 require "rspec/core/rake_task"
-RSpec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new
+
+require "yard"
+YARD::Rake::YardocTask.new
+
+require "rake/clean"
+CLEAN.include [".yardoc", "coverage"]
+CLOBBER.include ["doc", "pkg"]
 
 task :default => :spec

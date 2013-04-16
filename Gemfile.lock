@@ -13,7 +13,7 @@ GEM
     diff-lcs (1.2.3)
     happymapper (0.4.0)
       libxml-ruby (~> 2.0)
-    highline (1.6.16)
+    highline (1.6.18)
     libxml-ruby (2.6.0)
     mime-types (1.22)
     multi_json (1.7.2)
@@ -31,6 +31,7 @@ GEM
       rest-client (~> 1.6.0)
       rest-client (~> 1.6.0)
     rake (10.0.4)
+    redcarpet (2.2.2)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rspec (2.13.0)
@@ -45,6 +46,7 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.7.1)
     simplecov-html (0.7.1)
+    yard (0.8.6.1)
 
 PLATFORMS
   ruby
@@ -53,5 +55,7 @@ DEPENDENCIES
   bundler (~> 1.3)
   git-pivotal-tracker-integration!
   rake (~> 10.0)
+  redcarpet (~> 2.2.2)
   rspec (~> 2.13)
   simplecov (~> 0.7)
+  yard (~> 0.8.6.1)

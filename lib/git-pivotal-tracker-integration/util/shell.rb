@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby -U
 # Git Pivotal Tracker Integration
 # Copyright (c) 2013 the original author or authors.
 #
@@ -14,6 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/command/start"
+require "git-pivotal-tracker-integration/util/util"
 
-GitPivotalTrackerIntegration::Command::Start.new().run ARGV[0]
+# Utilties for dealing with the shell
+class GitPivotalTrackerIntegration::Util::Shell
+
+  # Executes a command.  If the command's +Status#existstatus+ is not +0+,
+  # then +Kernel::abort+ is called with +FAIL+ as the message.
+  #
+  # @param command [String] the command to execute
+  # @return [String] the result of the command
+  def self.exec(command)
+    result = `#{command}`
+    if $?.exitstatus != 0
+      abort "FAIL"
+    end
+
+    result
+  end
+
+end
