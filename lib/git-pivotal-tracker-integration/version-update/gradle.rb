@@ -28,7 +28,10 @@ class GitPivotalTrackerIntegration::VersionUpdate::Gradle
     @gradle_properties = File.expand_path "gradle.properties", root
 
     if File.exist? @gradle_properties
-      groups = File.read(@gradle_properties).scan(/version[=:](.*)/)
+      groups = nil
+      File.open(@gradle_properties, "r") do |file|
+        groups = file.read().scan(/version[=:](.*)/)
+      end
       @version = groups[0] ? groups[0][0]: nil
     end
   end
@@ -55,7 +58,7 @@ class GitPivotalTrackerIntegration::VersionUpdate::Gradle
   def update_version(new_version)
     contents = File.read(@gradle_properties)
     contents = contents.gsub(/(version[=:])#{@version}/, "\\1#{new_version}")
-    File.write(@gradle_properties, contents)
+    File.open(@gradle_properties, "w") { |file| file.write(contents) }
   end
 
 end

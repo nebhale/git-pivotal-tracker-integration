@@ -29,7 +29,7 @@ describe GitPivotalTrackerIntegration::VersionUpdate::Gradle do
   it "should not support if there is no version in the gradle.properties file" do
     Dir.mktmpdir do |root|
       gradle_properties = File.expand_path "gradle.properties", root
-      File.write(gradle_properties, "foo=bar")
+      File.open(gradle_properties, "w") { |file| file.write "foo=bar" }
 
       updater = GitPivotalTrackerIntegration::VersionUpdate::Gradle.new(root)
 
@@ -40,7 +40,7 @@ describe GitPivotalTrackerIntegration::VersionUpdate::Gradle do
   it "should support if there is a version in the gradle.properties file" do
     Dir.mktmpdir do |root|
       gradle_properties = File.expand_path "gradle.properties", root
-      File.write(gradle_properties, "version=1")
+      File.open(gradle_properties, "w") { |file| file.write "version=1" }
 
       updater = GitPivotalTrackerIntegration::VersionUpdate::Gradle.new(root)
 
@@ -51,7 +51,7 @@ describe GitPivotalTrackerIntegration::VersionUpdate::Gradle do
   it "returns the current version" do
     Dir.mktmpdir do |root|
       gradle_properties = File.expand_path "gradle.properties", root
-      File.write(gradle_properties, "version=1")
+      File.open(gradle_properties, "w") { |file| file.write "version=1" }
 
       updater = GitPivotalTrackerIntegration::VersionUpdate::Gradle.new(root)
 
@@ -62,13 +62,13 @@ describe GitPivotalTrackerIntegration::VersionUpdate::Gradle do
   it "returns the current version" do
     Dir.mktmpdir do |root|
       gradle_properties = File.expand_path "gradle.properties", root
-      File.write(gradle_properties, "version=1")
+      File.open(gradle_properties, "w") { |file| file.write "version=1" }
 
       updater = GitPivotalTrackerIntegration::VersionUpdate::Gradle.new(root)
 
       updater.update_version "2"
 
-      expect(File.read(gradle_properties)).to eq("version=2")
+      File.open(gradle_properties, "r") { |file| expect(file.read).to eq("version=2") }
     end
   end
 end
