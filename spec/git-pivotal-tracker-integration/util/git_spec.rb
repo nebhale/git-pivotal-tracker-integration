@@ -152,13 +152,13 @@ describe GitPivotalTrackerIntegration::Util::Git do
     end
   end
 
-  it "should fail if remote tip and local tip do not match" do
+  it "should fail if root tip and common_ancestor do not match" do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return("development_branch")
     GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-branch", :branch).and_return("master")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-remote", :branch).and_return("origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git fetch origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse origin/master").and_return("remote_tip")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse master").and_return("local_tip")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git checkout --quiet master")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git pull --quiet --ff-only")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git checkout --quiet development_branch")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse master").and_return("root_tip")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge-base master development_branch").and_return("common_ancestor")
 
     lambda { GitPivotalTrackerIntegration::Util::Git.trivial_merge? }.should raise_error(SystemExit)
@@ -166,26 +166,12 @@ describe GitPivotalTrackerIntegration::Util::Git do
     expect($stderr.string).to match(/FAIL/)
   end
 
-  it "should fail if local tip and common ancestor do not match" do
+  it "should pass if root tip and common ancestor match" do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return("development_branch")
     GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-branch", :branch).and_return("master")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-remote", :branch).and_return("origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git fetch origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse origin/master").and_return("HEAD")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse master").and_return("HEAD")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge-base master development_branch").and_return("common_ancestor")
-
-    lambda { GitPivotalTrackerIntegration::Util::Git.trivial_merge? }.should raise_error(SystemExit)
-
-    expect($stderr.string).to match(/FAIL/)
-  end
-
-  it "should pass if remote tip, local tip, and common ancestor all match" do
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return("development_branch")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-branch", :branch).and_return("master")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("root-remote", :branch).and_return("origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git fetch origin")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse origin/master").and_return("HEAD")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git checkout --quiet master")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git pull --quiet --ff-only")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git checkout --quiet development_branch")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git rev-parse master").and_return("HEAD")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge-base master development_branch").and_return("HEAD")
 

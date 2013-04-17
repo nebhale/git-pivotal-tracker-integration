@@ -211,17 +211,17 @@ class GitPivotalTrackerIntegration::Util::Git
   def self.trivial_merge?
     development_branch = branch_name
     root_branch = get_config @@KEY_ROOT_BRANCH, :branch
-    root_remote = get_config @@KEY_ROOT_REMOTE, :branch
 
     print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
 
-    GitPivotalTrackerIntegration::Util::Shell.exec "git fetch #{root_remote}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git pull --quiet --ff-only"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{development_branch}"
 
-    remote_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_remote}/#{root_branch}"
-    local_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
+    root_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
     common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
 
-    if remote_tip != local_tip || local_tip != common_ancestor
+    if root_tip != common_ancestor
       abort "FAIL"
     end
 
