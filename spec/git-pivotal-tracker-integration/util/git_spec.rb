@@ -61,7 +61,7 @@ describe GitPivotalTrackerIntegration::Util::Git do
 
   it "should get configuration when :branch scope is specified" do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return("test_branch_name")
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git config branch.test_branch_name.test_key").and_return("test_value")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git config branch.test_branch_name.test_key", false).and_return("test_value")
 
     value = GitPivotalTrackerIntegration::Util::Git.get_config "test_key", :branch
 
@@ -69,7 +69,7 @@ describe GitPivotalTrackerIntegration::Util::Git do
   end
 
   it "should get configuration when :inherited scope is specified" do
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git config test_key").and_return("test_value")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git config test_key", false).and_return("test_value")
 
     value = GitPivotalTrackerIntegration::Util::Git.get_config "test_key", :inherited
 

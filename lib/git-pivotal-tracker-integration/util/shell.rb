@@ -18,14 +18,15 @@ require "git-pivotal-tracker-integration/util/util"
 # Utilties for dealing with the shell
 class GitPivotalTrackerIntegration::Util::Shell
 
-  # Executes a command.  If the command's +Status#existstatus+ is not +0+,
-  # then +Kernel::abort+ is called with +FAIL+ as the message.
+  # Executes a command
   #
-  # @param command [String] the command to execute
+  # @param [String] command the command to execute
+  # @param [Boolean] abort_on_failure whether to +Kernel#abort+ with +FAIL+ as
+  #   the message when the command's +Status#existstatus+ is not +0+
   # @return [String] the result of the command
-  def self.exec(command)
+  def self.exec(command, abort_on_failure = true)
     result = `#{command}`
-    if $?.exitstatus != 0
+    if $?.exitstatus != 0 && abort_on_failure
       abort "FAIL"
     end
 

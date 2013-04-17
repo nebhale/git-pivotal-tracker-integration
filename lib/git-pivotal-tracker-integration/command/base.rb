@@ -29,7 +29,7 @@ class GitPivotalTrackerIntegration::Command::Base
   # * all communication with Pivotal Tracker will be protected with SSL
   # * the user has configured the project id for this repository
   def initialize
-    GitPivotalTrackerIntegration::Util::Git.repository_root
+    @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
 
     PivotalTracker::Client.token = @configuration.api_token

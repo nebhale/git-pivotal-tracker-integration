@@ -33,10 +33,10 @@ class GitPivotalTrackerIntegration::Util::Git
       print "Creating Git hook #{name}...  "
 
       FileUtils.mkdir_p hooks_directory
-      File.open(source, "r") do |source|
-        File.open(hook, "w") do |target|
-          target.write(source.read)
-          target.chmod(0755)
+      File.open(source, "r") do |input|
+        File.open(hook, "w") do |output|
+          output.write(input.read)
+          output.chmod(0755)
         end
       end
 
@@ -119,9 +119,9 @@ class GitPivotalTrackerIntegration::Util::Git
   # @raise if the specified scope is not +:branch+ or +:inherited+
   def self.get_config(key, scope = :inherited)
     if :branch == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec("git config branch.#{branch_name}.#{key}").strip
+      GitPivotalTrackerIntegration::Util::Shell.exec("git config branch.#{branch_name}.#{key}", false).strip
     elsif :inherited == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec("git config #{key}").strip
+      GitPivotalTrackerIntegration::Util::Shell.exec("git config #{key}", false).strip
     else
       raise "Unable to get Git configuration for scope '#{scope}'"
     end
@@ -168,9 +168,9 @@ class GitPivotalTrackerIntegration::Util::Git
   def self.repository_root
     repository_root = Dir.pwd
 
-    until Dir.entries(repository_root).any? { |child| child =~ /.git/ }
+    until Dir.entries(repository_root).any? { |child| File.directory?(child) && (child =~ /^.git$/) }
       next_repository_root = File.expand_path("..", repository_root)
-      raise "Current working directory is not in a Git repository" unless repository_root != next_repository_root
+      abort("Current working directory is not in a Git repository") unless repository_root != next_repository_root
       repository_root =  next_repository_root
     end
 

@@ -41,5 +41,12 @@ describe GitPivotalTrackerIntegration::Util::Shell do
     expect($stderr.string).to match(/FAIL/)
   end
 
+  it "should return result when the exit code is not 0 and told not to abort on failure" do
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command")
+    $?.should_receive(:exitstatus).and_return(-1)
+
+    GitPivotalTrackerIntegration::Util::Shell.exec "test_command", false
+  end
+
 
 end
