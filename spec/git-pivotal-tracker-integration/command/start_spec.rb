@@ -43,7 +43,11 @@ describe GitPivotalTrackerIntegration::Command::Start do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:create_branch).with("12345678-development_branch")
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story=)
     GitPivotalTrackerIntegration::Util::Git.should_receive(:add_hook)
-    @story.should_receive(:update).with(:current_state => "started")
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("user.name").and_return("test_owner")
+    @story.should_receive(:update).with(
+      :current_state => "started",
+      :owned_by => "test_owner"
+    )
 
     @start.run "test_filter"
   end

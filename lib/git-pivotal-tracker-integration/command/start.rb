@@ -57,7 +57,10 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
   def start_on_tracker(story)
     print "Starting story on Pivotal Tracker... "
-    story.update(:current_state => "started")
+    story.update(
+      :current_state => "started",
+      :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config("user.name")
+    )
     puts "OK"
   end
 
