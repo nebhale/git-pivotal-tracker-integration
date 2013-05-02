@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    git-pivotal-tracker-integration (1.2.0.dev)
+    git-pivotal-tracker-integration (1.4.0.dev)
       highline (~> 1.6)
       pivotal-tracker (~> 0.5)
 
@@ -15,7 +15,7 @@ GEM
       libxml-ruby (~> 2.0)
     highline (1.6.18)
     libxml-ruby (2.6.0)
-    mime-types (1.22)
+    mime-types (1.23)
     multi_json (1.7.2)
     nokogiri (1.5.9)
     nokogiri-happymapper (0.5.7)
