@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "bundler/gem_tasks"
+require 'bundler/gem_tasks'
 
-require "rspec/core/rake_task"
+require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
-require "yard"
+require 'yard'
 YARD::Rake::YardocTask.new
 
-require "rake/clean"
-CLEAN.include [".yardoc", "coverage"]
-CLOBBER.include ["doc", "pkg"]
+require 'rake/clean'
+CLEAN.include %w(.yardoc coverage)
+CLOBBER.include %w(doc pkg)
 
 task :default => :spec

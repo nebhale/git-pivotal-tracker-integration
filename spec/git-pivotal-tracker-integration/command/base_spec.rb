@@ -24,7 +24,7 @@ describe GitPivotalTrackerIntegration::Command::Base do
     $stdout = StringIO.new
     $stderr = StringIO.new
 
-    @project = double("project")
+    @project = double('project')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:repository_root)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:api_token)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:project_id)
@@ -32,7 +32,7 @@ describe GitPivotalTrackerIntegration::Command::Base do
     @base = GitPivotalTrackerIntegration::Command::Base.new
   end
 
-  it "should not run" do
+  it 'should not run' do
     lambda { @base.run }.should raise_error
   end
 end

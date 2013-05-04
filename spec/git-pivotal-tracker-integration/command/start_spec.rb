@@ -26,8 +26,8 @@ describe GitPivotalTrackerIntegration::Command::Start do
     $stdout = StringIO.new
     $stderr = StringIO.new
 
-    @project = double("project")
-    @story = double("story")
+    @project = double('project')
+    @story = double('story')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:repository_root)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:api_token)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:project_id)
@@ -35,20 +35,20 @@ describe GitPivotalTrackerIntegration::Command::Start do
     @start = GitPivotalTrackerIntegration::Command::Start.new
   end
 
-  it "should run" do
-    GitPivotalTrackerIntegration::Util::Story.should_receive(:select_story).with(@project, "test_filter").and_return(@story)
+  it 'should run' do
+    GitPivotalTrackerIntegration::Util::Story.should_receive(:select_story).with(@project, 'test_filter').and_return(@story)
     GitPivotalTrackerIntegration::Util::Story.should_receive(:pretty_print)
     @story.should_receive(:id).twice.and_return(12345678)
-    @start.should_receive(:ask).and_return("development_branch")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:create_branch).with("12345678-development_branch")
+    @start.should_receive(:ask).and_return('development_branch')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:create_branch).with('12345678-development_branch')
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story=)
     GitPivotalTrackerIntegration::Util::Git.should_receive(:add_hook)
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with("user.name").and_return("test_owner")
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('user.name').and_return('test_owner')
     @story.should_receive(:update).with(
-      :current_state => "started",
-      :owned_by => "test_owner"
+      :current_state => 'started',
+      :owned_by => 'test_owner'
     )
 
-    @start.run "test_filter"
+    @start.run 'test_filter'
   end
 end
