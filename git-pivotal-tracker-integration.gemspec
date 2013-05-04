@@ -32,11 +32,11 @@ Gem::Specification.new do |s|
   s.add_dependency "highline",        "~> 1.6"
   s.add_dependency "pivotal-tracker", "~> 0.5"
 
-  s.add_development_dependency "bundler", "~>1.3"
-  s.add_development_dependency "rake", "~> 10.0"
+  s.add_development_dependency "bundler",   "~> 1.3"
+  s.add_development_dependency "rake",      "~> 10.0"
   s.add_development_dependency "redcarpet", "~> 2.2"
-  s.add_development_dependency "rspec", "~> 2.13"
+  s.add_development_dependency "rspec",     "~> 2.13"
   s.add_development_dependency "simplecov", "~> 0.7"
-  s.add_development_dependency "yard", "~> 0.8"
+  s.add_development_dependency "yard",      "~> 0.8"
 
 end
