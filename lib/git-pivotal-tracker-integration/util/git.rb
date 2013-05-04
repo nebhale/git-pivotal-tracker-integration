@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/util/shell"
-require "git-pivotal-tracker-integration/util/util"
+require 'git-pivotal-tracker-integration/util/shell'
+require 'git-pivotal-tracker-integration/util/util'
 
 # Utilities for dealing with Git
 class GitPivotalTrackerIntegration::Util::Git
@@ -26,21 +26,21 @@ class GitPivotalTrackerIntegration::Util::Git
   # @param [Boolean] overwrite whether to overwrite the hook if it already exists
   # @return [void]
   def self.add_hook(name, source, overwrite = false)
-    hooks_directory =  File.join repository_root, ".git", "hooks"
+    hooks_directory =  File.join repository_root, '.git', 'hooks'
     hook = File.join hooks_directory, name
 
     if overwrite || !File.exist?(hook)
       print "Creating Git hook #{name}...  "
 
       FileUtils.mkdir_p hooks_directory
-      File.open(source, "r") do |input|
-        File.open(hook, "w") do |output|
+      File.open(source, 'r') do |input|
+        File.open(hook, 'w') do |output|
           output.write(input.read)
           output.chmod(0755)
         end
       end
 
-      puts "OK"
+      puts 'OK'
     end
   end
 
@@ -48,7 +48,7 @@ class GitPivotalTrackerIntegration::Util::Git
   #
   # @return [String] the name of the currently checked out branch
   def self.branch_name
-    GitPivotalTrackerIntegration::Util::Shell.exec("git branch").scan(/\* (.*)/)[0][0]
+    GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
   end
 
   # Creates a branch with a given +name+.  First pulls the current branch to
@@ -60,17 +60,19 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [void]
   def self.create_branch(name, print_messages = true)
     root_branch = branch_name
-    root_remote = get_config @@KEY_REMOTE, :branch
+    root_remote = get_config KEY_REMOTE, :branch
 
     if print_messages; print "Pulling #{root_branch}... " end
-    GitPivotalTrackerIntegration::Util::Shell.exec "git pull --quiet --ff-only"
-    if print_messages; puts "OK" end
+    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
+    if print_messages; puts 'OK'
+    end
 
     if print_messages; print "Creating and checking out #{name}... " end
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -b #{name}"
-    set_config @@KEY_ROOT_BRANCH, root_branch, :branch
-    set_config @@KEY_ROOT_REMOTE, root_remote, :branch
-    if print_messages; puts "OK" end
+    set_config KEY_ROOT_BRANCH, root_branch, :branch
+    set_config KEY_ROOT_REMOTE, root_remote, :branch
+    if print_messages; puts 'OK'
+    end
   end
 
   # Creates a commit with a given message.  The commit includes all change
@@ -98,13 +100,13 @@ class GitPivotalTrackerIntegration::Util::Git
 
     print "Creating tag v#{name}... "
 
-    create_branch @@RELEASE_BRANCH_NAME, false
+    create_branch RELEASE_BRANCH_NAME, false
     create_commit "#{name} Release", story
     GitPivotalTrackerIntegration::Util::Shell.exec "git tag v#{name}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{@@RELEASE_BRANCH_NAME}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
 
-    puts "OK"
+    puts 'OK'
   end
 
   # Returns a Git configuration value.  This value is read using the +git
@@ -134,16 +136,16 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [void]
   def self.merge(story)
     development_branch = branch_name
-    root_branch = get_config @@KEY_ROOT_BRANCH, :branch
+    root_branch = get_config KEY_ROOT_BRANCH, :branch
 
     print "Merging #{development_branch} to #{root_branch}... "
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[Completes ##{story.id}]\" #{development_branch}"
-    puts "OK"
+    puts 'OK'
 
     print "Deleting #{development_branch}... "
     GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
-    puts "OK"
+    puts 'OK'
   end
 
   # Push changes to the remote of the current branch
@@ -151,15 +153,15 @@ class GitPivotalTrackerIntegration::Util::Git
   # @param [String] refs the explicit references to push
   # @return [void]
   def self.push(*refs)
-    remote = get_config @@KEY_REMOTE, :branch
+    remote = get_config KEY_REMOTE, :branch
 
     print "Pushing to #{remote}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git push --quiet #{remote} " + refs.join(" ")
-    puts "OK"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git push --quiet #{remote} " + refs.join(' ')
+    puts 'OK'
   end
 
   # Returns the root path of the current Git repository.  The root is
-  # determined by ascending the path hierarcy, starting with the current
+  # determined by ascending the path hierarchy, starting with the current
   # working directory (+Dir#pwd+), until a directory is found that contains a
   # +.git/+ sub directory.
   #
@@ -169,8 +171,8 @@ class GitPivotalTrackerIntegration::Util::Git
     repository_root = Dir.pwd
 
     until Dir.entries(repository_root).any? { |child| File.directory?(child) && (child =~ /^.git$/) }
-      next_repository_root = File.expand_path("..", repository_root)
-      abort("Current working directory is not in a Git repository") unless repository_root != next_repository_root
+      next_repository_root = File.expand_path('..', repository_root)
+      abort('Current working directory is not in a Git repository') unless repository_root != next_repository_root
       repository_root =  next_repository_root
     end
 
@@ -210,33 +212,33 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [void]
   def self.trivial_merge?
     development_branch = branch_name
-    root_branch = get_config @@KEY_ROOT_BRANCH, :branch
+    root_branch = get_config KEY_ROOT_BRANCH, :branch
 
     print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
 
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git pull --quiet --ff-only"
+    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{development_branch}"
 
     root_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
     common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
 
     if root_tip != common_ancestor
-      abort "FAIL"
+      abort 'FAIL'
     end
 
-    puts "OK"
+    puts 'OK'
   end
 
   private
 
-  @@KEY_REMOTE = "remote"
+  KEY_REMOTE = 'remote'.freeze
 
-  @@KEY_ROOT_BRANCH = "root-branch"
+  KEY_ROOT_BRANCH = 'root-branch'.freeze
 
-  @@KEY_ROOT_REMOTE = "root-remote"
+  KEY_ROOT_REMOTE = 'root-remote'.freeze
 
-  @@RELEASE_BRANCH_NAME = "pivotal-tracker-release"
+  RELEASE_BRANCH_NAME = 'pivotal-tracker-release'.freeze
 
 end
 

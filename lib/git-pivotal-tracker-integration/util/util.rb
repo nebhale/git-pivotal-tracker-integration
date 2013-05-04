@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git_pivotal_tracker_integration"
+require 'git_pivotal_tracker_integration'
 
 # A module encapsulating utilities for the project
 module GitPivotalTrackerIntegration::Util

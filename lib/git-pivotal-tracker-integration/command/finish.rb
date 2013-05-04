@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/command/base"
-require "git-pivotal-tracker-integration/command/command"
-require "git-pivotal-tracker-integration/util/git"
+require 'git-pivotal-tracker-integration/command/base'
+require 'git-pivotal-tracker-integration/command/command'
+require 'git-pivotal-tracker-integration/util/git'
 
 # The class that encapsulates finishing a Pivotal Tracker Story
 class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegration::Command::Base
