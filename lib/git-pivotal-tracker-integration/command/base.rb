@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/command/command"
-require "git-pivotal-tracker-integration/command/configuration"
-require "git-pivotal-tracker-integration/util/git"
-require "pivotal-tracker"
+require 'git-pivotal-tracker-integration/command/command'
+require 'git-pivotal-tracker-integration/command/configuration'
+require 'git-pivotal-tracker-integration/util/git'
+require 'pivotal-tracker'
 
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality

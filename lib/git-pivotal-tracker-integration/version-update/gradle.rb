@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/version-update/version_update"
+require 'git-pivotal-tracker-integration/version-update/version_update'
 
 # A version updater for dealing with _typical_ Gradle projects.  This updater
 # assumes that the version of the current project is stored within a
@@ -25,11 +25,11 @@ class GitPivotalTrackerIntegration::VersionUpdate::Gradle
   #
   # @param [String] root The root of the repository
   def initialize(root)
-    @gradle_properties = File.expand_path "gradle.properties", root
+    @gradle_properties = File.expand_path 'gradle.properties', root
 
     if File.exist? @gradle_properties
       groups = nil
-      File.open(@gradle_properties, "r") do |file|
+      File.open(@gradle_properties, 'r') do |file|
         groups = file.read().scan(/version[=:](.*)/)
       end
       @version = groups[0] ? groups[0][0]: nil
@@ -39,7 +39,7 @@ class GitPivotalTrackerIntegration::VersionUpdate::Gradle
   # Whether this updater supports updating this project
   #
   # @return [Boolean] +true+ if a valid version number was found on
-  #   initiialization, +false+ otherwise
+  #   initialization, +false+ otherwise
   def supports?
     !@version.nil?
   end
@@ -58,7 +58,7 @@ class GitPivotalTrackerIntegration::VersionUpdate::Gradle
   def update_version(new_version)
     contents = File.read(@gradle_properties)
     contents = contents.gsub(/(version[=:])#{@version}/, "\\1#{new_version}")
-    File.open(@gradle_properties, "w") { |file| file.write(contents) }
+    File.open(@gradle_properties, 'w') { |file| file.write(contents) }
   end
 
 end

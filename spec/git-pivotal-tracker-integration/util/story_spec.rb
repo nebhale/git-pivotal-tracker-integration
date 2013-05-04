@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "spec_helper"
-require "git-pivotal-tracker-integration/util/story"
-require "pivotal-tracker"
+require 'spec_helper'
+require 'git-pivotal-tracker-integration/util/story'
+require 'pivotal-tracker'
 
 describe GitPivotalTrackerIntegration::Util::Story do
 

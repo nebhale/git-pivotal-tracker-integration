@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/util/util"
+require 'git-pivotal-tracker-integration/util/util'
 
-# Utilties for dealing with the shell
+# Utilities for dealing with the shell
 class GitPivotalTrackerIntegration::Util::Shell
 
   # Executes a command
@@ -27,7 +27,7 @@ class GitPivotalTrackerIntegration::Util::Shell
   def self.exec(command, abort_on_failure = true)
     result = `#{command}`
     if $?.exitstatus != 0 && abort_on_failure
-      abort "FAIL"
+      abort 'FAIL'
     end
 
     result

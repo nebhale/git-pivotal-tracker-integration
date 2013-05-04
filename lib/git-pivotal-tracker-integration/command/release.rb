@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/command/base"
-require "git-pivotal-tracker-integration/command/command"
-require "git-pivotal-tracker-integration/util/git"
-require "git-pivotal-tracker-integration/util/story"
-require "git-pivotal-tracker-integration/version-update/gradle"
+require 'git-pivotal-tracker-integration/command/base'
+require 'git-pivotal-tracker-integration/command/command'
+require 'git-pivotal-tracker-integration/util/git'
+require 'git-pivotal-tracker-integration/util/story'
+require 'git-pivotal-tracker-integration/version-update/gradle'
 
 # The class that encapsulates releasing a Pivotal Tracker Story
 class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegration::Command::Base
@@ -34,7 +34,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
-    story = GitPivotalTrackerIntegration::Util::Story.select_story(@project, filter.nil? ? "release" : filter, 1)
+    story = GitPivotalTrackerIntegration::Util::Story.select_story(@project, filter.nil? ? 'release' : filter, 1)
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
     updater = [

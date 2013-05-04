@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "spec_helper"
-require "git-pivotal-tracker-integration/command/configuration"
-require "git-pivotal-tracker-integration/command/finish"
-require "git-pivotal-tracker-integration/util/git"
-require "pivotal-tracker"
+require 'spec_helper'
+require 'git-pivotal-tracker-integration/command/configuration'
+require 'git-pivotal-tracker-integration/command/finish'
+require 'git-pivotal-tracker-integration/util/git'
+require 'pivotal-tracker'
 
 describe GitPivotalTrackerIntegration::Command::Finish do
 

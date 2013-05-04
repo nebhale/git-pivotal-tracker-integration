@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "git-pivotal-tracker-integration/util/util"
-require "highline/import"
-require "pivotal-tracker"
+require 'git-pivotal-tracker-integration/util/util'
+require 'highline/import'
+require 'pivotal-tracker'
 
-# Utilties for dealing with +PivotalTracker::Story+s
+# Utilities for dealing with +PivotalTracker::Story+s
 class GitPivotalTrackerIntegration::Util::Story
 
   # Print a human readable version of a story.  This pretty prints the title,
@@ -26,12 +26,12 @@ class GitPivotalTrackerIntegration::Util::Story
   # @param [PivotalTracker::Story] story the story to pretty print
   # @return [void]
   def self.pretty_print(story)
-    print_label @@LABEL_TITLE
+    print_label LABEL_TITLE
     print_value story.name
 
     description = story.description
     if !description.nil? && !description.empty?
-      print_label "Description"
+      print_label 'Description'
       print_value description
     end
 
@@ -54,8 +54,6 @@ class GitPivotalTrackerIntegration::Util::Story
   # @param [Fixnum] limit The number maximum number of stories the user can choose from
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
   def self.select_story(project, filter = nil, limit = 5)
-    story = nil
-
     if filter =~ /[[:digit:]]/
       story = project.stories.find filter.to_i
     else
@@ -67,39 +65,37 @@ class GitPivotalTrackerIntegration::Util::Story
 
   private
 
-  @@CANDIDATE_STATES = ["rejected", "unstarted", "unscheduled"]
+  CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze
 
-  @@LABEL_DESCRIPTION = "Description"
+  LABEL_DESCRIPTION = 'Description'.freeze
 
-  @@LABEL_TITLE = "Title"
+  LABEL_TITLE = 'Title'.freeze
 
-  @@LABEL_WIDTH = @@LABEL_DESCRIPTION.length + 2
+  LABEL_WIDTH = (LABEL_DESCRIPTION.length + 2).freeze
 
-  @@CONTENT_WIDTH = HighLine.new.output_cols - @@LABEL_WIDTH
+  CONTENT_WIDTH = (HighLine.new.output_cols - LABEL_WIDTH).freeze
 
   def self.print_label(label)
-    print "%#{@@LABEL_WIDTH}s" % ["#{label}: "]
+    print "%#{LABEL_WIDTH}s" % ["#{label}: "]
   end
 
   def self.print_value(value)
     if value.nil? || value.empty?
-      puts ""
+      puts ''
     else
-      value.scan(/\S.{0,#{@@CONTENT_WIDTH - 2}}\S(?=\s|$)|\S+/).each_with_index do |line, index|
+      value.scan(/\S.{0,#{CONTENT_WIDTH - 2}}\S(?=\s|$)|\S+/).each_with_index do |line, index|
         if index == 0
           puts line
         else
-          puts "%#{@@LABEL_WIDTH}s%s" % ["", line]
+          puts "%#{LABEL_WIDTH}s%s" % ['', line]
         end
       end
     end
   end
 
   def self.find_story(project, type, limit)
-    story = nil
-
     criteria = {
-      :current_state => @@CANDIDATE_STATES,
+      :current_state => CANDIDATE_STATES,
       :limit => limit
     }
     if type
@@ -111,10 +107,10 @@ class GitPivotalTrackerIntegration::Util::Story
       story = candidates[0]
     else
       story = choose do |menu|
-        menu.prompt = "Choose story to start: "
+        menu.prompt = 'Choose story to start: '
 
         candidates.each do |story|
-          name = type ? story.name : "%-7s %s" % [story.story_type.upcase, story.name]
+          name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
           menu.choice(name) { story }
         end
       end

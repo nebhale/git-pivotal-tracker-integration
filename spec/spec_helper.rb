@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "simplecov"
+require 'simplecov'
 SimpleCov.start do
   add_filter "spec"
 end
