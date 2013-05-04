@@ -23,29 +23,29 @@ describe GitPivotalTrackerIntegration::Util::Shell do
     $stderr = StringIO.new
   end
 
-  it "should return result when exit code is 0" do
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command").and_return("test_result")
+  it 'should return result when exit code is 0' do
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with('test_command').and_return('test_result')
     $?.should_receive(:exitstatus).and_return(0)
 
-    result = GitPivotalTrackerIntegration::Util::Shell.exec "test_command"
+    result = GitPivotalTrackerIntegration::Util::Shell.exec 'test_command'
 
-    expect(result).to eq("test_result")
+    expect(result).to eq('test_result')
   end
 
   it "should abort with 'FAIL' when the exit code is not 0" do
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with('test_command')
     $?.should_receive(:exitstatus).and_return(-1)
 
-    lambda { GitPivotalTrackerIntegration::Util::Shell.exec "test_command" }.should raise_error(SystemExit)
+    lambda { GitPivotalTrackerIntegration::Util::Shell.exec 'test_command' }.should raise_error(SystemExit)
 
     expect($stderr.string).to match(/FAIL/)
   end
 
-  it "should return result when the exit code is not 0 and told not to abort on failure" do
-    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with("test_command")
+  it 'should return result when the exit code is not 0 and told not to abort on failure' do
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:`).with('test_command')
     $?.should_receive(:exitstatus).and_return(-1)
 
-    GitPivotalTrackerIntegration::Util::Shell.exec "test_command", false
+    GitPivotalTrackerIntegration::Util::Shell.exec 'test_command', false
   end
 
 

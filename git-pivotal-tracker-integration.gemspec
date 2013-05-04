@@ -14,29 +14,29 @@
 # limitations under the License.
 
 Gem::Specification.new do |s|
-  s.name        = "git-pivotal-tracker-integration"
-  s.version     = "1.4.0.dev"
-  s.summary     = "Git commands for integration with Pivotal Tracker"
-  s.description = "Provides a set of additional Git commands to help developers when working with Pivotal Tracker"
-  s.authors     = ["Ben Hale"]
-  s.email       = "nebhale@nebhale.com"
-  s.homepage    = "https://github.com/nebhale/git-pivotal-tracker-integration"
+  s.name        = 'git-pivotal-tracker-integration'
+  s.version     = '1.4.0.dev'
+  s.summary     = 'Git commands for integration with Pivotal Tracker'
+  s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
+  s.authors     = ['Ben Hale']
+  s.email       = 'nebhale@nebhale.com'
+  s.homepage    = 'https://github.com/nebhale/git-pivotal-tracker-integration'
   s.license     = 'Apache-2.0'
 
-  s.files            = %w(LICENSE NOTICE README.md) + Dir["lib/**/*.rb"] + Dir["lib/**/*.sh"] + Dir["bin/*"]
-  s.executables      = Dir["bin/*"].map { |f| File.basename f }
-  s.test_files       = Dir["spec/**/*_spec.rb"]
+  s.files            = %w(LICENSE NOTICE README.md) + Dir['lib/**/*.rb'] + Dir['lib/**/*.sh'] + Dir['bin/*']
+  s.executables      = Dir['bin/*'].map { |f| File.basename f }
+  s.test_files       = Dir['spec/**/*_spec.rb']
 
-  s.required_ruby_version = ">= 1.8.7"
+  s.required_ruby_version = '>= 1.8.7'
 
-  s.add_dependency "highline",        "~> 1.6"
-  s.add_dependency "pivotal-tracker", "~> 0.5"
+  s.add_dependency 'highline', '~> 1.6'
+  s.add_dependency 'pivotal-tracker', '~> 0.5'
 
-  s.add_development_dependency "bundler",   "~> 1.3"
-  s.add_development_dependency "rake",      "~> 10.0"
-  s.add_development_dependency "redcarpet", "~> 2.2"
-  s.add_development_dependency "rspec",     "~> 2.13"
-  s.add_development_dependency "simplecov", "~> 0.7"
-  s.add_development_dependency "yard",      "~> 0.8"
+  s.add_development_dependency 'bundler', '~> 1.3'
+  s.add_development_dependency 'rake', '~> 10.0'
+  s.add_development_dependency 'redcarpet', '~> 2.2'
+  s.add_development_dependency 'rspec', '~> 2.13'
+  s.add_development_dependency 'simplecov', '~> 0.7'
+  s.add_development_dependency 'yard', '~> 0.8'
 
 end

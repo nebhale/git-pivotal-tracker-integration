@@ -25,7 +25,7 @@ describe GitPivotalTrackerIntegration::Command::Finish do
     $stdout = StringIO.new
     $stderr = StringIO.new
 
-    @project = double("project")
+    @project = double('project')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:repository_root)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:api_token)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:project_id)
@@ -33,12 +33,12 @@ describe GitPivotalTrackerIntegration::Command::Finish do
     @finish = GitPivotalTrackerIntegration::Command::Finish.new
   end
 
-  it "should run" do
+  it 'should run' do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:trivial_merge?)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story)
     GitPivotalTrackerIntegration::Util::Git.should_receive(:merge)
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return("master")
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:push).with("master")
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return('master')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:push).with('master')
 
     @finish.run
   end
