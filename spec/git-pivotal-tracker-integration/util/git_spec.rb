@@ -187,10 +187,20 @@ describe GitPivotalTrackerIntegration::Util::Git do
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge --quiet --no-ff -m \"Merge development_branch to master\n\n[Completes #12345678]\" development_branch")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git branch --quiet -D development_branch')
 
-    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678)
+    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), nil
   end
 
-it 'should push changes without refs' do
+  it 'should suppress Completes statement' do
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return('development_branch')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('root-branch', :branch).and_return('master')
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git checkout --quiet master')
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge --quiet --no-ff -m \"Merge development_branch to master\n\n[#12345678]\" development_branch")
+    GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git branch --quiet -D development_branch')
+
+    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), true
+  end
+
+  it 'should push changes without refs' do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('remote', :branch).and_return('origin')
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git push --quiet origin ')
 
