@@ -16,4 +16,4 @@
 
 require 'git-pivotal-tracker-integration/command/finish'
 
-GitPivotalTrackerIntegration::Command::Finish.new().run
+GitPivotalTrackerIntegration::Command::Finish.new().run ARGV[0]

@@ -40,6 +40,6 @@ describe GitPivotalTrackerIntegration::Command::Finish do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:branch_name).and_return('master')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:push).with('master')
 
-    @finish.run
+    @finish.run nil
   end
 end

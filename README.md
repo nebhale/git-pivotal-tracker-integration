@@ -112,7 +112,7 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 #
 ```
 
-### `git finish`
+### `git finish [--no-complete]`
 This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can only be run one way.
 
 ```plain
@@ -135,6 +135,14 @@ If all of these conditions are met, the development branch will be merged into t
 Merge 12345678-lorem-ipsum to master
 
 [Completes #12345678]
+```
+
+If the `--no-complete` option is specified, the `Completed` statement in the commit message will be supressed.
+
+```plain
+Merge 12345678-lorem-ipsum to master
+
+[#12345678]
 ```
 
 After merging, the development branch is deleted and the changes are pushed to the remote repository.
