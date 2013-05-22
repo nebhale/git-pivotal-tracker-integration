@@ -51,8 +51,8 @@ In order to take advantage of automatic issue completion, the [Pivotal Tracker S
 
 ## Commands
 
-### `git start [ type | issue ]`
-This command starts a story by creating a Git branch and changing the story's state to `started`.  This command can be run in three ways.  First it can be run specifying the issue that you want to start.
+### `git start [ type | story-id ]`
+This command starts a story by creating a Git branch and changing the story's state to `started`.  This command can be run in three ways.  First it can be run specifying the id of the story that you want to start.
 
 ```plain
 $ git start 12345678
@@ -94,12 +94,11 @@ $ git start 12345678
 Enter branch name (12345678-<branch-name>):
 ```
 
-The value entered here will be prepended with the story id such that the branch name is `<project-id>-<branch-name>`.  This branch is then created and checked out.
+The value entered here will be prepended with the story id such that the branch name is `<story-id>-<branch-name>`.  This branch is then created and checked out.
 
 If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your repository.  This commit hook augments the existing commit messsage pattern by appending the story id to the message automatically.
 
 ```plain
-
 
 [#12345678]
 # Please enter the commit message for your changes. Lines starting
@@ -113,7 +112,7 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 ```
 
 ### `git finish [--no-complete]`
-This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can only be run one way.
+This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can be run in two ways.  First it can be run without the `--no-complete` option.
 
 ```plain
 $ git finish
@@ -137,7 +136,7 @@ Merge 12345678-lorem-ipsum to master
 [Completes #12345678]
 ```
 
-If the `--no-complete` option is specified, the `Completed` statement in the commit message will be supressed.
+The second way is with the `--no-complete` option specified. In this case `finish` performs the same actions except the `Completes`... statement in the commit message will be supressed.
 
 ```plain
 Merge 12345678-lorem-ipsum to master
@@ -147,7 +146,7 @@ Merge 12345678-lorem-ipsum to master
 
 After merging, the development branch is deleted and the changes are pushed to the remote repository.
 
-### `git release [issue]`
+### `git release [story-id]`
 This command creates a release for a story.  It does this by updating the version string in the project and creating a tag.  This command can be run in two ways.  First it can be run specifying the release that you want to create.
 
 ```plain
