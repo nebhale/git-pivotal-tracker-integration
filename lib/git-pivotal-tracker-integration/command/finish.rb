@@ -29,10 +29,8 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   # @return [void]
   def run(argument)
     no_complete = argument =~ /--no-complete/
-
-    GitPivotalTrackerIntegration::Util::Git.trivial_merge?
-    GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    title = ask('Enter title for Pull Request: ')
+    GitPivotalTrackerIntegration::Util::Git.finish(@configuration.story(@project), title)
   end
 
 end

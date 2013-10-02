@@ -1,0 +1,73 @@
+#!/bin/bash
+# Author: Joel Nothman
+
+usage() {
+	echo Usage: $0 '[-m <commit msg>] <base>'
+	exit 1
+}
+
+unset base
+unset message
+
+while [ -n "$1" ]
+do
+	case "$1" in
+		-h)
+			usage
+			;;
+		-m)
+			shift
+			if [ -z "$1" ]
+			then
+				echo '-m requires an argument' >&2
+				usage
+			fi
+
+			if [ -n "$message" ]
+			then
+				message+=$'\n\n'"$1"
+			else
+				message="$1"
+			fi
+			;;
+		*)
+			if [ -z "$base" ]
+			then
+				base="$1"
+			else
+				echo 'Multiple bases specified' >&2
+				usage
+			fi
+	esac
+	shift
+done
+if [ -z "$base" ]
+then
+	echo 'No base ref provided' >&2
+	usage
+fi
+
+seq_ed="$(mktemp -t squash_edXXXXXX)" &&
+echo '#!'$(which bash)'
+	echo Squashing... >&2
+	tmp="$(mktemp -t squash_outXXXXXX)"
+	awk '"'"'NR != 1 { sub(/^pick/, "squash") } {print}'"'"' "$1" > "$tmp"
+	mv "$tmp" "$1"
+' > $seq_ed &&
+chmod +x "$seq_ed" &&
+
+echo 'Warning: Forgetting local history. To revert, use:
+  $ git reset --hard' $(git rev-parse --short HEAD) >&2
+if [ -n "$message" ]
+then
+	GIT_SEQUENCE_EDITOR=$seq_ed GIT_EDITOR=touch git rebase -i $base
+else
+	GIT_SEQUENCE_EDITOR=$seq_ed git rebase -i $base
+fi
+if [ -n "$message" ]
+then
+	echo 'Updating commit message' >&2
+	git commit -n --amend -m "$message" | head -n1
+fi
+rm -r "$seq_ed"
+

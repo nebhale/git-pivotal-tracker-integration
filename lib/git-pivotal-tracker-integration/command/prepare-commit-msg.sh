@@ -18,9 +18,13 @@ CURRENT_BRANCH=$(git branch | grep "*" | sed "s/* //")
 STORY_ID=$(git config branch.$CURRENT_BRANCH.pivotal-story-id)
 
 if [[ $2 != "commit" && -n $STORY_ID ]]; then
-	ORIG_MSG_FILE="$1"
-	TEMP=$(mktemp /tmp/git-XXXXX)
+  ORIG_MSG_FILE="$1"
+  msg="$(cat $ORIG_MSG_FILE)"
+  regex="^\[finishes"
+  if [[ ! $msg =~ $regex ]]; then
+    TEMP=$(mktemp /tmp/git-XXXXX)
 
-	(printf "\n\n[#$STORY_ID]" ; cat "$1") > "$TEMP"
-	cat "$TEMP" > "$ORIG_MSG_FILE"
+    (printf "\n\n[#$STORY_ID]" ; cat "$1") > "$TEMP"
+    cat "$TEMP" > "$ORIG_MSG_FILE"
+  fi
 fi

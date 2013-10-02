@@ -15,6 +15,7 @@
 
 require 'git-pivotal-tracker-integration/util/shell'
 require 'git-pivotal-tracker-integration/util/util'
+require 'json'
 
 # Utilities for dealing with Git
 class GitPivotalTrackerIntegration::Util::Git
@@ -49,6 +50,13 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [String] the name of the currently checked out branch
   def self.branch_name
     GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
+  end
+
+  # Returns the parent of the currently checked out branch
+  #
+  # @return [String] the name of the parent of the currently checked out branch
+  def self.parent_branch
+    root_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//'").strip
   end
 
   # Creates a branch with a given +name+.  First pulls the current branch to
@@ -228,6 +236,39 @@ class GitPivotalTrackerIntegration::Util::Git
     end
 
     puts 'OK'
+  end
+
+  def self.fetch
+    GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+  end
+
+  def self.finish(story, title)
+    current_branch = branch_name
+    root_branch = parent_branch
+    rebase(story, current_branch, root_branch)
+    pull_request(title, current_branch, root_branch)
+  end
+
+  def self.rebase(story, current_branch, root_branch)
+    fetch
+    msg = "finishes ##{story.id}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m '[#{msg}]' #{current_branch}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{branch_name}"
+  end
+
+  def self.pull_request(title, current_branch, root_branch)
+    repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
+    url = "https://api.github.com/repos/firmstepgit/#{repo}/pulls"
+    username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
+    data = {
+      :title => title,
+      :head => "firmstepgit:#{current_branch}",
+      :base => "firmstepgit:#{parent_branch}",
+    }
+
+puts data.to_json
+    curl = "curl -u #{username} --data 'title=#{title}&head=#{current_branch}&base=#{root_branch}' #{url}"
+    GitPivotalTrackerIntegration::Util::Shell.exec curl
   end
 
   private
