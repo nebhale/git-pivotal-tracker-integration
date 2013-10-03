@@ -59,8 +59,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     print 'Starting story on Pivotal Tracker... '
     story.update(
       :current_state => 'started',
-      :owned_by => @configuration.username,
-      :estimate => ask("Enter number of points: ")
+      :owned_by => @configuration.username
     )
     puts 'OK'
   end
