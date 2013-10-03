@@ -56,7 +56,9 @@ class GitPivotalTrackerIntegration::Util::Git
   #
   # @return [String] the name of the parent of the currently checked out branch
   def self.parent_branch
-    root_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//'").strip
+    commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1").strip
+    commit = commit.slice(commit.index("[")+1, commit.length)
+    commit.slice(0, commit.index("^"))
   end
 
   # Creates a branch with a given +name+.  First pulls the current branch to
@@ -253,21 +255,23 @@ class GitPivotalTrackerIntegration::Util::Git
     fetch
     msg = "finishes ##{story.id}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m '[#{msg}]' #{current_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{branch_name}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
   end
 
   def self.pull_request(title, current_branch, root_branch)
+    puts current_branch
+    puts root_branch
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/firmstepgit/#{repo}/pulls"
     username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
     data = {
       :title => title,
       :head => "firmstepgit:#{current_branch}",
-      :base => "firmstepgit:#{parent_branch}",
+      :base => "firmstepgit:#{root_branch}",
     }
 
 puts data.to_json
-    curl = "curl -u #{username} --data 'title=#{title}&head=#{current_branch}&base=#{root_branch}' #{url}"
+    curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
     GitPivotalTrackerIntegration::Util::Shell.exec curl
   end
 
