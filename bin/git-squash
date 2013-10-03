@@ -2,4 +2,5 @@
 
 require 'git-pivotal-tracker-integration/command/squash'
 
+ARGV[1] = "\"#{ARGV[1]}\""
 GitPivotalTrackerIntegration::Command::Squash.new().run ARGV.join ' '
