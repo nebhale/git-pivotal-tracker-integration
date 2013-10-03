@@ -2,4 +2,4 @@
 
 require 'git-pivotal-tracker-integration/command/squash'
 
-GitPivotalTrackerIntegration::Command::Squash.new().run
+GitPivotalTrackerIntegration::Command::Squash.new().run ARGV.join ' '
