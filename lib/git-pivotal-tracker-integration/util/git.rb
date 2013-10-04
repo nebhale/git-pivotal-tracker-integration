@@ -58,7 +58,12 @@ class GitPivotalTrackerIntegration::Util::Git
   def self.parent_branch
     commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1").strip
     commit = commit.slice(commit.index("[")+1, commit.length)
-    commit.slice(0, commit.index("^"))
+    if commit.index "^"
+      commit.slice(0, commit.index("^"))
+    else
+      commit.slice(0, commit.index("]"))
+    end
+    commit
   end
 
   # Creates a branch with a given +name+.  First pulls the current branch to
