@@ -211,11 +211,11 @@ class GitPivotalTrackerIntegration::Util::Git
   # @raise if the specified scope is not +:branch+, +:global+, or +:local+
   def self.set_config(key, value, scope = :local)
     if :branch == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local branch.#{branch_name}.#{key} '#{value}'"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local branch.#{branch_name}.#{key} \"#{value}\""
     elsif :global == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --global #{key} '#{value}'"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --global #{key} \"#{value}\""
     elsif :local == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local #{key} '#{value}'"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local #{key} \"#{value}\""
     else
       raise "Unable to set Git configuration for scope '#{scope}'"
     end
