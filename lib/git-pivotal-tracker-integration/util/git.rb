@@ -57,6 +57,9 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [String] the name of the parent of the currently checked out branch
   def self.parent_branch
     commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1").strip
+    if commit == ''
+      commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '!' | grep -v '#{branch_name}' | head -n1").strip
+    end
     commit = commit.slice(commit.index("[")+1, commit.length)
     if commit.index "^"
       commit.slice(0, commit.index("^"))
