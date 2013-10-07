@@ -62,9 +62,9 @@ class GitPivotalTrackerIntegration::Util::Git
     end
     commit = commit.slice(commit.index("[")+1, commit.length)
     if commit.index "^"
-      commit.slice(0, commit.index("^"))
+      commit = commit.slice(0, commit.index("^"))
     else
-      commit.slice(0, commit.index("]"))
+      commit = commit.slice(0, commit.index("]"))
     end
     commit
   end
@@ -278,7 +278,6 @@ class GitPivotalTrackerIntegration::Util::Git
       :base => "firmstepgit:#{root_branch}",
     }
 
-puts data.to_json
     curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
     GitPivotalTrackerIntegration::Util::Shell.exec curl
   end
