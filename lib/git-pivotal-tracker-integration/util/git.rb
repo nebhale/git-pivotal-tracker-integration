@@ -135,25 +135,6 @@ class GitPivotalTrackerIntegration::Util::Git
     end
   end
 
-  # Merges the current branch to its root branch and deletes the current branch
-  #
-  # @param [PivotalTracker::Story] story the story associated with the current branch
-  # @param [Boolean] no_complete whether to suppress the +Completes+ statement in the commit message
-  # @return [void]
-  def self.merge(story, no_complete)
-    development_branch = branch_name
-    root_branch = get_config KEY_ROOT_BRANCH, :branch
-
-    print "Merging #{development_branch} to #{root_branch}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
-    puts 'OK'
-
-    print "Deleting #{development_branch}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
-    puts 'OK'
-  end
-
   # Push changes to the remote of the current branch
   #
   # @param [String] refs the explicit references to push
@@ -207,33 +188,6 @@ class GitPivotalTrackerIntegration::Util::Git
     else
       raise "Unable to set Git configuration for scope '#{scope}'"
     end
-  end
-
-  # Checks whether merging the current branch back to its root branch would be
-  # a trivial merge.  A trivial merge is defined as one where the net change
-  # of the merge would be the same as the net change of the branch being
-  # merged.  The easiest way to ensure that a merge is trivial is to rebase a
-  # development branch onto the tip of its root branch.
-  #
-  # @return [void]
-  def self.trivial_merge?
-    development_branch = branch_name
-    root_branch = get_config KEY_ROOT_BRANCH, :branch
-
-    print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
-
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{development_branch}"
-
-    root_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
-    common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
-
-    if root_tip != common_ancestor
-      abort 'FAIL'
-    end
-
-    puts 'OK'
   end
 
   def self.fetch
