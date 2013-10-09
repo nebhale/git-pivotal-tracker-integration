@@ -69,28 +69,16 @@ class GitPivotalTrackerIntegration::Util::Git
     commit
   end
 
-  # Creates a branch with a given +name+.  First pulls the current branch to
-  # ensure that it is up to date and then creates and checks out the new
+  # Creates a branch with a given +name+.  Creates and checks out the new
   # branch.  If specified, sets branch-specific properties that are passed in.
   #
   # @param [String] name the name of the branch to create
   # @param [Boolean] print_messages whether to print messages
   # @return [void]
   def self.create_branch(name, print_messages = true)
-    root_branch = branch_name
-    root_remote = get_config KEY_REMOTE, :branch
-
-    if print_messages; print "Pulling #{root_branch}... " end
-    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
-    if print_messages; puts 'OK'
-    end
-
     if print_messages; print "Creating and checking out #{name}... " end
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -b #{name}"
-    set_config KEY_ROOT_BRANCH, root_branch, :branch
-    set_config KEY_ROOT_REMOTE, root_remote, :branch
-    if print_messages; puts 'OK'
-    end
+    puts 'OK'
   end
 
   # Creates a commit with a given message.  The commit includes all change
