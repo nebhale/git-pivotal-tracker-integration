@@ -56,11 +56,24 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   end
 
   def start_on_tracker(story)
+    username = @configuration.username
+    state = 'started'
     print 'Starting story on Pivotal Tracker... '
-    story.update(
-      :current_state => 'started',
-      :owned_by => @configuration.username
-    )
+
+    # If the story needs an estimate, but it doesn't have one, ask for it
+    if story.story_type == 'feature' and story.estimate <= 0
+      estimate = ask("Enter number of points: ")
+      story.update(
+        :current_state => state,
+        :owned_by => username,
+        :estimate => estimate
+      )
+    else
+      story.update(
+        :current_state => state,
+        :owned_by => username
+      )
+    end
     puts 'OK'
   end
 
