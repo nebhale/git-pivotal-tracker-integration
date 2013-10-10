@@ -199,6 +199,9 @@ class GitPivotalTrackerIntegration::Util::Git
     root_branch = parent_branch
     rebase(story, current_branch, root_branch)
     pull_request(title, current_branch, root_branch)
+
+    # Check out parent branch again
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
   end
 
   def self.rebase(story, current_branch, root_branch)
