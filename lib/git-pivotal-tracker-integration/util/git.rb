@@ -215,12 +215,12 @@ class GitPivotalTrackerIntegration::Util::Git
     puts current_branch
     puts root_branch
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
-    url = "https://api.github.com/repos/firmstepgit/#{repo}/pulls"
+    url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
     username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
     data = {
       :title => title,
-      :head => "firmstepgit:#{current_branch}",
-      :base => "firmstepgit:#{root_branch}",
+      :head => "Firmstep:#{current_branch}",
+      :base => "Firmstep:#{root_branch}",
     }
 
     curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
