@@ -224,8 +224,9 @@ class GitPivotalTrackerIntegration::Util::Git
     }
 
     curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
-    #puts curl
+    puts data, curl
     GitPivotalTrackerIntegration::Util::Shell.exec curl
+    puts 'OK'
   end
 
   private
