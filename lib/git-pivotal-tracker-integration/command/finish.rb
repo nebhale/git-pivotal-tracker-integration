@@ -28,9 +28,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    no_complete = argument =~ /--no-complete/
-    title = ask('Enter title for Pull Request: ')
-    GitPivotalTrackerIntegration::Util::Git.finish(@configuration.story(@project), title)
+    GitPivotalTrackerIntegration::Util::Git.finish(@configuration.story(@project))
   end
 
 end
