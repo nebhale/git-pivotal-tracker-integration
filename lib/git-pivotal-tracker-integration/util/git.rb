@@ -194,11 +194,11 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
   end
 
-  def self.finish(story, title)
+  def self.finish(story)
     current_branch = branch_name
     root_branch = parent_branch
     rebase(story, current_branch, root_branch)
-    pull_request(title, current_branch, root_branch)
+    pull_request(story, current_branch, root_branch)
 
     # Check out parent branch again
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
@@ -207,23 +207,24 @@ class GitPivotalTrackerIntegration::Util::Git
   def self.rebase(story, current_branch, root_branch)
     fetch
     msg = "finishes ##{story.id}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m '[#{msg}]' #{current_branch}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m '[#{msg}] #{story.name}' #{current_branch}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
   end
 
-  def self.pull_request(title, current_branch, root_branch)
+  def self.pull_request(story, current_branch, root_branch)
     puts current_branch
     puts root_branch
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
     username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
     data = {
-      :title => title,
+      :title => story.name,
       :head => "Firmstep:#{current_branch}",
       :base => "Firmstep:#{root_branch}",
     }
 
     curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
+    #puts curl
     GitPivotalTrackerIntegration::Util::Shell.exec curl
   end
 
