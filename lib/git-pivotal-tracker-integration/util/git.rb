@@ -212,8 +212,6 @@ class GitPivotalTrackerIntegration::Util::Git
   end
 
   def self.pull_request(story, current_branch, root_branch)
-    puts current_branch
-    puts root_branch
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
     username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
@@ -224,7 +222,6 @@ class GitPivotalTrackerIntegration::Util::Git
     }
 
     curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
-    puts data, curl
     GitPivotalTrackerIntegration::Util::Shell.exec curl
     puts 'OK'
   end
