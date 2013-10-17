@@ -207,7 +207,7 @@ class GitPivotalTrackerIntegration::Util::Git
   def self.rebase(story, current_branch, root_branch)
     fetch
     msg = "finishes ##{story.id}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m '[#{msg}] #{story.name}' #{current_branch}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m \"[#{msg}] #{story.name}\" #{current_branch}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
   end
 
@@ -221,7 +221,7 @@ class GitPivotalTrackerIntegration::Util::Git
       :base => "Firmstep:#{root_branch}",
     }
 
-    curl = "curl -u #{username} --data '#{data.to_json}' #{url}"
+    curl = "curl -u \"#{username}\" --data '#{data.to_json}' #{url}"
     GitPivotalTrackerIntegration::Util::Shell.exec curl
     puts 'OK'
   end
