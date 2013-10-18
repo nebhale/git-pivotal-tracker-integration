@@ -39,7 +39,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
     GitPivotalTrackerIntegration::Util::Git.checkout "development"
-    GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
+    GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name story
     @configuration.story = story
 
     GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
