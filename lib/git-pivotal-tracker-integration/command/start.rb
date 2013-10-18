@@ -38,7 +38,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
-    development_branch_name = development_branch_name story
+    GitPivotalTrackerIntegration::Util::Git.checkout "development"
     GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
     @configuration.story = story
 
@@ -50,9 +50,8 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
-    puts
-    branch_name
+    branch_title = (story.name.gsub(/[ '":;#{}]/, '-')).downcase
+    "#{story.id}-#{branch_title}"
   end
 
   def start_on_tracker(story)

@@ -52,23 +52,6 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
   end
 
-  # Returns the parent of the currently checked out branch
-  #
-  # @return [String] the name of the parent of the currently checked out branch
-  def self.parent_branch
-    commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '*' | grep -v '#{branch_name}' | head -n1").strip
-    if commit == ''
-      commit = (GitPivotalTrackerIntegration::Util::Shell.exec "git show-branch | grep -i '!' | grep -v '#{branch_name}' | head -n1").strip
-    end
-    commit = commit.slice(commit.index("[")+1, commit.length)
-    if commit.index "^"
-      commit = commit.slice(0, commit.index("^"))
-    else
-      commit = commit.slice(0, commit.index("]"))
-    end
-    commit
-  end
-
   # Creates a branch with a given +name+.  Creates and checks out the new
   # branch.  If specified, sets branch-specific properties that are passed in.
   #
@@ -109,7 +92,7 @@ class GitPivotalTrackerIntegration::Util::Git
     create_branch RELEASE_BRANCH_NAME, false
     create_commit "#{name} Release", story
     GitPivotalTrackerIntegration::Util::Shell.exec "git tag v#{name}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
+    checkout root_branch
     GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
 
     puts 'OK'
@@ -190,28 +173,33 @@ class GitPivotalTrackerIntegration::Util::Git
     end
   end
 
+  def self.checkout(branch_name)
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{branch_name}"
+  end
+
   def self.fetch
     GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
   end
 
   def self.finish(story)
     current_branch = branch_name
-    root_branch = parent_branch
-    rebase(story, current_branch, root_branch)
+    #TODO not hard-code
+    root_branch = "development"
+    #rebase(story, current_branch, root_branch)
     pull_request(story, current_branch, root_branch)
 
-    # Check out parent branch again
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
+    # Check out development again
+    checkout "development"
   end
 
   def self.rebase(story, current_branch, root_branch)
     fetch
     msg = "finishes ##{story.id}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m \"[#{msg}] #{story.name}\" #{current_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
   end
 
   def self.pull_request(story, current_branch, root_branch)
+    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
     username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
@@ -219,9 +207,9 @@ class GitPivotalTrackerIntegration::Util::Git
       :title => story.name,
       :head => "Firmstep:#{current_branch}",
       :base => "Firmstep:#{root_branch}",
-    }
+    }.to_json.gsub(/[']/, '')
 
-    curl = "curl -u \"#{username}\" --data '#{data.to_json}' #{url}"
+    curl = "curl -u \"#{username}\" --data '#{data}' #{url}"
     GitPivotalTrackerIntegration::Util::Shell.exec curl
     puts 'OK'
   end
