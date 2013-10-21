@@ -199,6 +199,9 @@ class GitPivotalTrackerIntegration::Util::Git
   end
 
   def self.pull_request(story, current_branch, root_branch)
+    latest_commit = GitPivotalTrackerIntegration::Util::Shell.exec "git log -1 --pretty=%B"
+    finish_message = "[finishes ##{story.id}] #{latest_commit}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git commit --amend #{finish_message}"
     GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"

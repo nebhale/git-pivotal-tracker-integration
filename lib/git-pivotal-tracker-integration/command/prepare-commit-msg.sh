@@ -17,7 +17,7 @@
 CURRENT_BRANCH=$(git branch | grep "*" | sed "s/* //")
 STORY_ID=$(git config branch.$CURRENT_BRANCH.pivotal-story-id)
 
-if [[ $2 != "commit" && -n $STORY_ID ]]; then
+if [[ $2 != "commit" && $3 != '--amend' && -n $STORY_ID ]]; then
   ORIG_MSG_FILE="$1"
   msg="$(cat $ORIG_MSG_FILE)"
   regex="^\[finishes"
