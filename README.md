@@ -1,10 +1,5 @@
 BLAH
 # Git Pivotal Tracker Integration
-[![Build Status](https://travis-ci.org/nebhale/git-pivotal-tracker-integration.png?branch=master)](https://travis-ci.org/nebhale/git-pivotal-tracker-integration)
-[![Gem Version](https://badge.fury.io/rb/git-pivotal-tracker-integration.png)](http://badge.fury.io/rb/git-pivotal-tracker-integration)
-[![Dependency Status](https://gemnasium.com/nebhale/git-pivotal-tracker-integration.png)](http://gemnasium.com/nebhale/git-pivotal-tracker-integration)
-[![Code Climate](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration.png)](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration)
-
 
 `git-pivotal-tracker-integration` provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
 
@@ -12,24 +7,24 @@ BLAH
 
 
 ## Installation
-`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.  In order to install it, do the following:
+`git-pivotal-tracker-integration` requires at least **Ruby 2.0.0** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _2.0.0_.  In order to install it, do the following:
 
 ```plain
-$ gem install git-pivotal-tracker-integration
+$ gem install specific_install
+$ gem specific_install https://github.com/Firmstep/git-pivotal-tracker-integration.git
 ```
 
 
 ## Usage
-`git-pivotal-tracker-integration` is intended to be a very lightweight tool, meaning that it won't affect your day to day workflow very much.  To be more specific, it is intended to automate branch creation and destruction as well as story state changes, but will not affect when you commit, when development branches are pushed to origin, etc.  The typical workflow looks something like the following:
+`git-pivotal-tracker-integration` is intended to be a very lightweight tool, meaning that it won't affect your day to day workflow very much.  To be more specific, it is intended to automate branch creation and pull requests as well as story state changes.  The typical workflow looks something like the following:
 
 ```plain
-$ git start       # Creates branch and starts story
+$ git start story_id   # Creates branch and starts story
 $ git commit ...
 $ git commit ...  # Your existing development process
 $ git commit ...
-$ git finish      # Merges and destroys branch, pushes to origin, and finishes story
+$ git finish      # Adds [finishes #story_id] to the last commit made, pushes to origin, and opens a new pull request
 ```
-
 
 ## Configuration
 
@@ -85,7 +80,7 @@ $ git start
 Choose story to start:
 ```
 
-Once a story has been selected by one of the three methods, the command then prompts for the name of the branch to create.
+Once a story has been selected by one of the three methods, the branch is created with a truncated, human-readable name of the story name.
 
 ```plain
 $ git start 12345678
@@ -95,7 +90,7 @@ $ git start 12345678
 Enter branch name (12345678-<branch-name>):
 ```
 
-The value entered here will be prepended with the story id such that the branch name is `<story-id>-<branch-name>`.  This branch is then created and checked out.
+The truncated name will be prepended with the story id such that the branch name is `<story-id>-<branch-name>`.  This branch is then created and checked out.
 
 If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your repository.  This commit hook augments the existing commit messsage pattern by appending the story id to the message automatically.
 
@@ -113,39 +108,13 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 ```
 
 ### `git finish [--no-complete]`
-This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can be run in two ways.  First it can be run without the `--no-complete` option.
+This command finishes a story by creating a pull request to github.
 
 ```plain
 $ git finish
-Checking for trivial merge from 12345678-lorem-ipsum to master... OK
-Merging 12345678-lorem-ipsum to master... OK
-Deleting 12345678-lorem-ipsum... OK
-Pushing to origin... OK
+... *insert real messages* ...
 ```
-
-The command checks that it will be able to do a trivial merge from the development branch to the target branch before it does anything.  The check has the following constraints
-
-1.  The local repository must be up to date with the remote repository (e.g. `origin`)
-2.  The local merge target branch (e.g. `master`) must be up to date with the remote merge target branch (e.g. `origin/master`)
-3.  The common ancestor (i.e. the branch point) of the development branch (e.g. `12345678-lorem-ipsum`) must be tip of the local merge target branch (e.g. `master`)
-
-If all of these conditions are met, the development branch will be merged into the target branch with a message of:
-
-```plain
-Merge 12345678-lorem-ipsum to master
-
-[Completes #12345678]
-```
-
-The second way is with the `--no-complete` option specified. In this case `finish` performs the same actions except the `Completes`... statement in the commit message will be supressed.
-
-```plain
-Merge 12345678-lorem-ipsum to master
-
-[#12345678]
-```
-
-After merging, the development branch is deleted and the changes are pushed to the remote repository.
+You will need to enter your github password at this point, at the moment the pull request is created with cUrl, no oauth etc.
 
 ### `git release [story-id]`
 This command creates a release for a story.  It does this by updating the version string in the project and creating a tag.  This command can be run in two ways.  First it can be run specifying the release that you want to create.
