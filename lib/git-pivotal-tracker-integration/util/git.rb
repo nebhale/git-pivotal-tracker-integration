@@ -15,6 +15,7 @@
 
 require 'git-pivotal-tracker-integration/util/shell'
 require 'git-pivotal-tracker-integration/util/util'
+require 'json'
 
 # Utilities for dealing with Git
 class GitPivotalTrackerIntegration::Util::Git
@@ -51,28 +52,16 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
   end
 
-  # Creates a branch with a given +name+.  First pulls the current branch to
-  # ensure that it is up to date and then creates and checks out the new
+  # Creates a branch with a given +name+.  Creates and checks out the new
   # branch.  If specified, sets branch-specific properties that are passed in.
   #
   # @param [String] name the name of the branch to create
   # @param [Boolean] print_messages whether to print messages
   # @return [void]
   def self.create_branch(name, print_messages = true)
-    root_branch = branch_name
-    root_remote = get_config KEY_REMOTE, :branch
-
-    if print_messages; print "Pulling #{root_branch}... " end
-    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
-    if print_messages; puts 'OK'
-    end
-
     if print_messages; print "Creating and checking out #{name}... " end
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -b #{name}"
-    set_config KEY_ROOT_BRANCH, root_branch, :branch
-    set_config KEY_ROOT_REMOTE, root_remote, :branch
-    if print_messages; puts 'OK'
-    end
+    puts 'OK'
   end
 
   # Creates a commit with a given message.  The commit includes all change
@@ -103,7 +92,7 @@ class GitPivotalTrackerIntegration::Util::Git
     create_branch RELEASE_BRANCH_NAME, false
     create_commit "#{name} Release", story
     GitPivotalTrackerIntegration::Util::Shell.exec "git tag v#{name}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
+    checkout root_branch
     GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
 
     puts 'OK'
@@ -127,25 +116,6 @@ class GitPivotalTrackerIntegration::Util::Git
     else
       raise "Unable to get Git configuration for scope '#{scope}'"
     end
-  end
-
-  # Merges the current branch to its root branch and deletes the current branch
-  #
-  # @param [PivotalTracker::Story] story the story associated with the current branch
-  # @param [Boolean] no_complete whether to suppress the +Completes+ statement in the commit message
-  # @return [void]
-  def self.merge(story, no_complete)
-    development_branch = branch_name
-    root_branch = get_config KEY_ROOT_BRANCH, :branch
-
-    print "Merging #{development_branch} to #{root_branch}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
-    puts 'OK'
-
-    print "Deleting #{development_branch}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
-    puts 'OK'
   end
 
   # Push changes to the remote of the current branch
@@ -193,40 +163,57 @@ class GitPivotalTrackerIntegration::Util::Git
   # @raise if the specified scope is not +:branch+, +:global+, or +:local+
   def self.set_config(key, value, scope = :local)
     if :branch == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local branch.#{branch_name}.#{key} #{value}"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local branch.#{branch_name}.#{key} \"#{value}\""
     elsif :global == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --global #{key} #{value}"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --global #{key} \"#{value}\""
     elsif :local == scope
-      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local #{key} #{value}"
+      GitPivotalTrackerIntegration::Util::Shell.exec "git config --local #{key} \"#{value}\""
     else
       raise "Unable to set Git configuration for scope '#{scope}'"
     end
   end
 
-  # Checks whether merging the current branch back to its root branch would be
-  # a trivial merge.  A trivial merge is defined as one where the net change
-  # of the merge would be the same as the net change of the branch being
-  # merged.  The easiest way to ensure that a merge is trivial is to rebase a
-  # development branch onto the tip of its root branch.
-  #
-  # @return [void]
-  def self.trivial_merge?
-    development_branch = branch_name
-    root_branch = get_config KEY_ROOT_BRANCH, :branch
+  def self.checkout(branch_name)
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{branch_name}"
+  end
 
-    print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
+  def self.fetch
+    GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+  end
 
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-    GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{development_branch}"
+  def self.finish(story)
+    current_branch = branch_name
+    #TODO not hard-code
+    root_branch = "development"
+    #rebase(story, current_branch, root_branch)
+    pull_request(story, current_branch, root_branch)
 
-    root_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
-    common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
+    # Check out development again
+    checkout "development"
+  end
 
-    if root_tip != common_ancestor
-      abort 'FAIL'
-    end
+  def self.rebase(story, current_branch, root_branch)
+    fetch
+    msg = "finishes ##{story.id}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git squash -m \"[#{msg}] #{story.name}\" #{current_branch}"
+  end
 
+  def self.pull_request(story, current_branch, root_branch)
+    latest_commit = GitPivotalTrackerIntegration::Util::Shell.exec "git log -1 --pretty=%B"
+    finish_message = "[finishes ##{story.id}] #{latest_commit}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git commit --amend -m #{finish_message}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
+    repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
+    url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
+    username = GitPivotalTrackerIntegration::Util::Git.get_config "user.name"
+    data = {
+      :title => story.name,
+      :head => "Firmstep:#{current_branch}",
+      :base => "Firmstep:#{root_branch}",
+    }.to_json.gsub(/[']/, '')
+
+    curl = "curl -u \"#{username}\" --data '#{data}' #{url}"
+    GitPivotalTrackerIntegration::Util::Shell.exec curl
     puts 'OK'
   end
 

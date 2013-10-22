@@ -28,11 +28,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    no_complete = argument =~ /--no-complete/
-
-    GitPivotalTrackerIntegration::Util::Git.trivial_merge?
-    GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    GitPivotalTrackerIntegration::Util::Git.finish(@configuration.story(@project))
   end
 
 end
