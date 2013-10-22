@@ -26,7 +26,7 @@ class GitPivotalTrackerIntegration::Util::Git
   # @param [String] source the file to use as the source for the created hook
   # @param [Boolean] overwrite whether to overwrite the hook if it already exists
   # @return [void]
-  def self.add_hook(name, source, overwrite = false)
+  def self.add_hook(name, source, overwrite = true)
     hooks_directory =  File.join repository_root, '.git', 'hooks'
     hook = File.join hooks_directory, name
 
@@ -200,8 +200,9 @@ class GitPivotalTrackerIntegration::Util::Git
 
   def self.pull_request(story, current_branch, root_branch)
     latest_commit = GitPivotalTrackerIntegration::Util::Shell.exec "git log -1 --pretty=%B"
+    latest_commit = latest_commit.delete("[##{story.id}]").gsub('["]', '-')
     finish_message = "[finishes ##{story.id}] #{latest_commit}"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git commit --amend -m #{finish_message}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git commit --amend -m \"#{finish_message}\""
     GitPivotalTrackerIntegration::Util::Shell.exec "git push -u origin #{current_branch}"
     repo = (GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse --show-toplevel").strip.split('/')[-1]
     url = "https://api.github.com/repos/Firmstep/#{repo}/pulls"
