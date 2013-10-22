@@ -64,6 +64,18 @@ class GitPivotalTrackerIntegration::Command::Configuration
     project_id
   end
 
+  def username
+    username = GitPivotalTrackerIntegration::Util::Git.get_config KEY_USERNAME, :inherited
+
+    if username.empty?
+      username = ask('Full name on Pivotal: ')
+      GitPivotalTrackerIntegration::Util::Git.set_config KEY_USERNAME, username, :local
+      puts
+    end
+
+    username
+  end
+
   # Returns the story associated with the current development branch
   #
   # @param [PivotalTracker::Project] project the project the story belongs to
@@ -88,5 +100,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
 
   KEY_STORY_ID = 'pivotal-story-id'.freeze
+
+  KEY_USERNAME = 'pivotal.user'.freeze
 
 end

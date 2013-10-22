@@ -38,8 +38,8 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
-    development_branch_name = development_branch_name story
-    GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
+    GitPivotalTrackerIntegration::Util::Git.checkout "development"
+    GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name story
     @configuration.story = story
 
     GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
@@ -50,17 +50,29 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
-    puts
-    branch_name
+    branch_title = (story.name.gsub(/[ '":;#{}]/, '-')).downcase
+    "#{story.id}-#{branch_title}"
   end
 
   def start_on_tracker(story)
+    username = @configuration.username
+    state = 'started'
     print 'Starting story on Pivotal Tracker... '
-    story.update(
-      :current_state => 'started',
-      :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
-    )
+
+    # If the story needs an estimate, but it doesn't have one, ask for it
+    if story.story_type == 'feature' and story.estimate <= 0
+      estimate = ask("Enter number of points: ")
+      story.update(
+        :current_state => state,
+        :owned_by => username,
+        :estimate => estimate
+      )
+    else
+      story.update(
+        :current_state => state,
+        :owned_by => username
+      )
+    end
     puts 'OK'
   end
 
