@@ -64,45 +64,6 @@ class GitPivotalTrackerIntegration::Util::Story
     story
   end
 
-  # Add labels to story if they are not already appended to story.
-  #
-  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
-  # @return [boolean] Boolean defining whether story was updated or not.
-  def self.add_labels(story, *labels)
-    current_labels = story.labels.split(',')
-    new_labels = current_labels | labels
-    if story.update(:labels => new_labels)
-      puts "Updated labels:"
-      puts "#{current_labels} => #{new_labels}"
-    else
-      abort("Failed to update labels on Pivotal Tracker")
-    end
-  end
-
-  # Remove labels from story.
-  #
-  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
-  # @return [boolean] Boolean defining whether story was updated or not.
-  def self.remove_labels(story, *labels)
-    current_labels = story.labels.split(',')
-    new_labels = current_labels - labels
-    if story.update(:labels => new_labels)
-      puts "Updated labels:"
-      puts "#{current_labels} => #{new_labels}"
-    else
-      abort("Failed to update labels on Pivotal Tracker")
-    end
-  end
-
-  # Print labels from story.
-  #
-  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
-  # @return [boolean] Boolean defining whether story was updated or not.
-  def self.print_labels(story)
-    puts "Story labels:"
-    puts story.labels.split(',')
-  end
-
   private
 
   CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze

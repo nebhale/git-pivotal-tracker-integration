@@ -16,10 +16,10 @@
 require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
-require 'git-pivotal-tracker-integration/util/story'
+require 'git-pivotal-tracker-integration/util/label'
 require 'pivotal-tracker'
 
-MODES = %w(add remove list)
+MODES = %w(add remove list once)
 
 # The class that encapsulates starting a Pivotal Tracker Story
 class GitPivotalTrackerIntegration::Command::Label < GitPivotalTrackerIntegration::Command::Base
@@ -31,10 +31,6 @@ class GitPivotalTrackerIntegration::Command::Label < GitPivotalTrackerIntegratio
     abort "You need to specify mode first [#{MODES}], e.g. 'git label add to_qa'" unless MODES.include? mode
     abort "You need to be on started story branch to add label to it!" if story.nil?
 
-    case mode
-    when 'add' then GitPivotalTrackerIntegration::Util::Story.add_labels(story, *labels)
-    when 'remove' then GitPivotalTrackerIntegration::Util::Story.remove_labels(story, *labels)
-    when 'list' then GitPivotalTrackerIntegration::Util::Story.print_labels(story, *labels)
-    end
+    GitPivotalTrackerIntegration::Util::Label.send(mode, story, *labels)
   end
 end

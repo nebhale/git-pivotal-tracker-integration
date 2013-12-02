@@ -75,14 +75,14 @@ class GitPivotalTrackerIntegration::Command::Configuration
 
     if user.empty?
       user = choose do |menu|
-        menu.prompt = 'Enter your Pivotal Tracker user name associated with this repository: '
+        menu.prompt = 'Choose your user name associated with this repository: '
 
-        PivotalTracker::Project.all.map{ |p| p.stories.all.map(&:owned_by).compact }.flatten.uniq.each do |owner|
+        PivotalTracker::Project.all.map{ |p| p.memberships.all.map(&:name) }.flatten.uniq.each do |owner|
           menu.choice(owner) { owner }
         end
       end
 
-      GitPivotalTrackerIntegration::Util::Git.set_config KEY_USER, user, :local
+      GitPivotalTrackerIntegration::Util::Git.set_config KEY_USER, user.inspect, :local
     end
 
     user
