@@ -54,6 +54,7 @@ class GitPivotalTrackerIntegration::Util::Story
   # @param [Fixnum] limit The number maximum number of stories the user can choose from
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
   def self.select_story(project, filter = nil, limit = 5)
+    puts filter.inspect
     if filter =~ /[[:digit:]]/
       story = project.stories.find filter.to_i
     else
@@ -61,6 +62,45 @@ class GitPivotalTrackerIntegration::Util::Story
     end
 
     story
+  end
+
+  # Add labels to story if they are not already appended to story.
+  #
+  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
+  # @return [boolean] Boolean defining whether story was updated or not.
+  def self.add_labels(story, *labels)
+    current_labels = story.labels.split(',')
+    new_labels = current_labels | labels
+    if story.update(:labels => new_labels)
+      puts "Updated labels:"
+      puts "#{current_labels} => #{new_labels}"
+    else
+      abort("Failed to update labels on Pivotal Tracker")
+    end
+  end
+
+  # Remove labels from story.
+  #
+  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
+  # @return [boolean] Boolean defining whether story was updated or not.
+  def self.remove_labels(story, *labels)
+    current_labels = story.labels.split(',')
+    new_labels = current_labels - labels
+    if story.update(:labels => new_labels)
+      puts "Updated labels:"
+      puts "#{current_labels} => #{new_labels}"
+    else
+      abort("Failed to update labels on Pivotal Tracker")
+    end
+  end
+
+  # Print labels from story.
+  #
+  # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
+  # @return [boolean] Boolean defining whether story was updated or not.
+  def self.print_labels(story)
+    puts "Story labels:"
+    puts story.labels.split(',')
   end
 
   private
@@ -95,14 +135,13 @@ class GitPivotalTrackerIntegration::Util::Story
 
   def self.find_story(project, type, limit)
     criteria = {
-      :current_state => CANDIDATE_STATES,
-      :limit => limit
+      :current_state => CANDIDATE_STATES
     }
     if type
       criteria[:story_type] = type
     end
 
-    candidates = project.stories.all criteria
+    candidates = project.stories.all(criteria).sort_by{ |s| s.owned_by == @user ? 1 : 0 }.slice(0..limit)
     if candidates.length == 1
       story = candidates[0]
     else
@@ -110,7 +149,8 @@ class GitPivotalTrackerIntegration::Util::Story
         menu.prompt = 'Choose story to start: '
 
         candidates.each do |story|
-          name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
+          name = story.owned_by ? '[%s] ' % story.owned_by : ''
+          name += type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
           menu.choice(name) { story }
         end
       end

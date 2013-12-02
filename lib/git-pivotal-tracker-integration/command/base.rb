@@ -36,6 +36,7 @@ class GitPivotalTrackerIntegration::Command::Base
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
+    @user = @configuration.user
   end
 
   # The main entry point to the command's execution

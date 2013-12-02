@@ -64,6 +64,30 @@ class GitPivotalTrackerIntegration::Command::Configuration
     project_id
   end
 
+  # Returns the Pivotal Tracker user id for this repository.  If this id
+  # has not been configuration, prompts the user for the value.  The value is
+  # checked for in the _inherited_ Git configuration, but is stored in the
+  # _local_ Git configuration so that it is specific to this repository.
+  #
+  # @return [String] The repository's Pivotal Tracker user id
+  def user
+    user = GitPivotalTrackerIntegration::Util::Git.get_config KEY_USER, :inherited
+
+    if user.empty?
+      user = choose do |menu|
+        menu.prompt = 'Enter your Pivotal Tracker user name associated with this repository: '
+
+        PivotalTracker::Project.all.map{ |p| p.stories.all.map(&:owned_by).compact }.flatten.uniq.each do |owner|
+          menu.choice(owner) { owner }
+        end
+      end
+
+      GitPivotalTrackerIntegration::Util::Git.set_config KEY_USER, user, :local
+    end
+
+    user
+  end
+
   # Returns the story associated with the current development branch
   #
   # @param [PivotalTracker::Project] project the project the story belongs to
@@ -84,6 +108,8 @@ class GitPivotalTrackerIntegration::Command::Configuration
   private
 
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
+
+  KEY_USER = 'pivotal.user'.freeze
 
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
 
