@@ -64,6 +64,14 @@ class GitPivotalTrackerIntegration::Command::Configuration
     project_id
   end
 
+  # Returns the Pivotal Tracker project for this repository.  If it is not
+  # configured yet, prompts the user for the value.
+  #
+  # @return [PivotalTracker::Project] The repository's Pivotal Tracker project
+  def project
+    PivotalTracker::Project.find project_id
+  end
+
   # Returns the Pivotal Tracker user id for this repository.  If this id
   # has not been configuration, prompts the user for the value.  The value is
   # checked for in the _inherited_ Git configuration, but is stored in the
@@ -90,11 +98,14 @@ class GitPivotalTrackerIntegration::Command::Configuration
 
   # Returns the story associated with the current development branch
   #
-  # @param [PivotalTracker::Project] project the project the story belongs to
   # @return [PivotalTracker::Story] the story associated with the current development branch
-  def story(project)
+  def story
     story_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_STORY_ID, :branch
-    project.stories.find story_id.to_i
+    if story_id.empty?
+      abort("You need to be on started story branch to do this!")
+    else
+      project.stories.find(story_id)
+    end
   end
 
   # Stores the story associated with the current development branch

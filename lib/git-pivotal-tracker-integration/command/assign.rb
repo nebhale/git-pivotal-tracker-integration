@@ -16,20 +16,30 @@
 require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
-require 'git-pivotal-tracker-integration/util/label'
+require 'git-pivotal-tracker-integration/util/story'
 require 'pivotal-tracker'
 
-MODES = %w(add remove list once)
+# The class that encapsulates assigning current Pivotal Tracker Story to a user
+class GitPivotalTrackerIntegration::Command::Assign < GitPivotalTrackerIntegration::Command::Base
 
-# The class that encapsulates starting a Pivotal Tracker Story
-class GitPivotalTrackerIntegration::Command::Label < GitPivotalTrackerIntegration::Command::Base
-
-  # Adds labels for active story.
+  # Assigns story to user.
   # @return [void]
-  def run(mode, *labels)
-    story = @configuration.story(@project)
-    abort "You need to specify mode first [#{MODES}], e.g. 'git label add to_qa'" unless MODES.include? mode
+  def run(username)
+    story = @configuration.story
+    user = username || choose_user
 
-    GitPivotalTrackerIntegration::Util::Label.send(mode, story, *labels)
+    GitPivotalTrackerIntegration::Util::Story.assign(story, user.name)
+  end
+
+  private
+
+  def choose_user
+    choose do |menu|
+      menu.prompt = 'Choose an user from list below: '
+
+      @project.memberships.all.each do |owner|
+        menu.choice(owner.name) { owner }
+      end
+    end
   end
 end

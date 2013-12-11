@@ -73,6 +73,18 @@ describe GitPivotalTrackerIntegration::Util::Story do
       "\n")
   end
 
+  it 'should assign owner to story and notify about success' do
+    story = double('story')
+    username = 'User Name'
+    story.should_receive(:update).with({ :owned_by => username }).and_return(true)
+
+    GitPivotalTrackerIntegration::Util::Story.assign story, username
+
+    expect($stdout.string).to eq(
+      "Story assigned to #{username}" +
+      "\n")
+  end
+
   it 'should select a story directly if the filter is a number' do
     @project.should_receive(:stories).and_return(@stories)
     @stories.should_receive(:find).with(12345678).and_return(@story)
@@ -86,10 +98,9 @@ describe GitPivotalTrackerIntegration::Util::Story do
     @project.should_receive(:stories).and_return(@stories)
     @stories.should_receive(:all).with(
       :current_state => %w(rejected unstarted unscheduled),
-      :limit => 1,
       :story_type => 'release'
     ).and_return([@story])
-
+    @story.should_receive(:owned_by)
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, 'release', 1
 
     expect(story).to be(@story)
@@ -99,7 +110,6 @@ describe GitPivotalTrackerIntegration::Util::Story do
     @project.should_receive(:stories).and_return(@stories)
     @stories.should_receive(:all).with(
       :current_state => %w(rejected unstarted unscheduled),
-      :limit => 5,
       :story_type => 'feature'
     ).and_return([
       PivotalTracker::Story.new(:name => 'name-1'),
@@ -118,8 +128,7 @@ describe GitPivotalTrackerIntegration::Util::Story do
   it 'should prompt the user with the story type if no filter is specified' do
     @project.should_receive(:stories).and_return(@stories)
     @stories.should_receive(:all).with(
-      :current_state => %w(rejected unstarted unscheduled),
-      :limit => 5
+      :current_state => %w(rejected unstarted unscheduled)
     ).and_return([
       PivotalTracker::Story.new(:story_type => 'chore', :name => 'name-1'),
       PivotalTracker::Story.new(:story_type => 'bug', :name => 'name-2')

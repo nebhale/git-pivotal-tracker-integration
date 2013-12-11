@@ -43,6 +43,15 @@ class GitPivotalTrackerIntegration::Util::Story
     puts
   end
 
+  # Assign story to pivotal tracker member.
+  #
+  # @param [PivotalTracker::Story] story to be assigned
+  # @param [PivotalTracker::Member] assigned user
+  # @return [void]
+  def self.assign(story, username)
+    puts "Story assigned to #{username}" if story.update({ :owned_by => username })
+  end
+
   # Selects a Pivotal Tracker story by doing the following steps:
   #
   # @param [PivotalTracker::Project] project the project to select stories from
@@ -54,7 +63,6 @@ class GitPivotalTrackerIntegration::Util::Story
   # @param [Fixnum] limit The number maximum number of stories the user can choose from
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
   def self.select_story(project, filter = nil, limit = 5)
-    puts filter.inspect
     if filter =~ /[[:digit:]]/
       story = project.stories.find filter.to_i
     else
