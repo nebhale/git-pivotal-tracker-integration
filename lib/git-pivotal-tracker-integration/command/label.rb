@@ -27,7 +27,7 @@ class GitPivotalTrackerIntegration::Command::Label < GitPivotalTrackerIntegratio
   # Adds labels for active story.
   # @return [void]
   def run(mode, *labels)
-    story = @configuration.story(@project)
+    story = @configuration.story
     abort "You need to specify mode first [#{MODES}], e.g. 'git label add to_qa'" unless MODES.include? mode
 
     GitPivotalTrackerIntegration::Util::Label.send(mode, story, *labels)
