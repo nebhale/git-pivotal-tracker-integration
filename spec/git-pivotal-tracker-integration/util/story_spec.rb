@@ -85,6 +85,18 @@ describe GitPivotalTrackerIntegration::Util::Story do
       "\n")
   end
 
+  it 'should change story state and notify about success' do
+    story = double('story')
+    state = 'finished'
+    story.should_receive(:update).with({ :current_state => state }).and_return(true)
+
+    GitPivotalTrackerIntegration::Util::Story.mark story, state
+
+    expect($stdout.string).to eq(
+      "Changed state to #{state}" +
+      "\n")
+  end
+
   it 'should select a story directly if the filter is a number' do
     @project.should_receive(:stories).and_return(@stories)
     @stories.should_receive(:find).with(12345678).and_return(@story)

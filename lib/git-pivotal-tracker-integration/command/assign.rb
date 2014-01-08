@@ -26,9 +26,11 @@ class GitPivotalTrackerIntegration::Command::Assign < GitPivotalTrackerIntegrati
   # @return [void]
   def run(username)
     story = @configuration.story
-    user = username || choose_user
+    if username.nil? or !memberships.include?(username)
+      username = choose_user
+    end
 
-    GitPivotalTrackerIntegration::Util::Story.assign(story, user.name)
+    GitPivotalTrackerIntegration::Util::Story.assign(story, username)
   end
 
   private
@@ -37,9 +39,13 @@ class GitPivotalTrackerIntegration::Command::Assign < GitPivotalTrackerIntegrati
     choose do |menu|
       menu.prompt = 'Choose an user from list below: '
 
-      @project.memberships.all.each do |owner|
-        menu.choice(owner.name) { owner }
+      memberships.each do |membership|
+        menu.choice(membership)
       end
     end
+  end
+
+  def memberships
+    @project.memberships.all.map(&:name)
   end
 end
