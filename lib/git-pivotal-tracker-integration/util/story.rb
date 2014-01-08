@@ -52,6 +52,15 @@ class GitPivotalTrackerIntegration::Util::Story
     puts "Story assigned to #{username}" if story.update({ :owned_by => username })
   end
 
+  # Marks Pivotal Tracker story with given state
+  #
+  # @param [PivotalTracker::Story] story to be assigned
+  # @param [PivotalTracker::Member] assigned user
+  # @return [void]
+  def self.mark(story, state)
+    puts "Changed state to #{state}" if story.update({ :current_state => state })
+  end
+
   # Selects a Pivotal Tracker story by doing the following steps:
   #
   # @param [PivotalTracker::Project] project the project to select stories from
@@ -129,5 +138,4 @@ class GitPivotalTrackerIntegration::Util::Story
 
     story
   end
-
 end
