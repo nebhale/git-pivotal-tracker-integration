@@ -15,11 +15,11 @@
 
 require 'spec_helper'
 require 'git-pivotal-tracker-integration/command/configuration'
-require 'git-pivotal-tracker-integration/command/label'
+require 'git-pivotal-tracker-integration/command/mark'
 require 'git-pivotal-tracker-integration/util/git'
 require 'pivotal-tracker'
 
-describe GitPivotalTrackerIntegration::Command::Label do
+describe GitPivotalTrackerIntegration::Command::Mark do
 
   before do
     $stdout = StringIO.new
@@ -31,14 +31,19 @@ describe GitPivotalTrackerIntegration::Command::Label do
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:api_token)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:project_id)
     PivotalTracker::Project.should_receive(:find).and_return(@project)
-    @label = GitPivotalTrackerIntegration::Command::Label.new
+    @mark = GitPivotalTrackerIntegration::Command::Mark.new
   end
 
   it 'should run' do
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story).and_return(@story)
 
-    GitPivotalTrackerIntegration::Util::Label.should_receive(:send).with('add', @story, 'on_qa')
+    menu = double('menu')
+    menu.should_receive(:prompt=)
+    GitPivotalTrackerIntegration::Command::Mark::STATES.each { |state| menu.should_receive(:choice).with(state) }
+    @mark.should_receive(:choose) { |&arg| arg.call menu }.and_return('finished')
 
-    @label.run('add', 'on_qa')
+    GitPivotalTrackerIntegration::Util::Story.should_receive(:mark).with(@story, 'finished')
+
+    @mark.run(nil)
   end
 end
