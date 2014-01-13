@@ -37,7 +37,7 @@ class GitPivotalTrackerIntegration::Command::Assign < GitPivotalTrackerIntegrati
 
   def choose_user
     choose do |menu|
-      menu.prompt = 'Choose an user from list below: '
+      menu.prompt = 'Choose an user from above list: '
 
       memberships.each do |membership|
         menu.choice(membership)
