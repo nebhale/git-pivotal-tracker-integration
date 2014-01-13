@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'pry'
 
 require 'git-pivotal-tracker-integration/util/util'
 
@@ -24,7 +23,7 @@ class GitPivotalTrackerIntegration::Util::Label
   # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
   # @return [boolean] Boolean defining whether story was updated or not.
   def self.add(story, *labels)
-    current_labels = story.labels.split(',')
+    current_labels = story.labels.split(',') rescue []
     new_labels = current_labels | labels
     if story.update(:labels => new_labels)
       puts "Updated labels on #{story.name}:"
@@ -52,7 +51,7 @@ class GitPivotalTrackerIntegration::Util::Label
   # @param [PivotalTracker::Story, String] labels as Strings, one label per parameter.
   # @return [boolean] Boolean defining whether story was updated or not.
   def self.remove(story, *labels)
-    current_labels = story.labels.split(',')
+    current_labels = story.labels.split(',') rescue []
     new_labels = current_labels - labels
     if story.update(:labels => new_labels)
       puts "Updated labels on #{story.name}:"
@@ -68,6 +67,6 @@ class GitPivotalTrackerIntegration::Util::Label
   # @return [boolean] Boolean defining whether story was updated or not.
   def self.list(story)
     puts "Story labels:"
-    puts story.labels.split(',')
+    puts story.labels.split(',') rescue []
   end
 end

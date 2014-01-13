@@ -35,7 +35,7 @@ class GitPivotalTrackerIntegration::Command::Mark < GitPivotalTrackerIntegration
 
   def choose_state
     choose do |menu|
-      menu.prompt = 'Choose story state from list below: '
+      menu.prompt = 'Choose story state from above list: '
       STATES.each do |state|
         menu.choice(state)
       end
