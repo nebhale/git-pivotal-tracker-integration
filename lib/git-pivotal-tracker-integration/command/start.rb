@@ -35,7 +35,19 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   # @return [void]
   def run(filter)
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
+    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
+    
+    suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
 
+    if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
+       should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
+       if should_chage_branch != "n"
+           print "Checking out branch '#{suggested_branch}'...\n\n"
+           GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}"
+       end
+           
+    end
+    
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
     development_branch_name = development_branch_name story
