@@ -50,9 +50,14 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
-    puts
-    branch_name
+      prefix = "#{story.id}-"
+      suggested_suffix = "#{story.name.tr(" ", "_")}"
+      branch_name = "#{prefix}" + ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
+      puts
+      if branch_name == "#{prefix}"
+          branch_name << suggested_suffix
+      end
+      branch_name.tr(" ", "_")
   end
 
   def start_on_tracker(story)
