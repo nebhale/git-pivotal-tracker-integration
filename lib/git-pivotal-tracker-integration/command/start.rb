@@ -69,7 +69,13 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
   def development_branch_name(story)
       prefix = "#{story.id}-"
-      suggested_suffix = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
+      story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
+      if(story_name.length > 30)
+          suggested_suffix = story_name[0..27]
+          suggested_suffix << "__"
+      else
+          suggested_suffix = story_name
+      end
       branch_name = "#{prefix}" + ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
       puts
       if branch_name == "#{prefix}"
