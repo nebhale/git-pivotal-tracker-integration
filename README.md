@@ -12,7 +12,9 @@
 
 
 ## Installation
-`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.  In order to install it, do the following:
+`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.  Check your Ruby version with `ruby -v`.  Check your git version with `git --version`.
+
+In order to install it, do the following:
 
 Clone the repository locally, cd into the repo.
 Then install with rake.
