@@ -114,9 +114,7 @@ class GitPivotalTrackerIntegration::Util::Story
     }
     candidates = estimated_candidates
 
-    if candidates.length == 1
-      story = candidates[0]
-    else
+
       story = choose do |menu|
         puts "\nUnestimated features can not be started.\n\n"
         menu.prompt = 'Choose a story to start: '
@@ -128,7 +126,7 @@ class GitPivotalTrackerIntegration::Util::Story
       end
 
       puts
-    end
+    
 
     story
   end
