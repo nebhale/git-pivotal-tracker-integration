@@ -103,11 +103,23 @@ class GitPivotalTrackerIntegration::Util::Story
     end
 
     candidates = project.stories.all criteria
+
+    # only include stories that have been estimated
+    estimated_candidates = Array.new
+    candidates.each {|val|
+        #puts "story_type:#{val.story_type} estimate:#{val.estimate}"
+        if !(val.story_type == "feature" && val.estimate < 0)
+            estimated_candidates << val
+        end
+    }
+    candidates = estimated_candidates
+
     if candidates.length == 1
       story = candidates[0]
     else
       story = choose do |menu|
-        menu.prompt = 'Choose story to start: '
+        puts "\nUnestimated features can not be started.\n\n"
+        menu.prompt = 'Choose a story to start: '
 
         candidates.each do |story|
           name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
