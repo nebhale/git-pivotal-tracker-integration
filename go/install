@@ -8,3 +8,4 @@ cd $V2GPTI_FOLDER
 bundle gem v2gpti
 bundle update
 sudo rake --trace install
+exit
