@@ -16,11 +16,12 @@
 Gem::Specification.new do |s|
   s.name        = 'v2gpti'
   s.version     = '0.2'
+  s.platform = Gem::Platform.local
   s.summary     = 'Git commands for integration with Pivotal Tracker'
   s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
-  s.authors     = ['Ben Hale']
-  s.email       = 'nebhale@nebhale.com'
-  s.homepage    = 'https://github.com/nebhale/git-pivotal-tracker-integration'
+  s.authors     = ['Ben Hale', 'Jeff Wolski']
+  s.email       = 'jeff.wolski@v2solutions.com'
+  s.homepage    = 'https://github.com/v2dev/V2GPTI'
   s.license     = 'Apache-2.0'
 
   s.files            = %w(LICENSE NOTICE README.md) + Dir['lib/**/*.rb'] + Dir['lib/**/*.sh'] + Dir['bin/*']
