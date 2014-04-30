@@ -18,9 +18,9 @@ In order to install it, do the following:
 
 1. Check your Ruby version with `ruby -v`. It should be at least **Ruby 1.8.7**
 2. Check your git version with `git --version`. It should be at least **Git 1.8.2.1** (It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.)
-3. Install with the following...  (This will require sudo, so you will be asked for your password.)
+3. Install with the following...  (This will require admin rights, so you may need sudo.)
 ```plain
-$ bash <(curl https://raw.githubusercontent.com/v2dev/V2GPTI/master/go/install)
+$ gem install v2gpti
 ```
 
 
