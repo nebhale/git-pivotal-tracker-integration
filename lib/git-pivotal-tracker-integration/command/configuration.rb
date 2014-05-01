@@ -28,6 +28,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
   #
   # @return [String] The user's Pivotal Tracker API token
   def api_token
+    self.check_config
     api_token = GitPivotalTrackerIntegration::Util::Git.get_config KEY_API_TOKEN, :inherited
 
     if api_token.empty?
@@ -37,6 +38,15 @@ class GitPivotalTrackerIntegration::Command::Configuration
     end
 
     api_token
+  end
+
+def check_config
+    repo_root = GitPivotalTrackerIntegration::Util::Git.repository_root
+    config_filename = "#{repo_root}/.v2gpti/config"
+    if File.file?(config_filename)
+      pconfig = ParseConfig.new(config_filename)
+      GitPivotalTrackerIntegration::Util::Git.set_config("pivotal.project-id", pconfig["pivotal-tracker"]["project-id"])
+    end
   end
 
   # Returns the Pivotal Tracker project id for this repository.  If this id
