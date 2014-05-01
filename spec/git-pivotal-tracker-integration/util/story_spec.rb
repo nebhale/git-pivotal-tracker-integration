@@ -89,6 +89,12 @@ describe GitPivotalTrackerIntegration::Util::Story do
       :limit => 1,
       :story_type => 'release'
     ).and_return([@story])
+    @story.stub(:story_type) {'release'}
+    @story.stub(:name) {'story_name'}
+
+    @menu.stub(:prompt=)
+    @menu.stub(:choice)
+    GitPivotalTrackerIntegration::Util::Story.should_receive(:choose) { |&arg| arg.call @menu }.and_return(@story)
 
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, 'release', 1
 

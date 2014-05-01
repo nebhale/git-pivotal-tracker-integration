@@ -34,6 +34,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   #   * +nil+
   # @return [void]
   def run(filter)
+    self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
@@ -47,12 +48,40 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     start_on_tracker story
   end
 
+  def check_branch
+
+      current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
+
+      suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
+
+      if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
+          should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
+          if should_chage_branch != "n"
+              print "Checking out branch '#{suggested_branch}'...\n\n"
+              GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}"
+          end
+
+      end
+
+  end
+
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
-    puts
-    branch_name
+      prefix = "#{story.id}-"
+      story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
+      if(story_name.length > 30)
+          suggested_suffix = story_name[0..27]
+          suggested_suffix << "__"
+      else
+          suggested_suffix = story_name
+      end
+      branch_name = "#{prefix}" + ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
+      puts
+      if branch_name == "#{prefix}"
+          branch_name << suggested_suffix
+      end
+      branch_name.gsub(/[^0-9a-z\\s\-]/i, '_')
   end
 
   def start_on_tracker(story)

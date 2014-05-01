@@ -1,3 +1,4 @@
+# V2GPTI
 # Git Pivotal Tracker Integration
 [![Build Status](https://travis-ci.org/nebhale/git-pivotal-tracker-integration.svg?branch=master)](https://travis-ci.org/nebhale/git-pivotal-tracker-integration)
 [![Gem Version](https://badge.fury.io/rb/git-pivotal-tracker-integration.png)](http://badge.fury.io/rb/git-pivotal-tracker-integration)
@@ -5,16 +6,21 @@
 [![Code Climate](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration.svg)](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration)
 
 
-`git-pivotal-tracker-integration` provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
+`v2gpti` is a mod of `git-pivotal-tracker-integration`.  It provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
 
 [pivotal-tracker]: http://www.pivotaltracker.com
 
 
 ## Installation
-`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.  In order to install it, do the following:
+`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.
 
+In order to install it, do the following:
+
+1. Check your Ruby version with `ruby -v`. It should be at least **Ruby 1.8.7**
+2. Check your git version with `git --version`. It should be at least **Git 1.8.2.1** (It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.)
+3. Install with the following...  (This will require admin rights, so you may need sudo.)
 ```plain
-$ gem install git-pivotal-tracker-integration
+$ gem install v2gpti
 ```
 
 
