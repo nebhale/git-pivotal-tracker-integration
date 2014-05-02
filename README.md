@@ -6,6 +6,7 @@
 [![Code Climate](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration.svg)](https://codeclimate.com/github/nebhale/git-pivotal-tracker-integration)
 
 
+
 `v2gpti` is a mod of `git-pivotal-tracker-integration`.  It provides a set of additional Git commands to help developers when working with [Pivotal Tracker][pivotal-tracker].
 
 [pivotal-tracker]: http://www.pivotaltracker.com
