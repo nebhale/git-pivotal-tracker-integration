@@ -15,7 +15,7 @@
 
     Gem::Specification.new do |s|
       s.name        = 'v2gpti'
-      s.version     = '0.2.0.2'
+      s.version     = '0.2.0.3'
       s.summary     = 'Git commands for integration with Pivotal Tracker'
       s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
       s.authors     = ['Ben Hale', 'Jeff Wolski']
@@ -27,7 +27,7 @@
       s.executables      = Dir['bin/*'].map { |f| File.basename f }
       s.test_files       = Dir['spec/**/*_spec.rb']
 
-      s.required_ruby_version = '>= 1.8.7'
+      s.required_ruby_version = '>= 1.9'
 
       s.add_dependency 'highline', '~> 1.6'
       s.add_dependency 'pivotal-tracker', '~> 0.5'
