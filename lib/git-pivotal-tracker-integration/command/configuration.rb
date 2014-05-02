@@ -28,19 +28,18 @@ class GitPivotalTrackerIntegration::Command::Configuration
   #
   # @return [String] The user's Pivotal Tracker API token
   def api_token
-    self.check_config
     api_token = GitPivotalTrackerIntegration::Util::Git.get_config KEY_API_TOKEN, :inherited
-
     if api_token.empty?
       api_token = ask('Pivotal API Token (found at https://www.pivotaltracker.com/profile): ').strip
       GitPivotalTrackerIntegration::Util::Git.set_config KEY_API_TOKEN, api_token, :global
       puts
-    end
+    end  
+    self.check_config_project_id
 
     api_token
   end
 
-def check_config
+  def check_config_project_id
     repo_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     config_filename = "#{repo_root}/.v2gpti/config"
     if File.file?(config_filename)
