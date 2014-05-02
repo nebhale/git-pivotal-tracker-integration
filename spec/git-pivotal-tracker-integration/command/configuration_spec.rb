@@ -37,6 +37,7 @@ describe GitPivotalTrackerIntegration::Command::Configuration do
   it 'should prompt the user for the API token if it is not configured' do
     GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.api-token', :inherited).and_return('')
     @configuration.should_receive(:ask).and_return('test_api_token')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:set_config).with("pivotal.project-id", anything())    
     GitPivotalTrackerIntegration::Util::Git.should_receive(:set_config).with('pivotal.api-token', 'test_api_token', :global)
 
     api_token = @configuration.api_token

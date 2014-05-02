@@ -46,6 +46,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
       pconfig = ParseConfig.new(config_filename)
       GitPivotalTrackerIntegration::Util::Git.set_config("pivotal.project-id", pconfig["pivotal-tracker"]["project-id"])
     end
+    nil
   end
 
   # Returns the Pivotal Tracker project id for this repository.  If this id
