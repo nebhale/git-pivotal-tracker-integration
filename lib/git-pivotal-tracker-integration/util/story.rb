@@ -63,6 +63,21 @@ class GitPivotalTrackerIntegration::Util::Story
     story
   end
 
+  def self.select_release(project, filter = 'b', limit = 10)
+    if filter =~ /[[:digit:]]/
+      story = project.stories.find filter.to_i
+      if story.(story_type != "release")
+        story = nil
+        puts "Specified story##{filter} is not a valid release story"
+        abort 'FAIL'
+      end
+    else
+      story = find_story project, filter, limit
+    end
+
+    story
+  end
+
   private
 
   CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze
@@ -94,6 +109,10 @@ class GitPivotalTrackerIntegration::Util::Story
   end
 
   def self.find_story(project, type, limit)
+    if (type == "b" || type == "v")
+      release_type = type
+      type = "release"      
+    end
     criteria = {
       :current_state => CANDIDATE_STATES,
       :limit => limit
@@ -106,11 +125,21 @@ class GitPivotalTrackerIntegration::Util::Story
 
     # only include stories that have been estimated
     estimated_candidates = Array.new
+    val_is_valid = true
     candidates.each {|val|
-        #puts "story_type:#{val.story_type} estimate:#{val.estimate}"
-        if !(val.story_type == "feature" && val.estimate < 0)
-            estimated_candidates << val
+        if (val.story_type == "feature" ) 
+          if (val.estimate < 0) 
+            val_is_valid == false 
+          end
+        elsif (val.story_type == "release")
+          if (val.name[0] != release_type)
+            val_is_valid = false
+          end
         end
+
+        if (val_is_valid)
+           estimated_candidates << val
+        end 
     }
     candidates = estimated_candidates
 
