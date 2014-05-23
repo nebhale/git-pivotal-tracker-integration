@@ -51,19 +51,26 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     build_number[0] = ""
     puts "build_number:#{build_number}"
     project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
-    puts project_directory
-    # puts GitPivotalTrackerIntegration::Util::Shell.exec "cd #{project_directory}"
-
-   GitPivotalTrackerIntegration::Util::Shell.exec "pwd"
+    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
+    puts "working_directory:#{working_directory}*"
     
+    # cd to the project_directory
+    Dir.chdir(project_directory)
+
+    # set build number and project number in project file
+    GitPivotalTrackerIntegration::Util::Shell.exec "pwd"   
     puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
     puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
 
+    # cd back to the working_directory
+    Dir.chdir(working_directory)
+
+    # Create a new build commit, push to QA, checkout develop
+    GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number} for delivery to QA", story)
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
 
 
-    # GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
-
-    # start_on_tracker story
   end
 
   def check_branch
@@ -76,7 +83,9 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
           should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
           if should_chage_branch != "n"
               print "Checking out branch '#{suggested_branch}'...\n\n"
-              GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}"
+              GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{suggested_branch}"
+              GitPivotalTrackerIntegration::Util::Shell.exec 'git pull'
+
           else
               abort "You must be on the #{suggested_branch} branch to run this command."
           end
