@@ -47,6 +47,20 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     else
       abort "FAILED to merge 'develop' in to 'QA'"
     end
+    build_number = story.name
+    build_number[0] = ""
+    puts "build_number:#{build_number}"
+    project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+    puts project_directory
+    # puts GitPivotalTrackerIntegration::Util::Shell.exec "cd #{project_directory}"
+
+   GitPivotalTrackerIntegration::Util::Shell.exec "pwd"
+    
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
+
+
+
     # GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
 
     # start_on_tracker story
