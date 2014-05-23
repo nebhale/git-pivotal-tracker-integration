@@ -67,9 +67,10 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
     # Create a new build commit, push to QA, checkout develop
     GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number} for delivery to QA", story)
-    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
 
+    included_stories @project, story
 
   end
 
@@ -95,6 +96,45 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
   end
 
   private
+
+    CANDIDATE_STATES = %w(finished unstarted).freeze
+    CANDIDATE_TYPES = %w(bug chore feature release)
+
+  def included_stories(project, build_story)
+
+    criteria = {
+      :current_state => CANDIDATE_STATES,
+      :limit => 1000,
+      :story_type => CANDIDATE_TYPES
+    }
+    
+
+    candidates = project.stories.all criteria
+
+    # only include stories that have been estimated
+    estimated_candidates = Array.new
+    val_is_valid = true
+    puts "Included stories:\n"
+    candidates.each {|val|
+        val_is_valid = true
+        if (val.id == build_story.id) 
+          break
+        end
+        if (val.current_state != "finished")
+          val_is_valid = false
+        end
+        if (val.story_type == "release")
+          val_is_valid = false
+        end
+        if val_is_valid
+          # puts "val_is_valid:#{val_is_valid}"
+           estimated_candidates << val
+           puts "#{val.id}"
+
+        end 
+    }
+    candidates = estimated_candidates
+  end
 
   def development_branch_name(story)
       prefix = "#{story.id}-"
