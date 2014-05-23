@@ -127,9 +127,12 @@ class GitPivotalTrackerIntegration::Util::Story
     estimated_candidates = Array.new
     val_is_valid = true
     candidates.each {|val|
+        val_is_valid = true
         if (val.story_type == "feature" ) 
-          if (val.estimate < 0) 
-            val_is_valid == false 
+          # puts "#{val.story_type} #{val.name}.estimate:#{val.estimate} "
+          if (val.estimate < 0)
+            # puts "#{val.estimate} < 0" 
+            val_is_valid = false 
           end
         elsif (val.story_type == "release")
           if (val.name[0] != release_type)
@@ -137,7 +140,8 @@ class GitPivotalTrackerIntegration::Util::Story
           end
         end
 
-        if (val_is_valid)
+        if val_is_valid
+          # puts "val_is_valid:#{val_is_valid}"
            estimated_candidates << val
         end 
     }
