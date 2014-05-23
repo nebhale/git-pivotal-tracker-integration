@@ -41,7 +41,12 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet QA"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
+    if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
+      puts "Merged 'develop' in to 'QA'"
+    else
+      abort "FAILED to merge 'develop' in to 'QA'"
+    end
     # GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
 
     # start_on_tracker story
