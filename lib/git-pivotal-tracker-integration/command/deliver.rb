@@ -121,10 +121,12 @@ def deliver_stories(stories, build_story)
     end
     
     puts "labels:#{s_labels_string}"
-    story.update(
-      :labels => s_labels_string
-      )
-
+    story.update(:labels => s_labels_string)
+    if (story.story_type == "feature") || (story.story_type == "bug")
+      story.update(:current_state => "delivered")
+    elsif (story.story_type == "chore") 
+      story.update(:current_state => "accepted")      
+    end
   }
 end
 
