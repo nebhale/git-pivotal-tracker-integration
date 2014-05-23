@@ -47,8 +47,12 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     else
       abort "FAILED to merge 'develop' in to 'QA'"
     end
-    build_number = story.name
+
+        puts "storyNAME:#{story.name}"
+
+    build_number = story.name.dup
     build_number[0] = ""
+    puts "storyNAME:#{story.name}"
     puts "build_number:#{build_number}"
     project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
     working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
@@ -70,7 +74,8 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
 
-    included_stories @project, story
+    i_stories = included_stories @project, story
+    deliver_stories i_stories, story
 
   end
 
@@ -99,6 +104,29 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
     CANDIDATE_STATES = %w(finished unstarted).freeze
     CANDIDATE_TYPES = %w(bug chore feature release)
+
+def deliver_stories(stories, build_story)
+  all_stories = stories.dup
+  all_stories << build_story
+  all_stories.each {|story|
+    puts "story class:#{story.class}"
+    s_labels_string = story.labels
+    s_labels = ""
+    if (s_labels_string)
+      s_labels = s_labels_string.split(",")
+      s_labels << build_story.name
+      s_labels_string = s_labels.uniq.join(",")
+    else
+      s_labels_string = build_story.name
+    end
+    
+    puts "labels:#{s_labels_string}"
+    story.update(
+      :labels => s_labels_string
+      )
+
+  }
+end
 
   def included_stories(project, build_story)
 
@@ -135,6 +163,8 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     }
     candidates = estimated_candidates
   end
+
+
 
   def development_branch_name(story)
       prefix = "#{story.id}-"
