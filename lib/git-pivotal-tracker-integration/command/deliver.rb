@@ -174,7 +174,6 @@ end
   end
 
 
-
   def development_branch_name(story)
       prefix = "#{story.id}-"
       story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
