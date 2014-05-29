@@ -41,6 +41,13 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 
+   # copy code from origin develop branch into current branch
+   puts "Merging (theirs) from orgin develop..."
+   GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+   GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin develop"
+
+   # checkout QA branch
+   # Merge develop into QA
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
     if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
       puts "Merged 'develop' in to 'QA'"
@@ -50,6 +57,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
         puts "storyNAME:#{story.name}"
 
+    # Update version and build numbers
     build_number = story.name.dup
     build_number[0] = ""
     puts "storyNAME:#{story.name}"
