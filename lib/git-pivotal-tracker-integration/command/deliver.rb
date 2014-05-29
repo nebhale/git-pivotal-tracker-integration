@@ -41,14 +41,13 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 
-   # copy code from origin develop branch into current branch
-   puts "Merging (theirs) from orgin develop..."
-   GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
-   GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin develop"
+   puts "Merging from orgin develop..."
+   GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
 
    # checkout QA branch
    # Merge develop into QA
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
+       GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
     if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
       puts "Merged 'develop' in to 'QA'"
     else
@@ -94,7 +93,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
       suggested_branch = "develop"
 
       if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
-          should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
+          should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. You must be on the #{suggested_branch} branch to run this command.\n\n Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
           if should_chage_branch != "n"
               print "Checking out branch '#{suggested_branch}'...\n\n"
               GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{suggested_branch}"

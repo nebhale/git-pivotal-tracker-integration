@@ -34,23 +34,55 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
-    story = GitPivotalTrackerIntegration::Util::Story.select_story(@project, filter.nil? ? 'release' : filter, 1)
+    story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
-    updater = [
-      GitPivotalTrackerIntegration::VersionUpdate::Gradle.new(@repository_root)
-    ].find { |candidate| candidate.supports? }
+    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 
-    current_version = updater.current_version
-    release_version = ask("Enter release version (current: #{current_version}): ")
-    next_version = ask("Enter next development version (current: #{current_version}): ")
+    # checkout QA branch
+    # Update QA from origin    
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs QA"
 
-    updater.update_version release_version
-    GitPivotalTrackerIntegration::Util::Git.create_release_tag release_version, story
-    updater.update_version next_version
-    GitPivotalTrackerIntegration::Util::Git.create_commit "#{next_version} Development", story
+    # checkout master branch
+    # Merge QA into master
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout master"
+       GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+    if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs master")
+      puts "Merged 'QA' in to 'master'"
+    else
+      abort "FAILED to merge 'QA' in to 'master'"
+    end
 
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name, "v#{release_version}"
+    # Update version and build numbers
+    version_number = story.name.dup
+    version_number[0] = ""
+    puts "storyNAME:#{story.name}"
+    puts "version_number:#{version_number}"
+    project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
+    puts "working_directory:#{working_directory}*"
+    
+    # cd to the project_directory
+    Dir.chdir(project_directory)
+
+    # set project number in project file
+    GitPivotalTrackerIntegration::Util::Shell.exec "pwd"   
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
+
+    # cd back to the working_directory
+    Dir.chdir(working_directory)
+
+    # Create a new build commit, push to QA, checkout develop
+    GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{version_number} for delivery to QA", story)
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
+
+
+
   end
+
+
 
 end
