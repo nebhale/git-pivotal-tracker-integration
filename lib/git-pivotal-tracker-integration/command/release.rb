@@ -41,15 +41,15 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
 
     # checkout QA branch
     # Update QA from origin    
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
-    GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs QA"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
 
     # checkout master branch
     # Merge QA into master
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout master"
-       GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
-    if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs master")
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout master"
+       puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+    if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs QA")
       puts "Merged 'QA' in to 'master'"
     else
       abort "FAILED to merge 'QA' in to 'master'"
@@ -75,7 +75,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     Dir.chdir(working_directory)
 
     # Create a new build commit, push to QA, checkout develop
-    GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{version_number} for delivery to QA", story)
+    puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
 
