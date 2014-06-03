@@ -49,12 +49,12 @@ class GitPivotalTrackerIntegration::Command::Base
 
   def check_version
     gem_latest_version = (GitPivotalTrackerIntegration::Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
-    gem_installed_version = Gem.loaded_specs["v2gpti"].version
+    gem_installed_version = Gem.loaded_specs["v2gpti"].version.version
     if (gem_installed_version == gem_latest_version)
         $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
     else
         $LOG.fatal("Out of date")
-        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
+        abort "\n\nYou are using v2gpti version #{gem_installed_version.class}, but the current version is #{gem_latest_version.class}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
         
     end
   end
