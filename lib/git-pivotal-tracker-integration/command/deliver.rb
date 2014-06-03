@@ -34,8 +34,10 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_release @project
+    $LOG.debug("story:#{story.name}")
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 

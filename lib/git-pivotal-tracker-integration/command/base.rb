@@ -18,6 +18,7 @@ require 'git-pivotal-tracker-integration/command/configuration'
 require 'git-pivotal-tracker-integration/util/git'
 require 'pivotal-tracker'
 require 'parseconfig'
+require 'logger'
 
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality
@@ -30,6 +31,7 @@ class GitPivotalTrackerIntegration::Command::Base
   # * all communication with Pivotal Tracker will be protected with SSL
   # * the user has configured the project id for this repository
   def initialize
+    self.start_logging
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
 
@@ -37,6 +39,10 @@ class GitPivotalTrackerIntegration::Command::Base
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
+  end
+
+  def start_logging
+    $LOG = Logger.new('/usr/local/v2gpti_local.log', 'weekly') 
   end
 
   # The main entry point to the command's execution

@@ -34,8 +34,10 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
+    $LOG.debug("story:#{story.name}")
 
     current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 

@@ -68,6 +68,7 @@ class GitPivotalTrackerIntegration::Util::Story
       story = project.stories.find filter.to_i
       if story.(story_type != "release")
         story = nil
+        $LOG.fatal("Specified story##{filter} is not a valid release story")
         puts "Specified story##{filter} is not a valid release story"
         abort 'FAIL'
       end
