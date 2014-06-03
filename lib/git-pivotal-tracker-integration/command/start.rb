@@ -34,14 +34,14 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   #   * +nil+
   # @return [void]
   def run(filter)
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
-
+    $LOG.debug("story:#{story.name}")
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
     development_branch_name = development_branch_name story
     GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
-    @configuration.story = story
 
     GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
 
@@ -51,14 +51,15 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   def check_branch
 
       current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
-
       suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
 
       if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
+          $LOG.warn("Currently checked out branch is '#{current_branch}'.")
           should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
           if should_chage_branch != "n"
+              $LOG.debug("Checking out branch '#{suggested_branch}'")
               print "Checking out branch '#{suggested_branch}'...\n\n"
-              GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}"
+              $LOG.debug(GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}")
           end
 
       end
