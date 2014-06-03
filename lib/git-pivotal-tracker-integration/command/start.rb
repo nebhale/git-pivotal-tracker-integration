@@ -51,8 +51,9 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   def check_branch
 
       current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
-      suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
-
+      # suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
+      suggested_branch = "develop"
+      
       if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
           $LOG.warn("Currently checked out branch is '#{current_branch}'.")
           should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")

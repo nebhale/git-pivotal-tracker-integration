@@ -20,6 +20,7 @@ require 'pivotal-tracker'
 require 'parseconfig'
 require 'logger'
 
+
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality
 class GitPivotalTrackerIntegration::Command::Base
@@ -32,6 +33,7 @@ class GitPivotalTrackerIntegration::Command::Base
   # * the user has configured the project id for this repository
   def initialize
     self.start_logging
+    self.check_version
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
 
@@ -43,6 +45,18 @@ class GitPivotalTrackerIntegration::Command::Base
 
   def start_logging
     $LOG = Logger.new('/usr/local/v2gpti_local.log', 'weekly') 
+  end
+
+  def check_version
+    gem_latest_version = (GitPivotalTrackerIntegration::Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
+    gem_installed_version = Gem.loaded_specs["v2gpti"].version
+    if (gem_installed_version == gem_latest_version)
+        $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
+    else
+        $LOG.fatal("Out of date")
+        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
+        
+    end
   end
 
   # The main entry point to the command's execution
