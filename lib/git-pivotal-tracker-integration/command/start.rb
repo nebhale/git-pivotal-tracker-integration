@@ -42,7 +42,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
     development_branch_name = development_branch_name story
     GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
-
+    @configuration.story = story
     GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
 
     start_on_tracker story
