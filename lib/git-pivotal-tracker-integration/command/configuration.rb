@@ -79,7 +79,9 @@ class GitPivotalTrackerIntegration::Command::Configuration
   # @param [PivotalTracker::Project] project the project the story belongs to
   # @return [PivotalTracker::Story] the story associated with the current development branch
   def story(project)
+    $LOG.debug("#{self.class}:#{__method__}")
     story_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_STORY_ID, :branch
+    $LOG.debug("story_id:#{story_id}")
     project.stories.find story_id.to_i
   end
 
