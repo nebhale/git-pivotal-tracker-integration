@@ -44,7 +44,7 @@ class GitPivotalTrackerIntegration::Command::Base
   end
 
   def start_logging
-    $LOG = Logger.new('/usr/local/v2gpti_local.log', 'weekly') 
+    $LOG = Logger.new("#{Dir.home}/.v2gpti_local.log", 'weekly') 
   end
 
   def check_version
@@ -54,7 +54,7 @@ class GitPivotalTrackerIntegration::Command::Base
         $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
     else
         $LOG.fatal("Out of date")
-        abort "\n\nYou are using v2gpti version #{gem_installed_version.class}, but the current version is #{gem_latest_version.class}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
+        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
         
     end
   end
