@@ -20,7 +20,6 @@ require 'pivotal-tracker'
 require 'parseconfig'
 require 'logger'
 
-
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality
 class GitPivotalTrackerIntegration::Command::Base
@@ -36,6 +35,7 @@ class GitPivotalTrackerIntegration::Command::Base
     self.check_version
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
+    @toggle = Toggl.new
 
     PivotalTracker::Client.token = @configuration.api_token
     PivotalTracker::Client.use_ssl = true
