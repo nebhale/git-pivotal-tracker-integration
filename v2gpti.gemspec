@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
     Gem::Specification.new do |s|
       s.name        = 'v2gpti'
       s.version     = '0.2.0.10'
@@ -32,6 +33,11 @@
       s.add_dependency 'highline', '~> 1.6'
       s.add_dependency 'pivotal-tracker', '~> 0.5'
       s.add_dependency 'parseconfig', '~> 1.0'
+      s.add_dependency 'faraday', '~> 0.9.0'
+      s.add_dependency 'awesome_print', '~> 1.1.0'
+      s.add_dependency 'json', '~> 1.8.0'
+      s.add_dependency  'logger', '~> 1.2.8'
+      s.add_dependency  'jazor', '~> 0.1.8'
 
       s.add_development_dependency 'bundler', '~> 1.3'
       s.add_development_dependency 'rake', '~> 10.0'

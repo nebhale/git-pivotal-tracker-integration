@@ -17,6 +17,8 @@ require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
 require 'highline/import'
 require 'pivotal-tracker'
+require 'git-pivotal-tracker-integration/util/togglV8'
+require 'time'
 
 # A class that exposes configuration that commands can use
 class GitPivotalTrackerIntegration::Command::Configuration
@@ -39,16 +41,28 @@ class GitPivotalTrackerIntegration::Command::Configuration
     api_token
   end
 
-  def check_config_project_id
-    repo_root = GitPivotalTrackerIntegration::Util::Git.repository_root
-    config_filename = "#{repo_root}/.v2gpti/config"
-    if File.file?(config_filename)
-      pconfig = ParseConfig.new(config_filename)
-      GitPivotalTrackerIntegration::Util::Git.set_config("pivotal.project-id", pconfig["pivotal-tracker"]["project-id"])
+  def toggl_project_id
+    toggle_config = self.pconfig["toggl"]
+    if toggle_config.nil?
+      abort "toggle project id not set"
+    else
+      toggle_config["project-id"]
     end
+  end
+
+  def check_config_project_id
+    GitPivotalTrackerIntegration::Util::Git.set_config("pivotal.project-id", self.pconfig["pivotal-tracker"]["project-id"])
     nil
   end
 
+  def pconfig
+    pc = nil
+    config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+    if File.file?(config_filename)
+      pc = ParseConfig.new(config_filename)
+    end
+    pc
+  end
   # Returns the Pivotal Tracker project id for this repository.  If this id
   # has not been configuration, prompts the user for the value.  The value is
   # checked for in the _inherited_ Git configuration, but is stored in the
