@@ -14,17 +14,26 @@ class Toggl
   def initialize(username=nil, password='api_token', debug=nil)
     self.debug_on(debug) if !debug.nil?
     if (password.to_s == 'api_token' && username.to_s == '')
-      toggl_api_file = ENV['HOME']+'/.toggl'
-      if FileTest.exist?(toggl_api_file) then
-        username = IO.read(toggl_api_file)
-      else
-        raise SystemCallError, "Expecting api_token in file ~/.toggl or parameters (api_token) or (username, password)"
-      end
+      toggl_api_file = self.toggl_file 
+      username = IO.read(toggl_api_file)
+
     end
 
     @conn = connection(username, password)
   end
 
+  def toggl_file
+    t_file = ENV['HOME']+'/.toggl'
+    if !FileTest.exist?(t_file) then
+      puts "\n\nIt looks like this is the first time you have used Toggl on this machine.\n"
+      t_API_key = ask("Please enter your Toggl API key:")
+      output = File.open( t_file, "w")
+      output << t_API_key
+      output.close
+    end
+
+    t_file
+  end
   def connection(username, password)
     Faraday.new(url: 'https://www.toggl.com/api/v8') do |faraday|
       faraday.request :url_encoded
