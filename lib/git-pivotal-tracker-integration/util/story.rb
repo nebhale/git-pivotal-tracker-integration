@@ -43,6 +43,7 @@ class GitPivotalTrackerIntegration::Util::Story
     puts
   end
 
+
   # Selects a Pivotal Tracker story by doing the following steps:
   #
   # @param [PivotalTracker::Project] project the project to select stories from

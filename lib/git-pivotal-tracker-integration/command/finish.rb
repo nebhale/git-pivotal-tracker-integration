@@ -28,9 +28,12 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
+    @toggl.debug_on
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
-
+    time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
+    finish_toggle(@configuration, time_spent)
+    # ask("pause")
     GitPivotalTrackerIntegration::Util::Git.trivial_merge?
     $LOG.debug("configuration:#{@configuration}")
     $LOG.debug("project:#{@project}")
@@ -38,5 +41,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
     GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
   end
+
+
 
 end
