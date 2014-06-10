@@ -28,7 +28,6 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    @toggl.debug_on
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
     time_spent = ""
