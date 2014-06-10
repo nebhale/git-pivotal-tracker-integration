@@ -31,7 +31,13 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     @toggl.debug_on
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
-    time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
+    time_spent = ""
+    while 1
+      time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
+      if (/\d/.match( time_spent )) && /[mhd]/.match(time_spent)
+        break
+      end
+    end
     finish_toggle(@configuration, time_spent)
     # ask("pause")
     GitPivotalTrackerIntegration::Util::Git.trivial_merge?

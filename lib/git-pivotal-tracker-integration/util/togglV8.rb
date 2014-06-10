@@ -155,6 +155,22 @@ class Toggl
     get "projects/#{project_id}/project_users"
   end
 
+  def get_project_tasks(project_id)
+    get "projects/#{project_id}/tasks"
+  end
+
+  def get_project_task_with_name(project_id, task_name)
+    task = nil
+    project_tasks = get_project_tasks(project_id)
+    project_tasks.each { |a_task|
+      a_task_name = "#{a_task["name"]}"
+      if (a_task_name.include?task_name)
+        task = a_task
+        break
+      end
+    }
+  task
+  end
 #---------------------#
 #--- Project users ---#
 #---------------------#

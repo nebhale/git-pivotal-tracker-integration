@@ -44,9 +44,8 @@ class GitPivotalTrackerIntegration::Command::Base
   end
   def finish_toggle(configuration, time_spent)
     current_story = @configuration.story(@project)
-    params = parameters(configuration, time_spent)
-    @toggl.create_task(params)
-    @toggl.create_time_entry(params)
+    @toggl.create_task(parameters(configuration, time_spent))
+    @toggl.create_time_entry(parameters(configuration, time_spent))
   end
   def start_logging
     $LOG = Logger.new("#{Dir.home}/.v2gpti_local.log", 'weekly') 
@@ -83,7 +82,7 @@ class GitPivotalTrackerIntegration::Command::Base
   TIMER_TOKENS = {
       "m" => (60),
       "h" => (60 * 60),
-      "d" => (60 * 60 * 24)
+      "d" => (60 * 60 * 8) # a work day is 8 hours
   }
   def parameters(configuration, time_spent)
     current_story = configuration.story(@project)
@@ -96,6 +95,10 @@ class GitPivotalTrackerIntegration::Command::Base
     params[:created_with] = "v2gpti"
     params[:start] = current_story.created_at.iso8601
     params[:duration] = seconds_spent(time_spent)
+    task = @toggl.get_project_task_with_name(configuration.toggl_project_id, "#{current_story.id}")
+     if !task.nil?
+       params[:tid] = task['id']
+     end
     params
   end
   def seconds_spent(time_spent)
