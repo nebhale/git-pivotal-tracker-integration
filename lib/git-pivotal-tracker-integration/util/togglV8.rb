@@ -379,7 +379,7 @@ class Toggl
       res = JSON.parse(full_res.env[:body])
       res['data'].nil? ? res : res['data']
     else
-      eval(full_res.env[:body])
+      puts(full_res.env[:body])
     end
   end
 
@@ -395,7 +395,7 @@ class Toggl
     puts "DELETE #{resource}" if @debug
     full_res = self.conn.delete(resource)
     # ap full_res.env if @debug
-    (200 == full_res.env[:status]) ? "" : eval(full_res.env[:body])
+    (200 == full_res.env[:status]) ? "" : puts(full_res.env[:body])
   end
 
 end

@@ -35,14 +35,19 @@ class GitPivotalTrackerIntegration::Command::Base
     self.check_version
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
-    @toggle = Toggl.new
+    @toggl = Toggl.new
 
     PivotalTracker::Client.token = @configuration.api_token
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
   end
-
+  def finish_toggle(configuration, time_spent)
+    current_story = @configuration.story(@project)
+    params = parameters(configuration, time_spent)
+    @toggl.create_task(params)
+    @toggl.create_time_entry(params)
+  end
   def start_logging
     $LOG = Logger.new("#{Dir.home}/.v2gpti_local.log", 'weekly') 
   end
@@ -65,4 +70,56 @@ class GitPivotalTrackerIntegration::Command::Base
     raise NotImplementedError
   end
 
+  # name              : The name of the task (string, required, unique in project)
+  # pid               : project ID for the task (integer, required)
+  # wid               : workspace ID, where the task will be saved (integer, project's workspace id is used when not supplied)
+  # uid               : user ID, to whom the task is assigned to (integer, not required)
+  # estimated_seconds : estimated duration of task in seconds (integer, not required)
+  # active            : whether the task is done or not (boolean, by default true)
+  # at                : timestamp that is sent in the response for PUT, indicates the time task was last updated
+  # -- Additional fields --
+  # done_seconds      : duration (in seconds) of all the time entries registered for this task
+  # uname             : full name of the person to whom the task is assigned to
+  TIMER_TOKENS = {
+      "m" => (60),
+      "h" => (60 * 60),
+      "d" => (60 * 60 * 24)
+  }
+  def parameters(configuration, time_spent)
+    current_story = configuration.story(@project)
+    params = Hash.new
+    params[:name] = "#{current_story.id}" + " - " + "#{current_story.name}"
+    params[:estimated_seconds] = estimated_seconds current_story
+    params[:pid] = configuration.toggl_project_id
+    params[:uid] = @toggl.me["id"]
+    params[:description] = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
+    params[:created_with] = "v2gpti"
+    params[:start] = current_story.created_at.iso8601
+    params[:duration] = seconds_spent(time_spent)
+    params
+  end
+  def seconds_spent(time_spent)
+    seconds = 0
+    time_spent.scan(/(\d+)(\w)/).each do |amount, measure|
+      seconds += amount.to_i * TIMER_TOKENS[measure]
+    end
+    seconds
+  end
+  def estimated_seconds(story)
+    estimate = story.estimate
+    seconds = 0
+    case estimate
+      when 0
+        estimate = 15 * 60
+      when 1
+        estimate = 1.25 * 60 * 60
+      when 2
+        estiamte = 3 * 60 * 60
+      when 3
+        estimate = 8 * 60 * 60
+      else
+        estimate = -1 * 60 * 60
+    end
+    estimate
+  end
 end
