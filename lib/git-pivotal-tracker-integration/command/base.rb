@@ -91,6 +91,7 @@ class GitPivotalTrackerIntegration::Command::Base
     params[:estimated_seconds] = estimated_seconds current_story
     params[:pid] = configuration.toggl_project_id
     params[:uid] = @toggl.me["id"]
+    params[:tags] = [current_story.story_type]
     params[:active] = false
     params[:description] = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
     params[:created_with] = "v2gpti"
@@ -118,7 +119,7 @@ class GitPivotalTrackerIntegration::Command::Base
       when 1
         estimate = 1.25 * 60 * 60
       when 2
-        estiamte = 3 * 60 * 60
+        estimate = 3 * 60 * 60
       when 3
         estimate = 8 * 60 * 60
       else
