@@ -91,6 +91,7 @@ class GitPivotalTrackerIntegration::Command::Base
     params[:estimated_seconds] = estimated_seconds current_story
     params[:pid] = configuration.toggl_project_id
     params[:uid] = @toggl.me["id"]
+    params[:active] = false
     params[:description] = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
     params[:created_with] = "v2gpti"
     params[:start] = current_story.created_at.iso8601
