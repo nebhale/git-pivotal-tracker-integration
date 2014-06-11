@@ -37,7 +37,6 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
         break
       end
     end
-    finish_toggle(@configuration, time_spent)
     # ask("pause")
     GitPivotalTrackerIntegration::Util::Git.trivial_merge?
     $LOG.debug("configuration:#{@configuration}")
@@ -45,6 +44,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("story:#{@configuration.story(@project)}")
     GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
     GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    finish_toggle(@configuration, time_spent)
   end
 
 
