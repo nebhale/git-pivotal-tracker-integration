@@ -94,8 +94,8 @@ class GitPivotalTrackerIntegration::Command::Base
     params[:active] = false
     params[:description] = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
     params[:created_with] = "v2gpti"
-    params[:start] = current_story.created_at.iso8601
     params[:duration] = seconds_spent(time_spent)
+    params[:start] = (Time.now - params[:duration]).iso8601
     task = @toggl.get_project_task_with_name(configuration.toggl_project_id, "#{current_story.id}")
      if !task.nil?
        params[:tid] = task['id']
