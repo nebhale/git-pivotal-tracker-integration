@@ -10,7 +10,7 @@
 /test/tmp/
 /test/version_tmp/
 /tmp/
-
+faraday.log
 ## Specific to RubyMotion:
 .dat*
 .repl_history
