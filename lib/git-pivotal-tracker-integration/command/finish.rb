@@ -36,6 +36,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("configuration:#{@configuration}")
     $LOG.debug("project:#{@project}")
     $LOG.debug("story:#{@configuration.story(@project)}")
+    self.commit_new_build
     time_spent = ""
     while 1
       time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
@@ -49,5 +50,27 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   end
 
 
+def commit_new_build
+  # Update version and build numbers
+  build_number = Time.now.utc.iso8601
 
+  puts "build_number:#{build_number}"
+  project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+  working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
+  puts "working_directory:#{working_directory}*"
+
+  # cd to the project_directory
+  Dir.chdir(project_directory)
+
+  # set build number and project number in project file
+  GitPivotalTrackerIntegration::Util::Shell.exec "pwd"
+  puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
+  puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
+
+  # cd back to the working_directory
+  Dir.chdir(working_directory)
+
+  # Create a new build commit, push to develop
+  GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
+end
 end
