@@ -33,6 +33,13 @@ class GitPivotalTrackerIntegration::Command::Base
   def initialize
     self.start_logging
     self.check_version
+
+    git_global_push_default = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default").chomp
+    if git_global_push_default != "simple"
+      puts "git config --global push.default simple"
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default simple"
+    end
+
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
     @toggl = Toggl.new
