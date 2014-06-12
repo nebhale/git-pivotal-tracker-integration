@@ -52,7 +52,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
 
 def commit_new_build
   # Update version and build numbers
-  build_number = Time.now.utc.iso8601
+  build_number = Time.now.utc.strftime("%y%m%d-%H%M")
 
   puts "build_number:#{build_number}"
   project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
