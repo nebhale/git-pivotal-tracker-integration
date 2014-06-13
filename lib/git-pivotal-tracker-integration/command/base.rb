@@ -55,7 +55,11 @@ class GitPivotalTrackerIntegration::Command::Base
     @toggl.create_time_entry(parameters(configuration, time_spent))
   end
   def start_logging
-    $LOG = Logger.new("#{Dir.home}/.v2gpti_local.log", 'weekly') 
+    $LOG = Logger.new("#{logger_filename}", 'weekly')
+  end
+
+  def logger_filename
+    return "#{Dir.home}/.v2gpti_local.log"
   end
 
   def check_version
