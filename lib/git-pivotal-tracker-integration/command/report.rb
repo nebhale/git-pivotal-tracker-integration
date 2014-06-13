@@ -55,8 +55,8 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
     bug_story.name = bug_title
     bug_story.description = bug_description
     bug_story.labels = "userreported"
-    bug_story.create
-
+    uploaded_story = bug_story.create
+    uploaded_story.upload_attachment(self.logger_filename)
   end
 
 
