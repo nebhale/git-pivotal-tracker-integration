@@ -36,6 +36,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("configuration:#{@configuration}")
     $LOG.debug("project:#{@project}")
     $LOG.debug("story:#{@configuration.story(@project)}")
+    memm =  PivotalTracker::Membership.all(@project)
     self.commit_new_build
     time_spent = ""
     while 1
