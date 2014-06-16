@@ -34,7 +34,7 @@ class GitPivotalTrackerIntegration::Command::Base
     self.start_logging
     self.check_version
 
-    git_global_push_default = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default").chomp
+    git_global_push_default = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default", false).chomp
     if git_global_push_default != "simple"
       puts "git config --global push.default simple"
       puts GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default simple"
