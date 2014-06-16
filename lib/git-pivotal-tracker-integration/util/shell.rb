@@ -27,7 +27,7 @@ class GitPivotalTrackerIntegration::Util::Shell
   def self.exec(command, abort_on_failure = true)
     result = `#{command}`
     if $?.exitstatus != 0 && abort_on_failure
-      abort 'FAIL'
+      abort "FAIL on command:#{command}"
     end
 
     result
