@@ -154,9 +154,12 @@ class GitPivotalTrackerIntegration::Util::Story
     }
     candidates = estimated_candidates
 
-
+    if candidates.length != 0
       story = choose do |menu|
-        puts "\nUnestimated features can not be started.\n\n"
+        if type != "release"
+          puts "\nUnestimated features can not be started.\n\n"
+        end
+
         menu.prompt = 'Choose a story to start: '
 
         candidates.each do |story|
@@ -166,9 +169,40 @@ class GitPivotalTrackerIntegration::Util::Story
       end
 
       puts
+    else
+      if type == "release"
+        last_release_number = last_release(project, release_type)
+        last_release_type_string = (release_type == "b")?"build":"version"
+        puts "There are no available release stories. The last #{last_release_type_string} release was #{last_release_number}."
+        next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:")
+        story = self.create_new_release(project, next_release_number)
+      else
+        puts "There are no available stories."
+      end
+    end
+
     
 
     story
   end
 
+  def self.last_release (project, release_type)
+    criteria = {
+      :story_type => "release"
+    }
+
+    candidates = project.stories.all criteria
+    candidates = candidates.select {|x| x.name[0]==release_type}
+
+    candidates[-1].name
+  end
+
+  def self.create_new_release (project, next_release_number)
+    new_story = PivotalTracker::Story.new
+    new_story.project_id = project.id
+    new_story.story_type = "release"
+    new_story.name = next_release_number
+
+    uploaded_story = new_story.create
+  end
 end
