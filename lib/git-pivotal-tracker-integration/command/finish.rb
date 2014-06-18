@@ -57,6 +57,9 @@ def commit_new_build
 
   puts "build_number:#{build_number}"
   project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+  if project_directory.nil?
+    return
+  end
   working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
   puts "working_directory:#{working_directory}*"
 
