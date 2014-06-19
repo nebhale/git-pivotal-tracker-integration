@@ -118,7 +118,7 @@ def deliver_stories(stories, build_story)
   all_stories = stories.dup
   all_stories << build_story
   all_stories.each {|story|
-    puts "story class:#{story.class}"
+    # puts "story class:#{story.class}"
     s_labels_string = story.labels
     s_labels = ""
     if (s_labels_string)
