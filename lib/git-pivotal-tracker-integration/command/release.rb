@@ -81,7 +81,18 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
 
+    s_labels_string = story.labels
+    s_labels = ""
+    if (s_labels_string)
+      s_labels = s_labels_string.split(",")
+      s_labels << story.name
+      s_labels_string = s_labels.uniq.join(",")
+    else
+      s_labels_string = story.name
+    end
 
+    puts "labels:#{s_labels_string}"
+    story.update(:labels => s_labels_string)
 
   end
 
