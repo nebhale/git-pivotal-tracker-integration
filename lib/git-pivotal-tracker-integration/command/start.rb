@@ -37,6 +37,9 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
+    if story.nil?
+      abort
+    end
     $LOG.debug("story:#{story.name}")
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
