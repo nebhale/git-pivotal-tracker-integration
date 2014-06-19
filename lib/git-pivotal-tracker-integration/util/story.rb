@@ -201,6 +201,7 @@ class GitPivotalTrackerIntegration::Util::Story
     new_story = PivotalTracker::Story.new
     new_story.project_id = project.id
     new_story.story_type = "release"
+    new_story.current_state = "unstarted"
     new_story.name = next_release_number
 
     uploaded_story = new_story.create
