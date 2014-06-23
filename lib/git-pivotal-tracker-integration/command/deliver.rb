@@ -38,7 +38,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_release @project
     $LOG.debug("story:#{story.name}")
-
+    sort_for_deliver story
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
@@ -85,7 +85,6 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
     i_stories = included_stories @project, story
     deliver_stories i_stories, story
-
   end
 
   def check_branch
@@ -202,4 +201,17 @@ end
     puts 'OK'
   end
 
+  def sort_for_deliver(release_story)
+    last_release = GitPivotalTrackerIntegration::Util::Story.last_release_story(@project, "b")
+    stories = included_stories(@project, release_story)
+    stories << release_story
+    previous_story = last_release.dup
+    puts "Last release:#{previous_story.name}"
+    stories.each {|story|
+      story.move(:after, previous_story)
+      previous_story = story.dup
+    }
+
+    a=1
+  end
 end

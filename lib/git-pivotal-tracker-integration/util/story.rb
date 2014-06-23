@@ -171,7 +171,7 @@ class GitPivotalTrackerIntegration::Util::Story
       puts
     else
       if type == "release"
-        last_release_number = last_release(project, release_type)
+        last_release_number = last_release_story(project, release_type).name
         last_release_type_string = (release_type == "b")?"build":"version"
         puts "There are no available release stories. The last #{last_release_type_string} release was #{last_release_number}."
         next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:")
@@ -186,15 +186,15 @@ class GitPivotalTrackerIntegration::Util::Story
     story
   end
 
-  def self.last_release (project, release_type)
+  def self.last_release_story (project, release_type)
     criteria = {
-      :story_type => "release"
+        :story_type => "release"
     }
 
     candidates = project.stories.all criteria
-    candidates = candidates.select {|x| x.name[0]==release_type}
+    candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include?x.name))}
 
-    candidates[-1].name
+    candidates[-1]
   end
 
   def self.create_new_release (project, next_release_number)
