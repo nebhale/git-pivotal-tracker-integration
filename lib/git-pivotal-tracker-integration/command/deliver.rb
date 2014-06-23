@@ -128,7 +128,7 @@ def deliver_stories(stories, build_story)
       s_labels_string = build_story.name
     end
     
-    puts "labels:#{s_labels_string}"
+    # puts "labels:#{s_labels_string}"
     story.update(:labels => s_labels_string)
     if (story.story_type == "feature") || (story.story_type == "bug")
       story.update(:current_state => "delivered")
