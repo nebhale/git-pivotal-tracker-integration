@@ -16,4 +16,4 @@
 
 require 'git-pivotal-tracker-integration/command/start'
 
-GitPivotalTrackerIntegration::Command::Start.new().run ARGV[0]
+GitPivotalTrackerIntegration::Command::Start.new().run ARGV

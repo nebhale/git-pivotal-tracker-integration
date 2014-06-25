@@ -33,12 +33,18 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   #   * a story type (feature, bug, chore)
   #   * +nil+
   # @return [void]
-  def run(filter)
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+  def run(args)
+    filter = args[0]
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
     self.check_branch
-    story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
+    story = nil
+    if (!args.nil? && args.any?{|arg| arg.include?("-n")})
+      story = self.create_story(args)
+    else
+      story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
+    end
     if story.nil?
-      abort
+      abort "There are no available stories."
     end
     $LOG.debug("story:#{story.name}")
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
