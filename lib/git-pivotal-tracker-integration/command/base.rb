@@ -139,4 +139,44 @@ class GitPivotalTrackerIntegration::Command::Base
     end
     estimate
   end
+
+  def create_story(args)
+    story_types = {"f" => "feature", "b" => "bug", "c" => "chore"}
+    new_story_type = nil
+    new_story_title = nil
+    new_story_estimate = -1
+    args.each do |arg|
+      new_story_type = story_types[arg[-1]] if arg.include? '-n'
+      new_story_title = arg if arg[0] != "-"
+    end
+
+    while new_story_type.nil?
+      nst = ask("Please enter f for feature, b for bug, or c for chore")
+      new_story_type = story_types[nst]
+    end
+
+    while (new_story_title.nil? || new_story_title.empty?)
+      new_story_title = ask("Please enter the title for this #{new_story_type}.")
+    end
+
+    while (new_story_type == "feature" && (new_story_estimate < 0 || new_story_estimate > 3))
+      nse = ask("Please enter an estimate for this #{new_story_type}. (0,1,2,3)")
+      if !nse.empty?
+        new_story_estimate = nse.to_i
+      end
+    end
+
+    new_story = PivotalTracker::Story.new
+    new_story.project_id = @project.id
+    new_story.story_type = new_story_type
+    new_story.current_state = "unstarted"
+    new_story.name = new_story_title
+    if new_story_type == "feature"
+      new_story.estimate = new_story_estimate
+    end
+
+    uploaded_story = new_story.create
+
+  end
+
 end

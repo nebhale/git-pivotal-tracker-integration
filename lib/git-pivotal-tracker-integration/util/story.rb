@@ -177,7 +177,7 @@ class GitPivotalTrackerIntegration::Util::Story
         next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:")
         story = self.create_new_release(project, next_release_number)
       else
-        puts "There are no available stories."
+        puts
       end
     end
 
