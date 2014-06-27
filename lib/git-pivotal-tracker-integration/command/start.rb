@@ -34,6 +34,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   #   * +nil+
   # @return [void]
   def run(args)
+    my_projects = PivotalTracker::Project.all
     filter = args[0]
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
     self.check_branch

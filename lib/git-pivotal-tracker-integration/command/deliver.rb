@@ -204,14 +204,17 @@ end
   def sort_for_deliver(release_story)
     last_release = GitPivotalTrackerIntegration::Util::Story.last_release_story(@project, "b")
     stories = included_stories(@project, release_story)
+    if last_release.nil?
+      last_release = stories[0]
+      stories.shift
+    end
     stories << release_story
     previous_story = last_release.dup
+
     puts "Last release:#{previous_story.name}"
     stories.each {|story|
       story.move(:after, previous_story)
       previous_story = story.dup
     }
-
-    a=1
   end
 end
