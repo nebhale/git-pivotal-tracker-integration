@@ -48,6 +48,12 @@ class GitPivotalTrackerIntegration::Command::Base
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
+    
+    my_projects = PivotalTracker::Project.all
+    my_all_projects_ids = Array.new
+    my_projects.collect{|project| my_all_projects_ids.push project.id.to_i }
+    current_project_id = @configuration.project_id.to_i
+    abort "You are not authorized for current project" unless my_all_projects_ids.include?(current_project_id)
   end
   def finish_toggle(configuration, time_spent)
     current_story = @configuration.story(@project)
