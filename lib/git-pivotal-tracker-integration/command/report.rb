@@ -49,7 +49,7 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
     bug_description = "#{current_user_email}\n#{report_note}"
 
     bug_story = PivotalTracker::Story.new
-    bug_story.project_id = @project.id
+    bug_story.project_id = "1067990"
     bug_story.owned_by = owned_by
     bug_story.story_type = "bug"
     bug_story.name = bug_title
