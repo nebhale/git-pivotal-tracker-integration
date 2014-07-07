@@ -46,7 +46,7 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
     current_user = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.name").chomp
     bug_title = "User Reported - #{current_user} - #{bug_title}"
     current_user_email = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.email").chomp
-    bug_description = "#{current_user_email}\n#{report_note}"
+    bug_description = "#{@project.name}\n#{current_user_email}\n#{report_note}"
 
     bug_story = PivotalTracker::Story.new
     bug_story.project_id = "1067990"
