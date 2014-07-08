@@ -184,5 +184,58 @@ class GitPivotalTrackerIntegration::Command::Base
     uploaded_story = new_story.create
 
   end
+  
+  def create_icebox_bug_story(args)
+      new_bug_story_title = nil
+      args.each do |arg|
+          new_bug_story_title = arg if arg[0] != "-"
+      end
+      while (new_bug_story_title.nil? || new_bug_story_title.empty?)
+          new_bug_story_title = ask("Please enter the title for this bug story")
+      end
+      icebox_stories = Array.new
+      @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
+      new_bug_story = PivotalTracker::Story.new
+      new_bug_story.project_id = @project.id
+      new_bug_story.story_type = "bug"
+      new_bug_story.current_state = "unscheduled"
+      new_bug_story.name = new_bug_story_title
+      
+      if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
+          icebox_first_story = icebox_stories.first
+          (new_bug_story.create).move(:before, icebox_first_story)
+          elsif args.any?{|arg| arg.include?("-bl")} && !(icebox_stories.empty? || icebox_stories.nil?)
+          icebox_last_story = icebox_stories.last
+          (new_bug_story.create).move(:after, icebox_last_story)
+          else
+          new_bug_story.create
+      end
+  end
+  
+  def create_backlog_bug_story(args)
+      new_bug_story_title = nil
+      args.each do |arg|
+          new_bug_story_title = arg if arg[0] != "-"
+      end
+      while (new_bug_story_title.nil? || new_bug_story_title.empty?)
+          new_bug_story_title = ask("Please enter the title for this bug story")
+      end
+      backlog_stories = Array.new
+      @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
+      new_bug_story = PivotalTracker::Story.new
+      new_bug_story.project_id = @project.id
+      new_bug_story.story_type = "bug"
+      new_bug_story.current_state = "unstarted"
+      new_bug_story.name = new_bug_story_title
+      if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
+          backlog_first_story = backlog_stories.first
+          (new_bug_story.create).move(:before, backlog_first_story)
+          elsif args.any?{|arg| arg.include?("-bl")} && !(backlog_stories.empty? || backlog_stories.nil?)
+          backlog_last_story = backlog_stories.last
+          (new_bug_story.create).move(:after, backlog_last_story) 
+          else
+          new_bug_story.create
+      end
+  end
 
 end
