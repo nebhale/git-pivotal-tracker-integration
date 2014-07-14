@@ -28,7 +28,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
     
     branch_status_check = GitPivotalTrackerIntegration::Util::Shell.exec "git status -s"
@@ -40,7 +40,11 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("project:#{@project}")
     $LOG.debug("story:#{@configuration.story(@project)}")
     memm =  PivotalTracker::Membership.all(@project)
-    self.commit_new_build
+    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
+		self.commit_new_build
+        else
+		self.commit_new_build_non_ios
+	end
     time_spent = ""
     while 1
       time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
@@ -80,4 +84,20 @@ def commit_new_build
   # Create a new build commit, push to develop
   GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
 end
+
+def commit_new_build_non_ios
+    # Update version and build numbers
+    build_number = Time.now.utc.strftime("%y%m%d-%H%M")
+    puts "build_number:#{build_number}"
+    
+    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop
+    puts "working_directory:#{working_directory}*"
+    
+    # cd back to the working_directory
+    Dir.chdir(working_directory)
+    
+    # Create a new build commit, push to develop
+    GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
+end
+
 end

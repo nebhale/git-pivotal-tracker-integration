@@ -36,7 +36,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   def run(args)
     my_projects = PivotalTracker::Project.all
     filter = args[0]
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
     self.check_branch
     story = nil
     if (!args.nil? && args.any?{|arg| arg.include?("-n")})
@@ -53,7 +53,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     development_branch_name = development_branch_name story
     GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
     @configuration.story = story
-    GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), 'prepare-commit-msg.sh')
+    GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), !OS.windows? ? 'prepare-commit-msg.sh' : 'prepare-commit-msg-win.sh' )
 
     start_on_tracker story
   end
