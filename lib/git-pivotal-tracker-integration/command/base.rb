@@ -19,6 +19,7 @@ require 'git-pivotal-tracker-integration/util/git'
 require 'pivotal-tracker'
 require 'parseconfig'
 require 'logger'
+require 'os'
 
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality
@@ -48,6 +49,15 @@ class GitPivotalTrackerIntegration::Command::Base
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
+    
+    @platform = @configuration.pconfig["platform"]["platform-name"].downcase
+    
+    while @platform.empty? || @platform.nil?
+    	@platform = ask("\nAre you currently working on IOS platform?(y/n)")
+    end
+    while !["y","n","ios","non-ios"].include?(@platform.downcase)
+    	@platform = ask("\nInvalid entry...\nAre you currently working on IOS platform?(y/n)")
+    end
     
     my_projects = PivotalTracker::Project.all
     my_all_projects_ids = Array.new

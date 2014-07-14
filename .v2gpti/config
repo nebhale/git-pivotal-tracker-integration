@@ -9,3 +9,6 @@ project-manager-email =
 
 [toggl]
 project-id = 4917786
+
+[platform]
+platform-name = ios
