@@ -11,4 +11,4 @@ project-manager-email =
 project-id = 4917786
 
 [platform]
-platform-name = ios
+platform-name = non-ios
