@@ -247,5 +247,94 @@ class GitPivotalTrackerIntegration::Command::Base
           new_bug_story.create
       end
   end
+  
+  def create_icebox_feature_story(args)
+      new_feature_story_title = nil
+      new_feature_story_points = nil
+      args.each do |arg|
+          new_feature_story_title = arg if arg[0] != "-"
+      end
+      while (new_feature_story_title.nil? || new_feature_story_title.empty?)
+          new_feature_story_title = ask("\nPlease enter the title for this feature story")
+      end
+      icebox_stories = Array.new
+      @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
+      new_feature_story = PivotalTracker::Story.new
+      new_feature_story.project_id = @project.id
+      new_feature_story.story_type = "feature"
+      new_feature_story.current_state = "unscheduled"
+      new_feature_story.name = new_feature_story_title
+      
+      args.each do |arg|
+          new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
+      end
+      while (new_feature_story_points.nil? || new_feature_story_points.empty?)
+          new_feature_story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
+      end
+      while (!["0","1","2","3","n"].include?(new_feature_story_points.downcase))
+          new_feature_story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
+      end
+      if new_feature_story_points.downcase == "n"
+          new_feature_story.estimate = -1
+          else
+          new_feature_story.estimate = new_feature_story_points
+      end
+      
+      
+      if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
+          icebox_first_story = icebox_stories.first
+          (new_feature_story.create).move(:before, icebox_first_story)
+          elsif args.any?{|arg| arg.include?("-bl")} && !(icebox_stories.empty? || icebox_stories.nil?)
+          icebox_last_story = icebox_stories.last
+          (new_feature_story.create).move(:after, icebox_last_story)
+          else
+          icebox_first_story = icebox_stories.first
+          (new_feature_story.create).move(:before, icebox_first_story)
+      end
+  end
+  
+  def create_backlog_feature_story(args)
+      new_feature_story_title = nil
+      new_feature_story_points = nil
+      args.each do |arg|
+          new_feature_story_title = arg if arg[0] != "-"
+      end
+      while (new_feature_story_title.nil? || new_feature_story_title.empty?)
+          new_feature_story_title = ask("\nPlease enter the title for this feature story")
+      end
+      backlog_stories = Array.new
+      @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
+      new_feature_story = PivotalTracker::Story.new
+      new_feature_story.project_id = @project.id
+      new_feature_story.story_type = "feature"
+      new_feature_story.current_state = "unstarted"
+      new_feature_story.name = new_feature_story_title
+      
+      args.each do |arg|
+          new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
+      end
+      while (new_feature_story_points.nil? || new_feature_story_points.empty?)
+          new_feature_story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
+      end
+      while (!["0","1","2","3","n"].include?(new_feature_story_points.downcase))
+          new_feature_story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
+      end
+      if new_feature_story_points.downcase == "n"
+          new_feature_story.estimate = -1
+          else
+          new_feature_story.estimate = new_feature_story_points
+      end
+      
+      if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
+          backlog_first_story = backlog_stories.first
+          (new_feature_story.create).move(:before, backlog_first_story)
+          elsif args.any?{|arg| arg.include?("-bl")} && !(backlog_stories.empty? || backlog_stories.nil?)
+          backlog_last_story = backlog_stories.last
+          (new_feature_story.create).move(:after, backlog_last_story)
+          else
+          backlog_first_story = backlog_stories.first
+          (new_feature_story.create).move(:before, backlog_first_story)
+      end
+  end
 
 end
