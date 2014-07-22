@@ -31,7 +31,7 @@ class GitPivotalTrackerIntegration::Command::Newbug < GitPivotalTrackerIntegrati
   # * If there are no arguments passed then it creates a bug story in icebox top of the list if you wish to create
   def run(args)
     my_projects = PivotalTracker::Project.all
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = nil
     if (!args.empty? && args.any?{|arg| arg.include?("-i")})
       story = self.create_icebox_bug_story(args)

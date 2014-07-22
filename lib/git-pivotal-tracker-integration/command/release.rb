@@ -34,7 +34,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
     $LOG.debug("story:#{story.name}")
@@ -42,7 +42,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
 
     # checkout QA branch
-    # Update QA from origin    
+    # Update QA from origin
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
@@ -65,12 +65,12 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
     working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
     puts "working_directory:#{working_directory}*"
-    
+
     # cd to the project_directory
     Dir.chdir(project_directory)
 
     # set project number in project file
-    GitPivotalTrackerIntegration::Util::Shell.exec "pwd"   
+    pwd
     puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
 
     # cd back to the working_directory
@@ -78,7 +78,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
 
     # Create a new build commit, push to QA, checkout develop
     puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
-    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
 
     s_labels_string = story.labels

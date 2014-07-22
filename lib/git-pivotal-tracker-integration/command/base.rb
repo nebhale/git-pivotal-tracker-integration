@@ -49,16 +49,16 @@ class GitPivotalTrackerIntegration::Command::Base
     PivotalTracker::Client.use_ssl = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
-    
+
     @platform = @configuration.pconfig["platform"]["platform-name"].downcase
-    
+
     while @platform.empty? || @platform.nil?
     	@platform = ask("\nAre you currently working on IOS platform?(y/n)")
     end
     while !["y","n","ios","non-ios"].include?(@platform.downcase)
     	@platform = ask("\nInvalid entry...\nAre you currently working on IOS platform?(y/n)")
     end
-    
+
     my_projects = PivotalTracker::Project.all
     my_all_projects_ids = Array.new
     my_projects.collect{|project| my_all_projects_ids.push project.id.to_i }
@@ -85,8 +85,8 @@ class GitPivotalTrackerIntegration::Command::Base
         $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
     else
         $LOG.fatal("Out of date")
-        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"  
-        
+        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"
+
     end
   end
 
@@ -194,7 +194,7 @@ class GitPivotalTrackerIntegration::Command::Base
     uploaded_story = new_story.create
 
   end
-  
+
   def create_icebox_bug_story(args)
       new_bug_story_title = nil
       args.each do |arg|
@@ -210,7 +210,7 @@ class GitPivotalTrackerIntegration::Command::Base
       new_bug_story.story_type = "bug"
       new_bug_story.current_state = "unscheduled"
       new_bug_story.name = new_bug_story_title
-      
+
       if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
           icebox_first_story = icebox_stories.first
           (new_bug_story.create).move(:before, icebox_first_story)
@@ -221,7 +221,7 @@ class GitPivotalTrackerIntegration::Command::Base
           new_bug_story.create
       end
   end
-  
+
   def create_backlog_bug_story(args)
       new_bug_story_title = nil
       args.each do |arg|
@@ -242,12 +242,12 @@ class GitPivotalTrackerIntegration::Command::Base
           (new_bug_story.create).move(:before, backlog_first_story)
           elsif args.any?{|arg| arg.include?("-bl")} && !(backlog_stories.empty? || backlog_stories.nil?)
           backlog_last_story = backlog_stories.last
-          (new_bug_story.create).move(:after, backlog_last_story) 
+          (new_bug_story.create).move(:after, backlog_last_story)
           else
           new_bug_story.create
       end
   end
-  
+
   def create_icebox_feature_story(args)
       new_feature_story_title = nil
       new_feature_story_points = nil
@@ -264,7 +264,7 @@ class GitPivotalTrackerIntegration::Command::Base
       new_feature_story.story_type = "feature"
       new_feature_story.current_state = "unscheduled"
       new_feature_story.name = new_feature_story_title
-      
+
       args.each do |arg|
           new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
       end
@@ -279,8 +279,8 @@ class GitPivotalTrackerIntegration::Command::Base
           else
           new_feature_story.estimate = new_feature_story_points
       end
-      
-      
+
+
       if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
           icebox_first_story = icebox_stories.first
           (new_feature_story.create).move(:before, icebox_first_story)
@@ -292,7 +292,7 @@ class GitPivotalTrackerIntegration::Command::Base
           (new_feature_story.create).move(:before, icebox_first_story)
       end
   end
-  
+
   def create_backlog_feature_story(args)
       new_feature_story_title = nil
       new_feature_story_points = nil
@@ -309,7 +309,7 @@ class GitPivotalTrackerIntegration::Command::Base
       new_feature_story.story_type = "feature"
       new_feature_story.current_state = "unstarted"
       new_feature_story.name = new_feature_story_title
-      
+
       args.each do |arg|
           new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
       end
@@ -324,7 +324,7 @@ class GitPivotalTrackerIntegration::Command::Base
           else
           new_feature_story.estimate = new_feature_story_points
       end
-      
+
       if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
           backlog_first_story = backlog_stories.first
           (new_feature_story.create).move(:before, backlog_first_story)
@@ -335,6 +335,13 @@ class GitPivotalTrackerIntegration::Command::Base
           backlog_first_story = backlog_stories.first
           (new_feature_story.create).move(:before, backlog_first_story)
       end
+  end
+
+  private
+
+  def pwd
+    command = OS.windows? ? 'echo %cd%': 'pwd'
+    GitPivotalTrackerIntegration::Util::Shell.exec(command).chop
   end
 
 end

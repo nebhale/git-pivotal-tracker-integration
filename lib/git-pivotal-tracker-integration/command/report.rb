@@ -28,7 +28,7 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
     owned_by = "Jeff Wolski" # hard coded to Jeff Wolski for now
 
 
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     bug_title = nil
     if args.length == 1
       bug_title = args[0]
@@ -43,19 +43,20 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
       report_note = ask("Description of bug:")
     end
 
-    current_user = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.name").chomp
-    bug_title = "User Reported - #{current_user} - #{bug_title}"
-    current_user_email = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.email").chomp
-    bug_description = "#{@project.name}\n#{current_user_email}\n#{report_note}"
+    current_user        = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.name").chomp
+    bug_title           = "User Reported - #{current_user} - #{bug_title}"
+    current_user_email  = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.email").chomp
+    bug_description     = "#{@project.name}\n#{current_user_email}\n#{report_note}"
 
     bug_story = PivotalTracker::Story.new
-    bug_story.project_id = "1067990"
-    bug_story.owned_by = owned_by
-    bug_story.story_type = "bug"
-    bug_story.name = bug_title
-    bug_story.description = bug_description
-    bug_story.labels = "userreported"
-    uploaded_story = bug_story.create
+    bug_story.project_id    = "1067990"
+    bug_story.owned_by      = owned_by
+    bug_story.story_type    = "bug"
+    bug_story.name          = bug_title
+    bug_story.description   = bug_description
+    bug_story.labels        = "userreported"
+    uploaded_story          = bug_story.create
+
     uploaded_story.upload_attachment(self.logger_filename)
   end
 
