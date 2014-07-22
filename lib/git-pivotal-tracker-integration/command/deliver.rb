@@ -34,7 +34,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec 'pwd').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     self.check_branch
     story = GitPivotalTrackerIntegration::Util::Story.select_release @project
     $LOG.debug("story:#{story.name}")
@@ -64,14 +64,14 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     puts "storyNAME:#{story.name}"
     puts "build_number:#{build_number}"
     project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
-    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
+    working_directory = pwd
     puts "working_directory:#{working_directory}*"
-    
+
     # cd to the project_directory
     Dir.chdir(project_directory)
 
     # set build number and project number in project file
-    GitPivotalTrackerIntegration::Util::Shell.exec "pwd"   
+    pwd
     puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
     puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
 
@@ -80,7 +80,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
     # Create a new build commit, push to QA, checkout develop
     GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number} for delivery to QA", story)
-    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push" 
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
 
     i_stories = included_stories @project, story
@@ -127,13 +127,13 @@ def deliver_stories(stories, build_story)
     else
       s_labels_string = build_story.name
     end
-    
+
     # puts "labels:#{s_labels_string}"
     story.update(:labels => s_labels_string)
     if (story.story_type == "feature") || (story.story_type == "bug")
       story.update(:current_state => "delivered")
-    elsif (story.story_type == "chore") 
-      story.update(:current_state => "accepted")      
+    elsif (story.story_type == "chore")
+      story.update(:current_state => "accepted")
     end
   }
 end
@@ -145,7 +145,7 @@ end
       :limit => 1000,
       :story_type => CANDIDATE_TYPES
     }
-    
+
 
     candidates = project.stories.all criteria
 
@@ -155,7 +155,7 @@ end
     puts "Included stories:\n"
     candidates.each {|val|
         val_is_valid = true
-        if (val.id == build_story.id) 
+        if (val.id == build_story.id)
           break
         end
         if (val.current_state != "finished")
@@ -169,7 +169,7 @@ end
            estimated_candidates << val
            puts "#{val.id}"
 
-        end 
+        end
     }
     candidates = estimated_candidates
   end

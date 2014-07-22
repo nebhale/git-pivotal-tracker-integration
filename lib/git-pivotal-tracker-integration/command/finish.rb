@@ -28,9 +28,9 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
-    
+
     branch_status_check = GitPivotalTrackerIntegration::Util::Shell.exec "git status -s"
     abort "\n\nThere are some unstaged changes in your current branch. Please do execute the below commands first and then try with git finish \n git add . \n git commit -m '<your-commit-message>'" unless branch_status_check.empty?
 
@@ -67,14 +67,14 @@ def commit_new_build
   if project_directory.nil?
     return
   end
-  working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
+  working_directory = pwd
   puts "working_directory:#{working_directory}*"
 
   # cd to the project_directory
   Dir.chdir(project_directory)
 
   # set build number and project number in project file
-  GitPivotalTrackerIntegration::Util::Shell.exec "pwd"
+  pwd
   puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
   puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
 
@@ -89,13 +89,13 @@ def commit_new_build_non_ios
     # Update version and build numbers
     build_number = Time.now.utc.strftime("%y%m%d-%H%M")
     puts "build_number:#{build_number}"
-    
-    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop
+
+    working_directory = pwd
     puts "working_directory:#{working_directory}*"
-    
+
     # cd back to the working_directory
     Dir.chdir(working_directory)
-    
+
     # Create a new build commit, push to develop
     GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
 end
