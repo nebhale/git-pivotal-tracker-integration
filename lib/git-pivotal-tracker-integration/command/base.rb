@@ -65,11 +65,15 @@ class GitPivotalTrackerIntegration::Command::Base
     current_project_id = @configuration.project_id.to_i
     abort "You are not authorized for current project" unless my_all_projects_ids.include?(current_project_id)
   end
+
   def finish_toggle(configuration, time_spent)
     current_story = @configuration.story(@project)
     @toggl.create_task(parameters(configuration, time_spent))
     @toggl.create_time_entry(parameters(configuration, time_spent))
+  rescue TogglException => te
+    puts te.message
   end
+
   def start_logging
     $LOG = Logger.new("#{logger_filename}", 'weekly')
   end
