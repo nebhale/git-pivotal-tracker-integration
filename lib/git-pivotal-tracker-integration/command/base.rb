@@ -63,7 +63,10 @@ class GitPivotalTrackerIntegration::Command::Base
     my_all_projects_ids = Array.new
     my_projects.collect{|project| my_all_projects_ids.push project.id.to_i }
     current_project_id = @configuration.project_id.to_i
-    abort "You are not authorized for current project" unless my_all_projects_ids.include?(current_project_id)
+    project_manager_name = @configuration.pconfig["project"]["project-manager"]
+    project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
+    project_name = @configuration.pconfig["project"]["project-name"]
+    abort "This project requires access to the Pivotal Tracker project [#{project_name} - #{current_project_id}]. Please speak with project manager [#{project_manager_name} - #{project_manager_email}] and ask him to add you to the project in Pivotal Tracker." unless my_all_projects_ids.include?(current_project_id)
   end
 
   def finish_toggle(configuration, time_spent)
