@@ -392,7 +392,7 @@ class Toggl
     res = JSON.parse(full_res.env[:body])
     res.is_a?(Array) || res['data'].nil? ? res : res['data']
   rescue Faraday::ClientError => e
-    raise TogglException.new "GET #{resource} Failed"
+    raise TogglException, "GET #{resource} Failed"
   end
 
   def post(resource, data)
@@ -406,7 +406,7 @@ class Toggl
       puts(full_res.env[:body])
     end
   rescue Faraday::ClientError => e
-    raise TogglException.new "POST #{resource} / #{data} Failed"
+    raise TogglException, "POST #{resource} / #{data} Failed"
   end
 
   def put(resource, data)
@@ -416,7 +416,7 @@ class Toggl
     res = JSON.parse(full_res.env[:body])
     res['data'].nil? ? res : res['data']
   rescue Faraday::ClientError => e
-    raise TogglException.new "PUT #{resource} / #{data} Failed"
+    raise TogglException, "PUT #{resource} / #{data} Failed"
   end
 
   def delete(resource)
@@ -425,7 +425,7 @@ class Toggl
     # ap full_res.env if @debug
     (200 == full_res.env[:status]) ? "" : puts(full_res.env[:body])
   rescue Faraday::ClientError => e
-    raise TogglException.new "DELETE #{resource} Failed"
+    raise TogglException, "DELETE #{resource} Failed"
   end
 
 end
