@@ -8,13 +8,19 @@ require 'json'
 
 require 'awesome_print' # for debug output
 
+class TogglException < StandardError
+  def initialize(message)
+    @message = "[Toggl] #{message}"
+  end
+end
+
 class Toggl
   attr_accessor :conn, :debug
 
   def initialize(username=nil, password='api_token', debug=nil)
     self.debug_on(debug) if !debug.nil?
     if (password.to_s == 'api_token' && username.to_s == '')
-      toggl_api_file = self.toggl_file 
+      toggl_api_file = self.toggl_file
       username = IO.read(toggl_api_file)
 
     end
@@ -385,6 +391,8 @@ class Toggl
     # ap full_res.env if @debug
     res = JSON.parse(full_res.env[:body])
     res.is_a?(Array) || res['data'].nil? ? res : res['data']
+  rescue Faraday::ClientError => e
+    raise TogglException.new "GET #{resource} Failed"
   end
 
   def post(resource, data)
@@ -397,6 +405,8 @@ class Toggl
     else
       puts(full_res.env[:body])
     end
+  rescue Faraday::ClientError => e
+    raise TogglException.new "POST #{resource} / #{data} Failed"
   end
 
   def put(resource, data)
@@ -405,6 +415,8 @@ class Toggl
     # ap full_res.env if @debug
     res = JSON.parse(full_res.env[:body])
     res['data'].nil? ? res : res['data']
+  rescue Faraday::ClientError => e
+    raise TogglException.new "PUT #{resource} / #{data} Failed"
   end
 
   def delete(resource)
@@ -412,6 +424,8 @@ class Toggl
     full_res = self.conn.delete(resource)
     # ap full_res.env if @debug
     (200 == full_res.env[:status]) ? "" : puts(full_res.env[:body])
+  rescue Faraday::ClientError => e
+    raise TogglException.new "DELETE #{resource} Failed"
   end
 
 end
