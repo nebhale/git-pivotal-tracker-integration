@@ -209,3 +209,10 @@ class GitPivotalTrackerIntegration::Util::Story
     uploaded_story = new_story.create
   end
 end
+
+#patch to highline gem
+HighLine.class_eval do
+    def explain_error( error )
+    abort "Thank you for using v2gpti"
+    end
+end
