@@ -113,7 +113,7 @@ class GitPivotalTrackerIntegration::Util::Story
   def self.find_story(project, type, limit)
     if (type == "b" || type == "v")
       release_type = type
-      type = "release"      
+      type = "release"
     end
     criteria = {
       :current_state => CANDIDATE_STATES,
@@ -131,16 +131,16 @@ class GitPivotalTrackerIntegration::Util::Story
 
     candidates.each {|val|
         val_is_valid = true
-        if (val.story_type == "feature" ) 
+        if (val.story_type == "feature" )
           # puts "#{val.story_type} #{val.name}.estimate:#{val.estimate} "
           if (val.estimate < 0)
-            # puts "#{val.estimate} < 0" 
-            val_is_valid = false 
+            # puts "#{val.estimate} < 0"
+            val_is_valid = false
           end
         elsif (val.story_type == "release")
           label_string = val.labels
           if label_string.nil?
-            label_string = "";            
+            label_string = "";
           end
           if (val.name[0] != release_type) || (label_string.include? val.name)
             val_is_valid = false
@@ -150,7 +150,7 @@ class GitPivotalTrackerIntegration::Util::Story
         if val_is_valid
           # puts "val_is_valid:#{val_is_valid}"
            estimated_candidates << val
-        end 
+        end
     }
     candidates = estimated_candidates
 
@@ -166,6 +166,7 @@ class GitPivotalTrackerIntegration::Util::Story
           name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
           menu.choice(name) { story }
         end
+
       end
 
       puts
@@ -183,7 +184,7 @@ class GitPivotalTrackerIntegration::Util::Story
       end
     end
 
-    
+
 
     story
   end
