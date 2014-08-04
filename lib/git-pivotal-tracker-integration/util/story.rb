@@ -166,7 +166,10 @@ class GitPivotalTrackerIntegration::Util::Story
           name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
           menu.choice(name) { story }
         end
-
+        menu.choice('Quit') do
+          say "Thank you for using v2gpti"
+          exit 0
+        end
       end
 
       puts
@@ -209,11 +212,4 @@ class GitPivotalTrackerIntegration::Util::Story
 
     uploaded_story = new_story.create
   end
-end
-
-#patch to highline gem
-HighLine.class_eval do
-    def explain_error( error )
-    abort "Thank you for using v2gpti"
-    end
 end

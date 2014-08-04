@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby -U
+# v2gpti
+# Copyright (c) 2014 V2 Solutions Inc.
+# All Rights Reserved
+
+
+require 'git-pivotal-tracker-integration/command/deliver'
+
+GitPivotalTrackerIntegration::Command::Deliver.new().run ARGV[0]
