@@ -45,12 +45,12 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     # Update QA from origin
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
-    puts GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
 
     # checkout master branch
     # Merge QA into master
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout master"
-       puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
     if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs QA")
       puts "Merged 'QA' in to 'master'"
     else
@@ -58,23 +58,27 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     end
 
     # Update version and build numbers
-    version_number = story.name.dup
+    version_number    = story.name.dup
     version_number[0] = ""
+    working_directory = pwd
+
     puts "storyNAME:#{story.name}"
     puts "version_number:#{version_number}"
-    project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
-    working_directory = (GitPivotalTrackerIntegration::Util::Shell.exec "pwd").chop
     puts "working_directory:#{working_directory}*"
 
-    # cd to the project_directory
-    Dir.chdir(project_directory)
+    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
+      project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
 
-    # set project number in project file
-    pwd
-    puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
+      # cd to the project_directory
+      Dir.chdir(project_directory)
 
-    # cd back to the working_directory
-    Dir.chdir(working_directory)
+      # set project number in project file
+      pwd
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
+
+      # cd back to the working_directory
+      Dir.chdir(working_directory)
+    end
 
     # Create a new build commit, push to QA, checkout develop
     puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)

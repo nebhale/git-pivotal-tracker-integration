@@ -36,7 +36,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   def run(args)
     my_projects = PivotalTracker::Project.all
     filter = args[0]
-    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{(GitPivotalTrackerIntegration::Util::Shell.exec !OS.windows? ? 'pwd' : 'echo %cd%').chop} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
+    $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
     self.check_branch
     story = nil
     if (!args.nil? && args.any?{|arg| arg.include?("-n")})
@@ -63,7 +63,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
       current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
       # suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
       suggested_branch = "develop"
-      
+
       if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
           $LOG.warn("Currently checked out branch is '#{current_branch}'.")
           should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")

@@ -39,12 +39,10 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("configuration:#{@configuration}")
     $LOG.debug("project:#{@project}")
     $LOG.debug("story:#{@configuration.story(@project)}")
+
     memm =  PivotalTracker::Membership.all(@project)
-    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
-		self.commit_new_build
-        else
-		self.commit_new_build_non_ios
-	end
+    self.commit_new_build
+
     time_spent = ""
     while 1
       time_spent = ask("How much time did you spend on this task? (example: 15m, 2.5h)")
@@ -52,52 +50,41 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
         break
       end
     end
+
     finish_toggle(@configuration, time_spent)
+
     GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
     GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
   end
 
 
-def commit_new_build
-  # Update version and build numbers
-  build_number = Time.now.utc.strftime("%y%m%d-%H%M")
-
-  puts "build_number:#{build_number}"
-  project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
-  if project_directory.nil?
-    return
-  end
-  working_directory = pwd
-  puts "working_directory:#{working_directory}*"
-
-  # cd to the project_directory
-  Dir.chdir(project_directory)
-
-  # set build number and project number in project file
-  pwd
-  puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
-  puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
-
-  # cd back to the working_directory
-  Dir.chdir(working_directory)
-
-  # Create a new build commit, push to develop
-  GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
-end
-
-def commit_new_build_non_ios
+  def commit_new_build
     # Update version and build numbers
-    build_number = Time.now.utc.strftime("%y%m%d-%H%M")
-    puts "build_number:#{build_number}"
-
+    build_number      = Time.now.utc.strftime("%y%m%d-%H%M")
     working_directory = pwd
+
+    puts "build_number:#{build_number}"
     puts "working_directory:#{working_directory}*"
 
-    # cd back to the working_directory
-    Dir.chdir(working_directory)
+    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
+      project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+      return if project_directory.nil?
+
+      # cd to the project_directory
+      Dir.chdir(project_directory)
+
+      # set build number and project number in project file
+      pwd
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
+
+      # cd back to the working_directory
+      Dir.chdir(working_directory)
+    end
 
     # Create a new build commit, push to develop
     GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
-end
+  end
+
 
 end

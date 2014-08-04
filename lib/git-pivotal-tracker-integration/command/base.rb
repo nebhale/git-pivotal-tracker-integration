@@ -45,8 +45,8 @@ class GitPivotalTrackerIntegration::Command::Base
     @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
     @toggl = Toggl.new
 
-    PivotalTracker::Client.token = @configuration.api_token
-    PivotalTracker::Client.use_ssl = true
+    PivotalTracker::Client.token    = @configuration.api_token
+    PivotalTracker::Client.use_ssl  = true
 
     @project = PivotalTracker::Project.find @configuration.project_id
 
@@ -59,13 +59,13 @@ class GitPivotalTrackerIntegration::Command::Base
     	@platform = ask("\nInvalid entry...\nAre you currently working on IOS platform?(y/n)")
     end
 
-    my_projects = PivotalTracker::Project.all
+    my_projects         = PivotalTracker::Project.all
     my_all_projects_ids = Array.new
     my_projects.collect{|project| my_all_projects_ids.push project.id.to_i }
-    current_project_id = @configuration.project_id.to_i
-    project_manager_name = @configuration.pconfig["project"]["project-manager"]
+    current_project_id    = @configuration.project_id.to_i
+    project_manager_name  = @configuration.pconfig["project"]["project-manager"]
     project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
-    project_name = @configuration.pconfig["project"]["project-name"]
+    project_name          = @configuration.pconfig["project"]["project-name"]
     abort "This project requires access to the Pivotal Tracker project [#{project_name} - #{current_project_id}]. Please speak with project manager [#{project_manager_name} - #{project_manager_email}] and ask him to add you to the project in Pivotal Tracker." unless my_all_projects_ids.include?(current_project_id)
   end
 
