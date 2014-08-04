@@ -224,7 +224,7 @@ class GitPivotalTrackerIntegration::Util::Git
     common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
 
     if root_tip != common_ancestor
-      abort 'FAIL'
+      abort "\nPlease merge #{root_branch} to #{development_branch} and resolve any conflicts if any. Run 'git merge #{root_branch}'"
     end
 
     puts 'OK'
