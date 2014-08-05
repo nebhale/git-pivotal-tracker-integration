@@ -198,9 +198,10 @@ class GitPivotalTrackerIntegration::Util::Story
     }
 
     candidates = project.stories.all criteria
-    candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include?x.name))}
+    candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include? x.name))}
+    candidates.sort! {|x,y| y.name <=> x.name }
 
-    candidates[-1]
+    candidates.first
   end
 
   def self.create_new_release (project, next_release_number)
