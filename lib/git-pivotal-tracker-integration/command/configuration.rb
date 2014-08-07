@@ -87,6 +87,23 @@ class GitPivotalTrackerIntegration::Command::Configuration
 
     project_id
   end
+  
+  def platform_name
+    platform_name = GitPivotalTrackerIntegration::Util::Git.get_config KEY_PLATFORM_NAME, :inherited
+
+    if platform_name.empty?
+		platforms = ["ios", "non-ios"]
+		platform_name = choose do |menu|
+			menu.prompt = 'Please choose your project platform:'
+			menu.choices(*platforms) do |chosen|
+				chosen
+			end
+		end
+		GitPivotalTrackerIntegration::Util::Git.set_config KEY_PLATFORM_NAME, platform_name, :local
+    end
+    puts "Your project platfrom is:#{platform_name}"
+    platform_name
+  end
 
   # Returns the story associated with the current development branch
   #
@@ -112,6 +129,8 @@ class GitPivotalTrackerIntegration::Command::Configuration
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
 
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
+  
+  KEY_PLATFORM_NAME = 'platform.platform-name'.freeze
 
   KEY_STORY_ID = 'pivotal-story-id'.freeze
 

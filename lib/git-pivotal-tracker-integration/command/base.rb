@@ -50,14 +50,7 @@ class GitPivotalTrackerIntegration::Command::Base
 
     @project = PivotalTracker::Project.find @configuration.project_id
 
-    @platform = @configuration.pconfig["platform"]["platform-name"].downcase
-
-    while @platform.empty? || @platform.nil?
-    	@platform = ask("\nAre you currently working on IOS platform?(y/n)")
-    end
-    while !["y","n","ios","non-ios"].include?(@platform.downcase)
-    	@platform = ask("\nInvalid entry...\nAre you currently working on IOS platform?(y/n)")
-    end
+    @platform = @configuration.platform_name
 
     my_projects         = PivotalTracker::Project.all
     my_all_projects_ids = Array.new
