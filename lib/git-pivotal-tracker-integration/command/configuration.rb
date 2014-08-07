@@ -101,7 +101,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
 		end
 		GitPivotalTrackerIntegration::Util::Git.set_config KEY_PLATFORM_NAME, platform_name, :local
     end
-    puts "Your project platfrom is:#{platform_name}"
+    puts "Your project platform is:#{platform_name}"
     platform_name
   end
 
