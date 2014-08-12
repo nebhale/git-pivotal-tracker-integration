@@ -42,14 +42,13 @@ class GitPivotalTrackerIntegration::Command::Base
     end
 
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
-    @configuration = GitPivotalTrackerIntegration::Command::Configuration.new
-    @toggl = Toggl.new
+    @configuration   = GitPivotalTrackerIntegration::Command::Configuration.new
+    @toggl           = Toggl.new
 
     PivotalTracker::Client.token    = @configuration.api_token
     PivotalTracker::Client.use_ssl  = true
 
-    @project = PivotalTracker::Project.find @configuration.project_id
-
+    @project  = PivotalTracker::Project.find @configuration.project_id
     @platform = @configuration.platform_name
 
     my_projects         = PivotalTracker::Project.all
@@ -64,10 +63,21 @@ class GitPivotalTrackerIntegration::Command::Base
 
   def finish_toggle(configuration, time_spent)
     current_story = @configuration.story(@project)
-    @toggl.create_task(parameters(configuration, time_spent))
-    @toggl.create_time_entry(parameters(configuration, time_spent))
-  rescue TogglException => te
-    puts te.message
+
+    # If a story gets rejected and the developer works on it, then the create task might fail.
+    # The task would be already created when he first worked on the story
+    begin
+      @toggl.create_task(parameters(configuration, time_spent))
+    rescue TogglException => te
+      puts ""
+    end
+
+    #If for some reason time entry cannot be done, then catch exception and continue.
+    begin
+      @toggl.create_time_entry(parameters(configuration, time_spent))
+    rescue TogglException => te
+      puts "Unable to log the time."
+    end
   end
 
   def start_logging
@@ -79,7 +89,7 @@ class GitPivotalTrackerIntegration::Command::Base
   end
 
   def check_version
-    gem_latest_version = (GitPivotalTrackerIntegration::Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
+    gem_latest_version    = (GitPivotalTrackerIntegration::Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
     gem_installed_version = Gem.loaded_specs["v2gpti"].version.version
     if (gem_installed_version == gem_latest_version)
         $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
@@ -88,6 +98,8 @@ class GitPivotalTrackerIntegration::Command::Base
         abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"
 
     end
+  rescue StandardError => se
+    puts ""
   end
 
   # The main entry point to the command's execution
@@ -113,19 +125,19 @@ class GitPivotalTrackerIntegration::Command::Base
       "d" => (60 * 60 * 8) # a work day is 8 hours
   }
   def parameters(configuration, time_spent)
-    current_story = configuration.story(@project)
-    params = Hash.new
-    params[:name] = "#{current_story.id}" + " - " + "#{current_story.name}"
+    current_story              = configuration.story(@project)
+    params                     = Hash.new
+    params[:name]              = "#{current_story.id}" + " - " + "#{current_story.name}"
     params[:estimated_seconds] = estimated_seconds current_story
-    params[:pid] = configuration.toggl_project_id
-    params[:uid] = @toggl.me["id"]
-    params[:tags] = [current_story.story_type]
-    params[:active] = false
-    params[:description] = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
-    params[:created_with] = "v2gpti"
-    params[:duration] = seconds_spent(time_spent)
-    params[:start] = (Time.now - params[:duration]).iso8601
-    task = @toggl.get_project_task_with_name(configuration.toggl_project_id, "#{current_story.id}")
+    params[:pid]               = configuration.toggl_project_id
+    params[:uid]               = @toggl.me["id"]
+    params[:tags]              = [current_story.story_type]
+    params[:active]            = false
+    params[:description]       = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
+    params[:created_with]      = "v2gpti"
+    params[:duration]          = seconds_spent(time_spent)
+    params[:start]             = (Time.now - params[:duration]).iso8601
+    task                       = @toggl.get_project_task_with_name(configuration.toggl_project_id, "#{current_story.id}")
      if !task.nil?
        params[:tid] = task['id']
      end
@@ -182,11 +194,11 @@ class GitPivotalTrackerIntegration::Command::Base
       end
     end
 
-    new_story = PivotalTracker::Story.new
-    new_story.project_id = @project.id
-    new_story.story_type = new_story_type
+    new_story               = PivotalTracker::Story.new
+    new_story.project_id    = @project.id
+    new_story.story_type    = new_story_type
     new_story.current_state = "unstarted"
-    new_story.name = new_story_title
+    new_story.name          = new_story_title
     if new_story_type == "feature"
       new_story.estimate = new_story_estimate
     end
@@ -205,11 +217,11 @@ class GitPivotalTrackerIntegration::Command::Base
       end
       icebox_stories = Array.new
       @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
-      new_bug_story = PivotalTracker::Story.new
-      new_bug_story.project_id = @project.id
-      new_bug_story.story_type = "bug"
+      new_bug_story               = PivotalTracker::Story.new
+      new_bug_story.project_id    = @project.id
+      new_bug_story.story_type    = "bug"
       new_bug_story.current_state = "unscheduled"
-      new_bug_story.name = new_bug_story_title
+      new_bug_story.name          = new_bug_story_title
 
       if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
           icebox_first_story = icebox_stories.first
@@ -232,11 +244,11 @@ class GitPivotalTrackerIntegration::Command::Base
       end
       backlog_stories = Array.new
       @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
-      new_bug_story = PivotalTracker::Story.new
-      new_bug_story.project_id = @project.id
-      new_bug_story.story_type = "bug"
+      new_bug_story               = PivotalTracker::Story.new
+      new_bug_story.project_id    = @project.id
+      new_bug_story.story_type    = "bug"
       new_bug_story.current_state = "unstarted"
-      new_bug_story.name = new_bug_story_title
+      new_bug_story.name          = new_bug_story_title
       if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
           backlog_first_story = backlog_stories.first
           (new_bug_story.create).move(:before, backlog_first_story)
@@ -259,11 +271,11 @@ class GitPivotalTrackerIntegration::Command::Base
       end
       icebox_stories = Array.new
       @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
-      new_feature_story = PivotalTracker::Story.new
-      new_feature_story.project_id = @project.id
-      new_feature_story.story_type = "feature"
+      new_feature_story               = PivotalTracker::Story.new
+      new_feature_story.project_id    = @project.id
+      new_feature_story.story_type    = "feature"
       new_feature_story.current_state = "unscheduled"
-      new_feature_story.name = new_feature_story_title
+      new_feature_story.name          = new_feature_story_title
 
       args.each do |arg|
           new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
@@ -304,11 +316,11 @@ class GitPivotalTrackerIntegration::Command::Base
       end
       backlog_stories = Array.new
       @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
-      new_feature_story = PivotalTracker::Story.new
-      new_feature_story.project_id = @project.id
-      new_feature_story.story_type = "feature"
+      new_feature_story               = PivotalTracker::Story.new
+      new_feature_story.project_id    = @project.id
+      new_feature_story.story_type    = "feature"
       new_feature_story.current_state = "unstarted"
-      new_feature_story.name = new_feature_story_title
+      new_feature_story.name          = new_feature_story_title
 
       args.each do |arg|
           new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
