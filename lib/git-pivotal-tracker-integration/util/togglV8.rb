@@ -398,7 +398,7 @@ class Toggl
   def post(resource, data)
     puts "POST #{resource} / #{data}" if @debug
     full_res = self.conn.post(resource, JSON.generate(data))
-    ap full_res.env if @debug
+    #ap full_res.env if @debug
     if (200 == full_res.env[:status]) then
       res = JSON.parse(full_res.env[:body])
       res['data'].nil? ? res : res['data']
@@ -413,8 +413,12 @@ class Toggl
     puts "PUT #{resource} / #{data}" if @debug
     full_res = self.conn.put(resource, JSON.generate(data))
     # ap full_res.env if @debug
-    res = JSON.parse(full_res.env[:body])
-    res['data'].nil? ? res : res['data']
+    if (200 == full_res.env[:status]) then
+      res = JSON.parse(full_res.env[:body])
+      res['data'].nil? ? res : res['data']
+    else
+      puts(full_res.env[:body])
+    end
   rescue Faraday::ClientError => e
     raise TogglException, "PUT #{resource} / #{data} Failed"
   end
