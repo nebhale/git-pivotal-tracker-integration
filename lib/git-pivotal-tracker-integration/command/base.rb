@@ -64,12 +64,14 @@ class GitPivotalTrackerIntegration::Command::Base
   def finish_toggle(configuration, time_spent)
     current_story = @configuration.story(@project)
 
-    # If a story gets rejected and the developer works on it, then the create task might fail.
-    # The task would be already created when he first worked on the story
-    begin
-      @toggl.create_task(parameters(configuration, time_spent))
-    rescue TogglException => te
-      puts ""
+    # If a story gets rejected and the developer works on it, then we need to check if the task is already created or not.
+    params =  parameters(configuration, time_spent)
+    if params[:tid].nil?
+      begin
+        @toggl.create_task(parameters(params))
+      rescue TogglException => te
+        puts ""
+      end
     end
 
     #If for some reason time entry cannot be done, then catch exception and continue.
