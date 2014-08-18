@@ -358,4 +358,15 @@ class GitPivotalTrackerIntegration::Command::Base
     GitPivotalTrackerIntegration::Util::Shell.exec(command).chop
   end
 
+  def estimate_story(story)
+    story_points = nil
+    while (story_points.nil? || story_points.empty?)
+      story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this story.")
+    end
+    while (!["0","1","2","3"].include?(story_points))
+      story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this story.")
+    end
+    story.update(:estimate => story_points)
+  end
+
 end
