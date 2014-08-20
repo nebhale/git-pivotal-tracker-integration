@@ -154,7 +154,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     candidates.each do |val|
       val_is_valid = true
       if (val.id == build_story.id)
-        break
+        next
       end
       if (val.current_state != "finished")
         val_is_valid = false
@@ -206,6 +206,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
       last_release = stories[0]
       stories.shift
     end
+    abort "\nThere are no last release stories or finished stories to deliver" if last_release.nil?
     stories << release_story
     previous_story = last_release.dup
 
