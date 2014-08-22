@@ -68,7 +68,7 @@ class GitPivotalTrackerIntegration::Command::Base
     params =  parameters(configuration, time_spent)
     if params[:tid].nil?
       begin
-        @toggl.create_task(parameters(params))
+        @toggl.create_task(parameters(configuration, time_spent))
       rescue TogglException => te
         puts ""
       end
