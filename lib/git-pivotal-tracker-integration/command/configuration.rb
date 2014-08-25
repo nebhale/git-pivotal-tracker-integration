@@ -89,7 +89,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
   end
   
   def platform_name
-    platform_name = GitPivotalTrackerIntegration::Util::Git.get_config KEY_PLATFORM_NAME, :inherited
+    platform_name = self.pconfig["platform"]["platform-name"].downcase
 
     if platform_name.empty?
 		platforms = ["ios", "non-ios"]
@@ -99,7 +99,9 @@ class GitPivotalTrackerIntegration::Command::Configuration
 				chosen
 			end
 		end
-		GitPivotalTrackerIntegration::Util::Git.set_config KEY_PLATFORM_NAME, platform_name, :local
+		config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+        pc_text = File.read(config_filename)
+        File.open(config_filename, "w") {|file| file.puts pc_text.gsub(/platform-name[\s+]?=/, "platform-name = #{platform_name}")}
     end
     puts "Your project platform is:#{platform_name}"
     platform_name
