@@ -211,9 +211,16 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     previous_story = last_release.dup
 
     puts "Last release:#{previous_story.name}"
+    last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
+    not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
+    stories.reverse!
+
     stories.each do |story|
-      story.move(:after, previous_story)
-      previous_story = story.dup
+      if not_accepted_releases.size == 1
+        story.move(:after, last_accepted_release_story)
+      else
+        story.move(:after, previous_story)
+      end
     end
   end
 
