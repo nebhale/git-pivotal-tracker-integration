@@ -216,8 +216,10 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     stories.reverse!
 
     stories.each do |story|
-      if not_accepted_releases.size == 1
+      if not_accepted_releases.size == 1 && !last_accepted_release_story.nil?
         story.move(:after, last_accepted_release_story)
+      elsif previous_story.current_state == 'accepted'
+        story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
       else
         story.move(:after, previous_story)
       end
