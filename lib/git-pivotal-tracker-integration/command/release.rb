@@ -36,6 +36,8 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   def run(filter)
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
+    place_version_release story
+    pull_out_rejected_stories story
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
     $LOG.debug("story:#{story.name}")
 
@@ -99,7 +101,26 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     story.update(:labels => s_labels_string)
 
   end
-
-
+  
+  private
+  
+  def place_version_release(release_story)
+      sleep 5
+      not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
+      specified_pt_story = @project.stories.all(:current_state => ['unstarted', 'started', 'finished', 'delivered', 'rejected']).first
+      last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
+      if not_accepted_releases.size > 1
+          release_story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
+      elsif !specified_pt_story.nil?
+          release_story.move(:before, specified_pt_story)
+      end
+  end
+  
+  def pull_out_rejected_stories(release_story)
+      rejected_stories=@project.stories.all(:current_state => ['rejected'], :story_type => ['bug', 'chore', 'feature'])
+      rejected_stories.each{|rejected_story|
+          rejected_story.move(:after, release_story)
+      }	
+  end
 
 end
