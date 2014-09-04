@@ -105,15 +105,23 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   private
   
   def place_version_release(release_story)
-      sleep 5
-      not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
-      specified_pt_story = @project.stories.all(:current_state => ['unstarted', 'started', 'finished', 'delivered', 'rejected']).first
-      last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
-      if not_accepted_releases.size > 1
-          release_story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
-      elsif !specified_pt_story.nil?
-          release_story.move(:before, specified_pt_story)
-      end
+	not_accepted_releases = nil
+	not_accepted_releases_ids = nil
+	not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
+	not_accepted_releases_ids = Array.new
+	not_accepted_releases.collect{|not_accepted_release| not_accepted_releases_ids.push not_accepted_release.id.to_i }
+	unless (not_accepted_releases_ids.include?(release_story.id))
+		not_accepted_releases << release_story
+		not_accepted_releases_ids.clear
+		not_accepted_releases.collect{|not_accepted_release| not_accepted_releases_ids.push not_accepted_release.id.to_i }
+	end
+    specified_pt_story = @project.stories.all(:current_state => ['unstarted', 'started', 'finished', 'delivered', 'rejected']).first
+    last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
+    if not_accepted_releases.size > 1
+		release_story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
+    elsif !specified_pt_story.nil?
+		release_story.move(:before, specified_pt_story)
+    end
   end
   
   def pull_out_rejected_stories(release_story)
