@@ -81,10 +81,18 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
       # cd back to the working_directory
       Dir.chdir(working_directory)
     end
+    
+    # Change spec version
+    change_spec_version(version_number) if has_spec_path?
 
-    # Create a new build commit, push to QA, checkout develop
+    # Create a new build commit, push to QA
     puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
+    
+    # Create release tag
+    create_release_tag(version_number) if has_spec_path?
+    
+    #checkout develop branch
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
 
     s_labels_string = story.labels
@@ -129,6 +137,33 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
       rejected_stories.each{|rejected_story|
           rejected_story.move(:after, release_story)
       }	
+  end
+  
+  def has_spec_path?
+      config_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+      config_file_text = File.read(config_file_path)
+      spec_pattern_check = /spec-path(.*)=/.match("#{config_file_text}")
+      if spec_pattern_check.nil?
+          return false
+          else
+          spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}#{@configuration.pconfig["spec"]["spec-path"]}"
+          if spec_file_path.nil?
+              return false
+              else
+              return true
+          end
+      end
+  end
+  
+  def change_spec_version(version_number)
+      spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}#{@configuration.pconfig["spec"]["spec-path"]}"
+      spec_file_text = File.read(spec_file_path)
+      File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
+  end
+                                                                           
+  def create_release_tag(version_number)
+      GitPivotalTrackerIntegration::Util::Shell.exec "git tag -a #{version_number} -m \"release #{version_number}\""
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "git push origin #{version_number}"
   end
 
 end
