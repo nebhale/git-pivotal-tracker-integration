@@ -34,6 +34,13 @@ class GitPivotalTrackerIntegration::Command::Base
   def initialize
     self.start_logging
     self.check_version
+    
+    #Setting the certificate on windows boxes if not yet set
+    if OS.windows? && !File.exist?(File.join(Dir.home, 'cacert.pem'))
+	  FileUtils.cp(File.join(File.dirname(__FILE__), 'cacert.pem'), File.join(Dir.home, 'cacert.pem'))
+	  GitPivotalTrackerIntegration::Util::Shell.exec "setx SSL_CERT_FILE #{File.join(Dir.home, 'cacert.pem')}"
+	  abort "\nCertificate has been set successfully.\nYou need to close the current terminal and open a new terminal then proceed with your work on that"
+	end
 
     git_global_push_default = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default", false).chomp
     if git_global_push_default != "simple"
