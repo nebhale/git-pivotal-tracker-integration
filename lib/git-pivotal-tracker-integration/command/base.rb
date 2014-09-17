@@ -104,8 +104,11 @@ class GitPivotalTrackerIntegration::Command::Base
         $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
     else
         $LOG.fatal("Out of date")
-        abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"
-
+        if OS.windows?
+          abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    gem update v2gpti\n\n"
+        else
+		  abort "\n\nYou are using v2gpti version #{gem_installed_version}, but the current version is #{gem_latest_version}.\nPlease update your gem with the following command.\n\n    sudo gem update v2gpti\n\n"
+		end
     end
   rescue StandardError => se
     puts ""
