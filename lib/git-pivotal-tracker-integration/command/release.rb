@@ -146,7 +146,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
       if spec_pattern_check.nil?
           return false
           else
-          spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}#{@configuration.pconfig["spec"]["spec-path"]}"
+          spec_file_path = @configuration.pconfig["spec"]["spec-path"]
           if spec_file_path.nil?
               return false
               else
@@ -156,7 +156,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   end
   
   def change_spec_version(version_number)
-      spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}#{@configuration.pconfig["spec"]["spec-path"]}"
+      spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
       spec_file_text = File.read(spec_file_path)
       File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
   end
