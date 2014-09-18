@@ -12,3 +12,6 @@ project-id = 4917786
 
 [platform]
 platform-name = non-ios
+
+[spec]
+spec-path = v2gpti.gemspec
