@@ -41,7 +41,7 @@ class Toggl
     t_file
   end
   def connection(username, password)
-    Faraday.new(url: 'https://www.toggl.com/api/v8') do |faraday|
+    Faraday.new(url: 'https://www.toggl.com/api/v8', :ssl => {:verify => false}) do |faraday|
       faraday.request :url_encoded
       faraday.response :logger, Logger.new('faraday.log')
       faraday.adapter Faraday.default_adapter
