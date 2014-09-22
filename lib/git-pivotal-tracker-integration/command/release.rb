@@ -108,9 +108,71 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     puts "labels:#{s_labels_string}"
     story.update(:labels => s_labels_string)
 
+    i_stories = included_stories @project, story
+    add_version_tag_to_stories i_stories, story
+
   end
   
   private
+
+  CANDIDATE_STATES = %w(delivered unstarted).freeze
+  CANDIDATE_TYPES = %w(bug chore feature release)
+
+  def add_version_tag_to_stories(stories, release_story)
+    all_stories = stories.dup
+    all_stories << release_story
+    puts "Included stories:\n"
+    all_stories.each {|story|
+      s_labels_string = story.labels
+      s_labels = ""
+      if (s_labels_string)
+        s_labels = s_labels_string.split(",")
+        s_labels << release_story.name
+        s_labels_string = s_labels.uniq.join(",")
+      else
+        s_labels_string = release_story.name
+      end
+
+      unless story.labels.nil?
+        if story.labels.scan(/b\d{1}/).size > story.labels.scan(/v\d{1}/).size
+          story.update(:labels => s_labels_string)
+          puts story.id
+        end
+      end 
+    }
+  end
+
+  def included_stories(project, release_story)
+
+    criteria = {
+      :current_state => CANDIDATE_STATES,
+      :limit => 1000,
+      :story_type => CANDIDATE_TYPES
+    }
+
+
+    candidates = project.stories.all criteria
+
+    estimated_candidates = Array.new
+    val_is_valid = true
+    
+    candidates.each do |val|
+      val_is_valid = true
+      if (val.id == release_story.id)
+        next
+      end
+      if (val.current_state != "delivered")
+        val_is_valid = false
+      end
+      if (val.story_type == "release")
+        val_is_valid = false
+      end
+      if val_is_valid
+         estimated_candidates << val
+      end
+    end
+    candidates = estimated_candidates
+  end
   
   def place_version_release(release_story)
 	not_accepted_releases = nil
