@@ -138,6 +138,10 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
   def included_stories(project, build_story)
 
+    notes_file = ENV['HOME']+"/#{project.name}-#{build_story.name}"
+    output = File.open( notes_file, "w")
+    output << "Included stories:\n"
+
     criteria = {
       :current_state => CANDIDATE_STATES,
       :limit => 1000,
@@ -165,10 +169,12 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
       if val_is_valid
         # puts "val_is_valid:#{val_is_valid}"
          estimated_candidates << val
+         output << "#{val.id}\n"
          puts "#{val.id}"
 
       end
     end
+    output.close
     candidates = estimated_candidates
   end
 
