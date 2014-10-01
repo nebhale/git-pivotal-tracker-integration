@@ -91,6 +91,13 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     
     # Create release tag
     create_release_tag(version_number) if has_spec_path?
+
+    #Created tag should be pushed to private Podspec repo
+    if has_spec_path? && OS.mac?
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{version_number}"
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "pod repo push V2PodSpecs #{@configuration.pconfig["spec"]["spec-path"]}"
+      puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
+    end
     
     #checkout develop branch
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
