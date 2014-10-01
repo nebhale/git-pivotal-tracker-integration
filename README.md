@@ -12,7 +12,7 @@
 [pivotal-tracker]: http://www.pivotaltracker.com
 
 
-## Installation
+## Installation on OS X
 `git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.
 
 In order to install it, do the following:
@@ -21,9 +21,20 @@ In order to install it, do the following:
 2. Check your git version with `git --version`. It should be at least **Git 1.8.2.1** (It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.)
 3. Install with the following...  (This will require admin rights, so you may need sudo.)
 ```plain
-$ gem install v2gpti
+$ sudo gem install v2gpti
 ```
 
+## Installation on WINDOWS
+`git-pivotal-tracker-integration` requires at least **Ruby 1.8.7** and **Git 1.8.2.1** in order to run.  It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.
+
+In order to install it, do the following:
+
+1. Check your Ruby version with `ruby -v`. It should be at least **Ruby 1.8.7**
+2. Check your git version with `git --version`. It should be at least **Git 1.8.2.1** (It is tested against Rubies _1.8.7_, _1.9.3_, and _2.0.0_.)
+3. Install with the following...
+```plain
+> gem install v2gpti
+```
 
 ## Usage
 `git-pivotal-tracker-integration` is intended to be a very lightweight tool, meaning that it won't affect your day to day workflow very much.  To be more specific, it is intended to automate branch creation and destruction as well as story state changes, but will not affect when you commit, when development branches are pushed to origin, etc.  The typical workflow looks something like the following:
