@@ -177,10 +177,10 @@ class GitPivotalTrackerIntegration::Util::Story
       if type == "release"
         last_release = last_release_story(project, release_type)
         last_release_number = last_release.name if !last_release.nil?
-        last_release_type_string = (release_type == "b")?"build":"version"
+        last_release_type_string = (release_type == "b") ? "build" : "version"
         puts "There are no available release stories."
         puts " The last #{last_release_type_string} release was #{last_release_number}." if !last_release.nil?
-        next_release_number = last_release_number.next if !last_release.nil?
+        next_release_number = set_next_release_number(last_release, release_type, last_release_number) if !last_release.nil?
         next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:") if last_release.nil?
         puts "New #{last_release_type_string} release number is: #{next_release_number}"
         story = self.create_new_release(project, next_release_number)
@@ -201,9 +201,22 @@ class GitPivotalTrackerIntegration::Util::Story
 
     candidates = project.stories.all criteria
     candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include? x.name))}
-    candidates.sort! {|x,y| y.name <=> x.name }
+    candidates.sort! { |x,y| Gem::Version.new(y.name[1 .. -1]) <=> Gem::Version.new(x.name[1 .. -1]) }
 
     candidates.first
+  end
+  
+  def self.set_next_release_number(last_release, release_type, last_release_number)
+    if release_type == "b"
+      return last_release_number.next
+    end
+    if release_type == "v"
+      version_split = last_release_number.split(/\./)
+      last_incremented_number=version_split.last.next
+      version_split.pop
+      version_split.push(last_incremented_number)
+      return version_split.join(".")
+    end
   end
 
   def self.create_new_release (project, next_release_number)
