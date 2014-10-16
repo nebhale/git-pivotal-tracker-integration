@@ -305,8 +305,7 @@ class GitPivotalTrackerIntegration::Command::Base
           icebox_last_story = icebox_stories.last
           (new_feature_story.create).move(:after, icebox_last_story)
           else
-          icebox_first_story = icebox_stories.first
-          (new_feature_story.create).move(:before, icebox_first_story)
+            new_feature_story.create
       end
   end
 
@@ -349,8 +348,7 @@ class GitPivotalTrackerIntegration::Command::Base
           backlog_last_story = backlog_stories.last
           (new_feature_story.create).move(:after, backlog_last_story)
           else
-          backlog_first_story = backlog_stories.first
-          (new_feature_story.create).move(:before, backlog_first_story)
+            new_feature_story.create
       end
   end
 

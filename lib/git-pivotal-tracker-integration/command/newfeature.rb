@@ -19,7 +19,7 @@ require 'git-pivotal-tracker-integration/util/git'
 require 'git-pivotal-tracker-integration/util/story'
 require 'pivotal-tracker'
 
-# The class that encapsulates creating a Pivotal Tracker Bug Story
+# The class that encapsulates creating a Pivotal Tracker Feature Story
 class GitPivotalTrackerIntegration::Command::Newfeature < GitPivotalTrackerIntegration::Command::Base
 
   # Creates a Pivotal Tracker story by doing the following steps:
