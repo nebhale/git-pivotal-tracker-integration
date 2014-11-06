@@ -66,7 +66,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     puts "build_number:#{build_number}"
     puts "working_directory:#{working_directory}*"
 
-    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
+    if (OS.mac? && @platform.downcase == "ios")
       project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
       return if project_directory.nil?
 
