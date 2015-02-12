@@ -194,3 +194,46 @@ Once these have been entered, the version string for the current project is upda
 Version update is currently supported for the following kinds of projects.  If you do not see a project type that you would like supported, please open an issue or submit a pull request.
 
 * Gradle
+
+### `git newfeature [ -i | -b ] [-bl | -tl ]`
+This command creates a new feature story in pivotal tracker.
+
+For more clarity read the below explanation
+
+```plain
+-i			# icebox
+-b       	# backlog
+-bl       	# bottom of the list
+-tl       	# top of the list
+```
+
+```plain
+$ git newfeature -i -bl       # Creates a new feature story in icebox bottom of the list
+$ git newfeature -i -tl       # Creates a new feature story in icebox top of the list
+$ git newfeature -b -bl       # Creates a new feature story in backlog bottom of the list
+$ git newfeature -b -tl       # Creates a new feature story in backlog top of the list
+```
+
+### `git newbug [ -i | -b ] [-bl | -tl ]`
+This command creates a new bug story in pivotal tracker.
+
+For more clarity read the below explanation
+
+```plain
+-i			# icebox
+-b       	# backlog
+-bl       	# bottom of the list
+-tl       	# top of the list
+```
+
+```plain
+$ git newbug -i -bl       # Creates a new bug story in icebox bottom of the list
+$ git newbug -i -tl       # Creates a new bug story in icebox top of the list
+$ git newbug -b -bl       # Creates a new bug story in backlog bottom of the list
+$ git newbug -b -tl       # Creates a new bug story in backlog top of the list
+```
+
+
+
+
+

@@ -167,7 +167,7 @@ class Toggl
 
   def get_project_task_with_name(project_id, task_name)
     task = nil
-    project_tasks = get_project_tasks(project_id)
+    project_tasks = get_project_tasks(project_id) || []
     project_tasks.each { |a_task|
       a_task_name = "#{a_task["name"]}"
       if (a_task_name.include?task_name)
@@ -389,6 +389,7 @@ class Toggl
     puts "GET #{resource}" if @debug
     full_res = self.conn.get(resource)
     # ap full_res.env if @debug
+    return nil if full_res.env[:body] == 'null'
     res = JSON.parse(full_res.env[:body])
     res.is_a?(Array) || res['data'].nil? ? res : res['data']
   rescue Faraday::ClientError => e

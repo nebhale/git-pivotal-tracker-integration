@@ -68,7 +68,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     puts "version_number:#{version_number}"
     puts "working_directory:#{working_directory}*"
 
-    if (OS.mac? && ["y","ios"].include?(@platform.downcase))
+    if (OS.mac? && @platform.downcase == "ios")
       project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
 
       # cd to the project_directory
@@ -227,7 +227,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   def change_spec_version(version_number)
       spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
       spec_file_text = File.read(spec_file_path)
-      File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
+      File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/(?<!_)version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
   end
                                                                            
   def create_release_tag(version_number)
