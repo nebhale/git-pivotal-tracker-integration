@@ -28,7 +28,7 @@
       s.executables      = Dir['bin/*'].map { |f| File.basename f }
       s.test_files       = Dir['spec/**/*_spec.rb']
 
-      s.required_ruby_version     = '1.1.8'
+      s.required_ruby_version     = '>= 1.9'
 
       s.add_dependency 'highline', '~> 1.6'
       s.add_dependency 'pivotal-tracker', '~> 0.5'
