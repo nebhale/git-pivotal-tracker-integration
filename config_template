@@ -1,0 +1,16 @@
+[pivotal-tracker]
+project-id =
+
+[project]
+project-name =
+project-manager =
+project-manager-email =
+
+[toggl]
+project-id =
+
+[platform]
+platform-name = non-ios
+
+[spec]
+spec-path = v2gpti.gemspec

@@ -29,6 +29,11 @@ class GitPivotalTrackerIntegration::Command::Configuration
   # configuration so that it can be used across multiple repositories.
   #
   # @return [String] The user's Pivotal Tracker API token
+
+  def initialize
+    check_for_config_file
+    check_for_config_contents
+  end
   def api_token
     api_token = GitPivotalTrackerIntegration::Util::Git.get_config KEY_API_TOKEN, :inherited
     if api_token.empty?
@@ -127,6 +132,59 @@ class GitPivotalTrackerIntegration::Command::Configuration
   end
 
   private
+
+  def check_for_config_file
+    rep_path = GitPivotalTrackerIntegration::Util::Git.repository_root
+    FileUtils.mkdir_p(rep_path + '/.v2gpti') unless Dir.exists?( rep_path + '/.v2gpti/')
+    FileUtils.cp(File.expand_path(File.dirname(__FILE__) + '/../../..') + '/config_template', rep_path + '/.v2gpti/config') unless File.exists?(rep_path + '/.v2gpti/config')
+  end
+
+  def check_for_config_contents
+    config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+    pc = ParseConfig.new(config_filename) if File.file?(config_filename)
+
+    config_content = {}
+    pc.params.each do |key,value|
+      if value.is_a?(Hash)
+        value.each do |child_key, child_value|
+          populate_and_save(child_key,child_value,config_content,key)
+        end
+      else
+        populate_and_save(key,value,config_content)
+      end
+    end
+
+    pc.params = config_content
+
+    File.open(config_filename, 'w') do |file|
+      pc.write(file, false)
+    end
+
+    puts "For any modification, please update the details in #{config_filename}"
+  end
+
+  def populate_and_save(key,value,hash, parent=nil)
+    if value.empty?
+      val = if  key.scan(/project-id/).empty?
+              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
+            else
+              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", Integer)
+            end
+      value = val
+    end
+
+    if parent.nil?
+      hash[key.to_s] = value
+    else
+      if hash.has_key?(parent.to_s) && hash[parent.to_s].has_key?(key.to_s)
+        hash[parent.to_s][key.to_sym] = value.to_s
+      else
+        hash[parent.to_s] = Hash.new if !hash.has_key?(parent.to_s)
+        hash[parent.to_s].store(key.to_s,value.to_s)
+      end
+    end
+    hash
+  end
 
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
 
