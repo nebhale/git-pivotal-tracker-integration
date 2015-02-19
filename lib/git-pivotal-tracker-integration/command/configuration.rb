@@ -169,21 +169,23 @@ class GitPivotalTrackerIntegration::Command::Configuration
   def populate_and_save(key,value,hash, parent=nil)
     mandatory_details = %w(pivotal-tracker-project-id platform-platform-name)
     if value.empty?
-      val = if mandatory_details.include?([parent,key].compact.join('-')) || @new_config
-              if key.include?('project-id')
-                ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", Integer) do |q|
-                  q.responses[:invalid_type] = 'Please provide valid project-id '
-                end
-              elsif key.include?('platform-name')
-                say("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: \n")
-                choose do |menu|
-                  menu.prompt = 'Enter any of the above choices: '
-                  menu.choices('ios','non-ios')
-                end
-              else
-                ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
+      mandatory_field = mandatory_details.include?([parent,key].compact.join('-'))
+      val =
+          if mandatory_field || @new_config
+            if key.include?('project-id')
+              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", lambda{|ip| mandatory_field ? Integer(ip) : ip =~ /^$/ ? '' : Integer(ip) }) do |q|
+                q.responses[:invalid_type] = "Please provide valid project-id#{mandatory_field ? '' : '(or blank line to skip)'}"
               end
+            elsif key.include?('platform-name')
+              say("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: \n")
+              choose do |menu|
+                menu.prompt = 'Enter any of the above choices: '
+                menu.choices('ios','non-ios')
+              end
+            else
+              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
             end
+          end
       value = val
     end
 
