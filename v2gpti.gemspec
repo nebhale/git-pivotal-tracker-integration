@@ -24,7 +24,7 @@
       s.homepage    = 'https://github.com/v2dev/V2GPTI'
       s.license     = 'Apache-2.0'
 
-      s.files            = %w(LICENSE NOTICE README.md) + Dir['lib/**/*.rb'] + Dir['lib/**/*.sh'] + Dir['bin/*']
+      s.files            = %w(LICENSE NOTICE README.md config_template) + Dir['lib/**/*.rb'] + Dir['lib/**/*.sh'] + Dir['bin/*']
       s.executables      = Dir['bin/*'].map { |f| File.basename f }
       s.test_files       = Dir['spec/**/*_spec.rb']
 

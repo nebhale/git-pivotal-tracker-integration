@@ -10,7 +10,7 @@ project-manager-email =
 project-id =
 
 [platform]
-platform-name = non-ios
+platform-name =
 
 [spec]
 spec-path = v2gpti.gemspec

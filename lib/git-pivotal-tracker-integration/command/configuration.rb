@@ -136,7 +136,10 @@ class GitPivotalTrackerIntegration::Command::Configuration
   def check_for_config_file
     rep_path = GitPivotalTrackerIntegration::Util::Git.repository_root
     FileUtils.mkdir_p(rep_path + '/.v2gpti') unless Dir.exists?( rep_path + '/.v2gpti/')
-    FileUtils.cp(File.expand_path(File.dirname(__FILE__) + '/../../..') + '/config_template', rep_path + '/.v2gpti/config') unless File.exists?(rep_path + '/.v2gpti/config')
+    unless File.exists?(rep_path + '/.v2gpti/config')
+      FileUtils.cp(File.expand_path(File.dirname(__FILE__) + '/../../..') + '/config_template', rep_path + '/.v2gpti/config')
+      @new_config = true
+    end
   end
 
   def check_for_config_contents
@@ -160,15 +163,26 @@ class GitPivotalTrackerIntegration::Command::Configuration
       pc.write(file, false)
     end
 
-    puts "For any modification, please update the details in #{config_filename}"
+    puts "For any modification, please update the details in #{config_filename}" if @new_config
   end
 
   def populate_and_save(key,value,hash, parent=nil)
+    mandatory_details = %w(pivotal-tracker-project-id platform-platform-name)
     if value.empty?
-      val = if  key.scan(/project-id/).empty?
-              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
-            else
-              ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", Integer)
+      val = if mandatory_details.include?([parent,key].compact.join('-')) || @new_config
+              if key.include?('project-id')
+                ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", Integer) do |q|
+                  q.responses[:invalid_type] = 'Please provide valid project-id '
+                end
+              elsif key.include?('platform-name')
+                say("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: \n")
+                choose do |menu|
+                  menu.prompt = 'Enter any of the above choices: '
+                  menu.choices('ios','non-ios')
+                end
+              else
+                ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
+              end
             end
       value = val
     end
