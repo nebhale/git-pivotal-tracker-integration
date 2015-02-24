@@ -44,6 +44,7 @@ class GitPivotalTrackerIntegration::Command::Base
     @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
     @configuration   = GitPivotalTrackerIntegration::Command::Configuration.new
     @toggl           = Toggl.new
+    @toggl.debug_on(true)
 
     PivotalTracker::Client.token    = @configuration.api_token
     PivotalTracker::Client.use_ssl  = true
