@@ -39,6 +39,7 @@
       s.add_dependency  'logger', '~> 1.2.8'
       s.add_dependency  'jazor', '~> 0.1.8'
       s.add_dependency  'os', '~> 0.9.6'
+      s.add_dependency  'tracker_api', '~>0.2.7'
 
       s.add_development_dependency 'bundler', '~> 1.3'
       s.add_development_dependency 'rake', '~> 10.0'
