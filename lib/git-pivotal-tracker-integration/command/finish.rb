@@ -31,8 +31,8 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     no_complete = argument =~ /--no-complete/
 
-    # branch_status_check = GitPivotalTrackerIntegration::Util::Shell.exec "git status -s"
-    # abort "\n\nThere are some unstaged changes in your current branch. Please do execute the below commands first and then try with git finish \n git add . \n git commit -m '<your-commit-message>'" unless branch_status_check.empty?
+    branch_status_check = GitPivotalTrackerIntegration::Util::Shell.exec "git status -s"
+    abort "\n\nThere are some unstaged changes in your current branch. Please do execute the below commands first and then try with git finish \n git add . \n git commit -m '<your-commit-message>'" unless branch_status_check.empty?
 
     # ask("pause")
     GitPivotalTrackerIntegration::Util::Git.trivial_merge?

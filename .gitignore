@@ -15,11 +15,6 @@ faraday.log
 .dat*
 .repl_history
 build/
-install.sh
-.gitignore
-.idea/
-.v2gpti/
-.ruby-version
 
 ## Documentation cache and generated files:
 /.yardoc/

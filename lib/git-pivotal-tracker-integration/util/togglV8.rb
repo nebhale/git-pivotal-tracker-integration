@@ -388,8 +388,7 @@ class Toggl
   def get(resource)
     puts "GET #{resource}" if @debug
     full_res = self.conn.get(resource)
-     ap full_res.env if @debug
-    puts full_res.env[:body]
+    # ap full_res.env if @debug
     return nil if full_res.env[:body] == 'null'
     res = JSON.parse(full_res.env[:body])
     res.is_a?(Array) || res['data'].nil? ? res : res['data']
