@@ -20,6 +20,7 @@ require 'pivotal-tracker'
 require 'parseconfig'
 require 'logger'
 require 'os'
+require 'tracker_api'
 
 # An abstract base class for all commands
 # @abstract Subclass and override {#run} to implement command functionality
@@ -45,20 +46,18 @@ class GitPivotalTrackerIntegration::Command::Base
     @configuration   = GitPivotalTrackerIntegration::Command::Configuration.new
     @toggl           = Toggl.new
 
-    PivotalTracker::Client.token    = @configuration.api_token
-    PivotalTracker::Client.use_ssl  = true
-
-    @project  = PivotalTracker::Project.find @configuration.project_id
+    @client = TrackerApi::Client.new(:token => @configuration.api_token)
     @platform = @configuration.platform_name
 
-    my_projects         = PivotalTracker::Project.all
-    my_all_projects_ids = Array.new
-    my_projects.collect{|project| my_all_projects_ids.push project.id.to_i }
-    current_project_id    = @configuration.project_id.to_i
-    project_manager_name  = @configuration.pconfig["project"]["project-manager"]
-    project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
-    project_name          = @configuration.pconfig["project"]["project-name"]
-    abort "This project requires access to the Pivotal Tracker project [#{project_name} - #{current_project_id}]. Please speak with project manager [#{project_manager_name} - #{project_manager_email}] and ask him to add you to the project in Pivotal Tracker." unless my_all_projects_ids.include?(current_project_id)
+    @project = @client.project @configuration.project_id
+    my_projects         = @client.projects
+    current_project_id = @configuration.project_id.to_i
+    unless my_projects && my_projects.map(&:id).include?(current_project_id)
+      project_manager_name  = @configuration.pconfig["project"]["project-manager"]
+      project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
+      project_name          = @configuration.pconfig["project"]["project-name"]
+      abort "This project requires access to the Pivotal Tracker project [#{project_name} - #{current_project_id}]. Please speak with project manager [#{project_manager_name} - #{project_manager_email}] and ask him to add you to the project in Pivotal Tracker."
+    end
   end
 
   def finish_toggle(configuration, time_spent)
