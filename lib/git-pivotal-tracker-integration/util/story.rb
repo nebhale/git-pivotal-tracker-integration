@@ -35,10 +35,11 @@ class GitPivotalTrackerIntegration::Util::Story
       print_value description
     end
 
-    PivotalTracker::Note.all(story).sort_by { |note| note.noted_at }.each_with_index do |note, index|
-      print_label "Note #{index + 1}"
-      print_value note.text
-    end
+    #Todo Need to implement for comments in v5 api
+    # PivotalTracker::Note.all(story).sort_by { |note| note.noted_at }.each_with_index do |note, index|
+    #   print_label "Note #{index + 1}"
+    #   print_value note.text
+    # end
 
     puts
   end
@@ -56,7 +57,7 @@ class GitPivotalTrackerIntegration::Util::Story
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
   def self.select_story(project, filter = nil, limit = 12)
     if filter =~ /[[:digit:]]/
-      story = project.stories.find filter.to_i
+      story = project.story filter.to_i
     else
       story = find_story project, filter, limit
     end
@@ -116,14 +117,13 @@ class GitPivotalTrackerIntegration::Util::Story
       type = "release"
     end
     criteria = {
-      :current_state => CANDIDATE_STATES,
-      :limit => limit
+      :current_state => CANDIDATE_STATES
     }
-    if type
+    if type && %w(feature bug chore release).include?(type)
       criteria[:story_type] = type
     end
 
-    candidates = project.stories.all criteria
+    candidates = project.stories filter: self.params_to_string(criteria)  #limit parameter wont work with filter parameter
 
     # only include stories that have been estimated
     estimated_candidates = Array.new
@@ -199,7 +199,7 @@ class GitPivotalTrackerIntegration::Util::Story
         :story_type => "release"
     }
 
-    candidates = project.stories.all criteria
+    candidates = project.stories filter: (self.params_to_string criteria)
     candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include? x.name))}
     candidates.sort! { |x,y| Gem::Version.new(y.name[1 .. -1]) <=> Gem::Version.new(x.name[1 .. -1]) }
 
@@ -220,12 +220,10 @@ class GitPivotalTrackerIntegration::Util::Story
   end
 
   def self.create_new_release (project, next_release_number)
-    new_story = PivotalTracker::Story.new
-    new_story.project_id = project.id
-    new_story.story_type = "release"
-    new_story.current_state = "unstarted"
-    new_story.name = next_release_number
+    project.create_story(:story_type => 'release', :current_state => 'unstarted', :name => next_release_number)
+  end
 
-    uploaded_story = new_story.create
+  def self.params_to_string(input= {})
+    input.inject(''){|rslt,ip| rslt << "#{ip.first.to_s}:#{ip.last.is_a?(Array) ? ip.last.join(',') : ip.last} "}
   end
 end

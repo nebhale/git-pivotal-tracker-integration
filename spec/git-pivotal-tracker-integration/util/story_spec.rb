@@ -15,7 +15,7 @@
 
 require 'spec_helper'
 require 'git-pivotal-tracker-integration/util/story'
-require 'pivotal-tracker'
+require 'tracker_api'
 
 describe GitPivotalTrackerIntegration::Util::Story do
 
@@ -33,9 +33,9 @@ describe GitPivotalTrackerIntegration::Util::Story do
     story = double('story')
     story.should_receive(:name)
     story.should_receive(:description).and_return("description-1\ndescription-2")
-    PivotalTracker::Note.should_receive(:all).and_return([
-      PivotalTracker::Note.new(:noted_at => Date.new, :text => 'note-1')
-    ])
+    # PivotalTracker::Note.should_receive(:all).and_return([
+    #   PivotalTracker::Note.new(:noted_at => Date.new, :text => 'note-1')
+    # ])
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
@@ -43,7 +43,6 @@ describe GitPivotalTrackerIntegration::Util::Story do
       "      Title: \n" +
       "Description: description-1\n" +
       "             description-2\n" +
-      "     Note 1: note-1\n" +
       "\n")
   end
 
@@ -51,7 +50,7 @@ describe GitPivotalTrackerIntegration::Util::Story do
     story = double('story')
     story.should_receive(:name)
     story.should_receive(:description)
-    PivotalTracker::Note.should_receive(:all).and_return([])
+    # PivotalTracker::Note.should_receive(:all).and_return([])
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
@@ -64,7 +63,7 @@ describe GitPivotalTrackerIntegration::Util::Story do
     story = double('story')
     story.should_receive(:name)
     story.should_receive(:description).and_return('')
-    PivotalTracker::Note.should_receive(:all).and_return([])
+    # PivotalTracker::Note.should_receive(:all).and_return([])
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
@@ -74,8 +73,7 @@ describe GitPivotalTrackerIntegration::Util::Story do
   end
 
   it 'should select a story directly if the filter is a number' do
-    @project.should_receive(:stories).and_return(@stories)
-    @stories.should_receive(:find).with(12345678).and_return(@story)
+    @project.should_receive(:story).and_return(@story)
 
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, '12345678'
 
@@ -83,37 +81,30 @@ describe GitPivotalTrackerIntegration::Util::Story do
   end
 
   it 'should select a story if the result of the query is a single story' do
-    @project.should_receive(:stories).and_return(@stories)
-    @stories.should_receive(:all).with(
-      :current_state => %w(rejected unstarted unscheduled),
-      :limit => 1,
-      :story_type => 'release'
-    ).and_return([@story])
-    @story.stub(:story_type) {'release'}
+    @project.should_receive(:stories).and_return([@story])
+    @story.stub(:story_type) {'feature'}
     @story.stub(:name) {'story_name'}
+    @story.stub(:labels){''}
+    @story.stub(:estimate){ 1}
 
     @menu.stub(:prompt=)
     @menu.stub(:choice)
     GitPivotalTrackerIntegration::Util::Story.should_receive(:choose) { |&arg| arg.call @menu }.and_return(@story)
 
-    story = GitPivotalTrackerIntegration::Util::Story.select_story @project, 'release', 1
+    story = GitPivotalTrackerIntegration::Util::Story.select_story @project
 
     expect(story).to be(@story)
   end
 
   it 'should prompt the user for a story if the result of the query is more than a single story' do
-    @project.should_receive(:stories).and_return(@stories)
-    @stories.should_receive(:all).with(
-      :current_state => %w(rejected unstarted unscheduled),
-      :limit => 5,
-      :story_type => 'feature'
-    ).and_return([
-      PivotalTracker::Story.new(:name => 'name-1'),
-      PivotalTracker::Story.new(:name => 'name-2')
+    @project.should_receive(:stories).and_return([
+      TrackerApi::Resources::Story.new(:name => 'name-1',:estimate  => 1,:story_type => 'feature'),
+      TrackerApi::Resources::Story.new(:name => 'name-2',:estimate  => 1)
     ])
     @menu.should_receive(:prompt=)
     @menu.should_receive(:choice).with('name-1')
     @menu.should_receive(:choice).with('name-2')
+    @menu.should_receive(:choice).with('Quit')
     GitPivotalTrackerIntegration::Util::Story.should_receive(:choose) { |&arg| arg.call @menu }.and_return(@story)
 
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project, 'feature'
@@ -122,17 +113,14 @@ describe GitPivotalTrackerIntegration::Util::Story do
   end
 
   it 'should prompt the user with the story type if no filter is specified' do
-    @project.should_receive(:stories).and_return(@stories)
-    @stories.should_receive(:all).with(
-      :current_state => %w(rejected unstarted unscheduled),
-      :limit => 5
-    ).and_return([
-      PivotalTracker::Story.new(:story_type => 'chore', :name => 'name-1'),
-      PivotalTracker::Story.new(:story_type => 'bug', :name => 'name-2')
+    @project.should_receive(:stories).and_return([
+      TrackerApi::Resources::Story.new(:story_type => 'chore', :name => 'name-1'),
+      TrackerApi::Resources::Story.new(:story_type => 'bug', :name => 'name-2')
     ])
     @menu.should_receive(:prompt=)
     @menu.should_receive(:choice).with('CHORE   name-1')
     @menu.should_receive(:choice).with('BUG     name-2')
+    @menu.should_receive(:choice).with('Quit')
     GitPivotalTrackerIntegration::Util::Story.should_receive(:choose) { |&arg| arg.call @menu }.and_return(@story)
 
     story = GitPivotalTrackerIntegration::Util::Story.select_story @project
