@@ -17,7 +17,6 @@ require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
 require 'git-pivotal-tracker-integration/util/story'
-require 'pivotal-tracker'
 
 # The class that encapsulates starting a Pivotal Tracker Story
 class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegration::Command::Base
@@ -34,7 +33,6 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   #   * +nil+
   # @return [void]
   def run(args)
-    my_projects = PivotalTracker::Project.all
     filter = args[0]
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
     self.check_branch
@@ -101,10 +99,11 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
 
   def start_on_tracker(story)
     print 'Starting story on Pivotal Tracker... '
-    story.update(
-      :current_state => 'started',
-      :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
-    )
+    story.attributes = {
+        :current_state => 'started',
+        :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
+    }
+    story.save
     puts 'OK'
   end
 

@@ -16,7 +16,6 @@
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/command/configuration'
 require 'git-pivotal-tracker-integration/util/git'
-require 'pivotal-tracker'
 require 'parseconfig'
 require 'logger'
 require 'os'
@@ -49,9 +48,9 @@ class GitPivotalTrackerIntegration::Command::Base
     @client = TrackerApi::Client.new(:token => @configuration.api_token)
     @platform = @configuration.platform_name
 
-    @project = @client.project @configuration.project_id
-    my_projects         = @client.projects
     current_project_id = @configuration.project_id.to_i
+    @project = @client.project current_project_id
+    my_projects         = @client.projects
     unless my_projects && my_projects.map(&:id).include?(current_project_id)
       project_manager_name  = @configuration.pconfig["project"]["project-manager"]
       project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
@@ -198,16 +197,10 @@ class GitPivotalTrackerIntegration::Command::Base
       end
     end
 
-    new_story               = PivotalTracker::Story.new
-    new_story.project_id    = @project.id
-    new_story.story_type    = new_story_type
-    new_story.current_state = "unstarted"
-    new_story.name          = new_story_title
-    if new_story_type == "feature"
-      new_story.estimate = new_story_estimate
-    end
+    attrs = {:story_type => new_story_type, :current_state => 'unstarted', :name => new_story_title}
+    attrs[:estimate] = new_story_estimate if new_story_type == "feature"
 
-    uploaded_story = new_story.create
+    @project.create_story(attrs)
 
   end
 
@@ -366,7 +359,8 @@ class GitPivotalTrackerIntegration::Command::Base
     while (!["0","1","2","3"].include?(story_points))
       story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this story.")
     end
-    story.update(:estimate => story_points)
+    story.attributes = {:estimate => story_points}
+    story.save
   end
 
 end
