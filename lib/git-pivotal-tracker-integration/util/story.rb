@@ -133,7 +133,7 @@ class GitPivotalTrackerIntegration::Util::Story
         val_is_valid = true
         if (val.story_type == "feature" )
           # puts "#{val.story_type} #{val.name}.estimate:#{val.estimate} "
-          if (val.estimate < 0)
+          if (val.estimate.to_i < 0)
             # puts "#{val.estimate} < 0"
             val_is_valid = false
           end
