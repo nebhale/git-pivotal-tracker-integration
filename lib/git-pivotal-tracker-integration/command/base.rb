@@ -190,11 +190,8 @@ class GitPivotalTrackerIntegration::Command::Base
       new_story_title = ask("Please enter the title for this #{new_story_type}.")
     end
 
-    while (new_story_type == "feature" && (new_story_estimate < 0 || new_story_estimate > 3))
-      nse = ask("Please enter an estimate for this #{new_story_type}. (0,1,2,3)")
-      if !nse.empty?
-        new_story_estimate = nse.to_i
-      end
+    if (new_story_type == "feature" && (new_story_estimate < 0 || new_story_estimate > 3))
+      new_story_estimate = estimate_story
     end
 
     attrs = {:story_type => new_story_type, :current_state => 'unstarted', :name => new_story_title}
@@ -205,143 +202,19 @@ class GitPivotalTrackerIntegration::Command::Base
   end
 
   def create_icebox_bug_story(args)
-      new_bug_story_title = nil
-      args.each do |arg|
-          new_bug_story_title = arg if arg[0] != "-"
-      end
-      while (new_bug_story_title.nil? || new_bug_story_title.empty?)
-          new_bug_story_title = ask("Please enter the title for this bug story")
-      end
-      icebox_stories = Array.new
-      @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
-      new_bug_story               = PivotalTracker::Story.new
-      new_bug_story.project_id    = @project.id
-      new_bug_story.story_type    = "bug"
-      new_bug_story.current_state = "unscheduled"
-      new_bug_story.name          = new_bug_story_title
-
-      if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
-          icebox_first_story = icebox_stories.first
-          (new_bug_story.create).move(:before, icebox_first_story)
-          elsif args.any?{|arg| arg.include?("-bl")} && !(icebox_stories.empty? || icebox_stories.nil?)
-          icebox_last_story = icebox_stories.last
-          (new_bug_story.create).move(:after, icebox_last_story)
-          else
-          new_bug_story.create
-      end
+    create_story_with_type_state("bug", "unscheduled", args)
   end
 
   def create_backlog_bug_story(args)
-      new_bug_story_title = nil
-      args.each do |arg|
-          new_bug_story_title = arg if arg[0] != "-"
-      end
-      while (new_bug_story_title.nil? || new_bug_story_title.empty?)
-          new_bug_story_title = ask("Please enter the title for this bug story")
-      end
-      backlog_stories = Array.new
-      @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
-      new_bug_story               = PivotalTracker::Story.new
-      new_bug_story.project_id    = @project.id
-      new_bug_story.story_type    = "bug"
-      new_bug_story.current_state = "unstarted"
-      new_bug_story.name          = new_bug_story_title
-      if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
-          backlog_first_story = backlog_stories.first
-          (new_bug_story.create).move(:before, backlog_first_story)
-          elsif args.any?{|arg| arg.include?("-bl")} && !(backlog_stories.empty? || backlog_stories.nil?)
-          backlog_last_story = backlog_stories.last
-          (new_bug_story.create).move(:after, backlog_last_story)
-          else
-          new_bug_story.create
-      end
+    create_story_with_type_state("bug", "unstarted", args)
   end
 
   def create_icebox_feature_story(args)
-      new_feature_story_title = nil
-      new_feature_story_points = nil
-      args.each do |arg|
-          new_feature_story_title = arg if arg[0] != "-"
-      end
-      while (new_feature_story_title.nil? || new_feature_story_title.empty?)
-          new_feature_story_title = ask("\nPlease enter the title for this feature story")
-      end
-      icebox_stories = Array.new
-      @project.stories.all.collect{|story| icebox_stories.push story if story.current_state == "unscheduled"}
-      new_feature_story               = PivotalTracker::Story.new
-      new_feature_story.project_id    = @project.id
-      new_feature_story.story_type    = "feature"
-      new_feature_story.current_state = "unscheduled"
-      new_feature_story.name          = new_feature_story_title
-
-      args.each do |arg|
-          new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
-      end
-      while (new_feature_story_points.nil? || new_feature_story_points.empty?)
-          new_feature_story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
-      end
-      while (!["0","1","2","3","n"].include?(new_feature_story_points.downcase))
-          new_feature_story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
-      end
-      if new_feature_story_points.downcase == "n"
-          new_feature_story.estimate = -1
-          else
-          new_feature_story.estimate = new_feature_story_points
-      end
-
-
-      if args.any?{|arg| arg.include?("-tl") } && !(icebox_stories.empty? || icebox_stories.nil?)
-          icebox_first_story = icebox_stories.first
-          (new_feature_story.create).move(:before, icebox_first_story)
-          elsif args.any?{|arg| arg.include?("-bl")} && !(icebox_stories.empty? || icebox_stories.nil?)
-          icebox_last_story = icebox_stories.last
-          (new_feature_story.create).move(:after, icebox_last_story)
-          else
-            new_feature_story.create
-      end
-  end
+    create_story_with_type_state("feature", "unscheduled", args)
+   end
 
   def create_backlog_feature_story(args)
-      new_feature_story_title = nil
-      new_feature_story_points = nil
-      args.each do |arg|
-          new_feature_story_title = arg if arg[0] != "-"
-      end
-      while (new_feature_story_title.nil? || new_feature_story_title.empty?)
-          new_feature_story_title = ask("\nPlease enter the title for this feature story")
-      end
-      backlog_stories = Array.new
-      @project.stories.all.collect{|story| backlog_stories.push story if story.current_state == "unstarted" && story.story_type != "release"}
-      new_feature_story               = PivotalTracker::Story.new
-      new_feature_story.project_id    = @project.id
-      new_feature_story.story_type    = "feature"
-      new_feature_story.current_state = "unstarted"
-      new_feature_story.name          = new_feature_story_title
-
-      args.each do |arg|
-          new_feature_story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
-      end
-      while (new_feature_story_points.nil? || new_feature_story_points.empty?)
-          new_feature_story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
-      end
-      while (!["0","1","2","3","n"].include?(new_feature_story_points.downcase))
-          new_feature_story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n")
-      end
-      if new_feature_story_points.downcase == "n"
-          new_feature_story.estimate = -1
-          else
-          new_feature_story.estimate = new_feature_story_points
-      end
-
-      if args.any?{|arg| arg.include?("-tl")} && !(backlog_stories.empty? || backlog_stories.nil?)
-          backlog_first_story = backlog_stories.first
-          (new_feature_story.create).move(:before, backlog_first_story)
-          elsif args.any?{|arg| arg.include?("-bl")} && !(backlog_stories.empty? || backlog_stories.nil?)
-          backlog_last_story = backlog_stories.last
-          (new_feature_story.create).move(:after, backlog_last_story)
-          else
-            new_feature_story.create
-      end
+    create_story_with_type_state("feature", "unstarted", args)
   end
 
   private
@@ -351,16 +224,57 @@ class GitPivotalTrackerIntegration::Command::Base
     GitPivotalTrackerIntegration::Util::Shell.exec(command).chop
   end
 
-  def estimate_story(story)
-    story_points = nil
-    while (story_points.nil? || story_points.empty?)
-      story_points = ask("\nPlease enter the estimate points(0/1/2/3) for this story.")
+  def estimate_story
+    ask("Please enter the estimate points(0/1/2/3) for this story.") do |q|
+      q.in = ["0", "1", "2", "3"]
+      q.responses[:not_in_range] = "Invalid entry...Please enter the estimate points(0/1/2/3) for this story."
     end
-    while (!["0","1","2","3"].include?(story_points))
-      story_points = ask("\nInvalid entry...Please enter the estimate points(0/1/2/3) for this story.")
+  end
+
+  def estimate_story_optional
+    estimate  = ask("Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n") do |q|
+                  q.in = ["0", "1", "2", "3", "n"]
+                  q.responses[:not_in_range] = "Invalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n"
+                end
+    estimate = nil if estimate == "n"
+    estimate
+  end
+
+  def create_story_with_type_state(type, state, args)
+    story_title   = nil
+    story_points  = nil
+
+    args.each {|arg| story_title = arg if arg[0] != "-" }
+
+    while (story_title.nil? || story_title.empty?)
+      story_title = ask("Please enter the title for the story")
     end
-    story.attributes = {:estimate => story_points}
+
+    story_params = {:story_type => type, :current_state => state, :name => story_title}
+
+    # if it is a feature, get the estimate for the story.
+    # if it is not provided in the command line, ask for it
+    if type == "feature"  #set the story points if it is feature story
+      args.each do |arg|
+        story_points = arg[2] if arg[0] == "-" && arg[1].downcase == "p"
+      end
+      story_points = estimate_story_optional if story_points.nil? || story_points.empty?
+      story_params[:estimate] = story_points unless story_points.nil?
+    end
+
+    story = @project.create_story(story_params)
+
+    #move the story
+    stories = @project.stories(:with_state => state, :fields => 'name')
+
+    if args.any?{|arg| arg.include?("-tl") } && !(stories.empty? || stories.nil?)
+      story.before_id = stories.first.id
+    elsif args.any?{|arg| arg.include?("-bl")} && !(stories.empty? || stories.nil?)
+      story.after_id = stories.last.id
+    end
+
     story.save
+    story
   end
 
 end

@@ -17,7 +17,6 @@ require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
 require 'git-pivotal-tracker-integration/util/story'
-require 'pivotal-tracker'
 
 # The class that encapsulates creating a Pivotal Tracker Bug Story
 class GitPivotalTrackerIntegration::Command::Newbug < GitPivotalTrackerIntegration::Command::Base
@@ -30,30 +29,29 @@ class GitPivotalTrackerIntegration::Command::Newbug < GitPivotalTrackerIntegrati
   # * If arguments contains -bl then it creates a bug story at bottom of specified list
   # * If there are no arguments passed then it creates a bug story in icebox top of the list if you wish to create
   def run(args)
-    my_projects = PivotalTracker::Project.all
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = nil
-    if (!args.empty? && args.any?{|arg| arg.include?("-i")})
-      story = self.create_icebox_bug_story(args)
-    elsif (!args.empty? && args.any?{|arg| arg.include?("-b")})
-      story = self.create_backlog_bug_story(args)
-	else
-	  puts "\n Syntax for creating new bug story in icebox top of the list:\n git newbug -i -tl <bug-title> \n Syntax for creating new bug story in icebox bottom of the list: \n git newbug -i -bl <bug-title>\n"
-	  puts "\n Syntax for creating new bug story in backlog top of the list:\n git newbug -b -tl <bug-title> \n Syntax for creating new bug story in backlog bottom of the list: \n git newbug -b -bl <bug-title>\n"
-	  user_response = nil
-	  while (user_response.nil? || user_response.empty?)
-	  user_response = ask("\nYou have missed some parameters to pass...If you are ok with creating new bug story in icebox then enter y otherwise enter n")
-	  end
-	  while !(["y","n"].include?(user_response))
-	  user_response = ask("\nInvalid entry...If you are ok with creating new bug story in icebox then enter y otherwise enter n")
-	  end
-	  if user_response.downcase == "y"
-		story = self.create_icebox_bug_story(args)
+    if (args.include?("-i")) #icebox
+      story = create_icebox_bug_story(args)
+    elsif (args.include?("-b")) #backlog
+      story = create_backlog_bug_story(args)
 	  else
-	  abort "\nCheck your new bug story creation syntax and then try again"
-	  end
+  	  puts "\n Syntax for creating new bug story in icebox top of the list:\n git newbug -i -tl <bug-title> \n Syntax for creating new bug story in icebox bottom of the list: \n git newbug -i -bl <bug-title>\n"
+  	  puts "\n Syntax for creating new bug story in backlog top of the list:\n git newbug -b -tl <bug-title> \n Syntax for creating new bug story in backlog bottom of the list: \n git newbug -b -bl <bug-title>\n"
+	    user_response = nil
+	    while (user_response.nil? || user_response.empty?)
+	      user_response = ask("\nYou have missed some parameters to pass...If you are ok with creating new bug story in icebox then enter y otherwise enter n")
+	    end
+	    while !(["y","n"].include?(user_response))
+	     user_response = ask("\nInvalid entry...If you are ok with creating new bug story in icebox then enter y otherwise enter n")
+	    end
+	    if user_response.downcase == "y"
+		    story = self.create_icebox_bug_story(args)
+	    else
+	      abort "\nCheck your new bug story creation syntax and then try again"
+	    end
     end
-	puts "A new bug story has been created successfully with ID:#{story.id}"
+	  puts "A new bug story has been created successfully with ID:#{story.id}"
   end
 
 end

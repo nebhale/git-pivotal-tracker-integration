@@ -46,7 +46,8 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
       abort "There are no available stories."
     end
     if story.story_type == "feature" && story.estimate < 0
-      estimate_story(story)
+      story.estimate = estimate_story
+      story.save
     end
     $LOG.debug("story:#{story.name}")
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
