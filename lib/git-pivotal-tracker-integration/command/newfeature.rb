@@ -33,7 +33,7 @@ class GitPivotalTrackerIntegration::Command::Newfeature < GitPivotalTrackerInteg
   # * If arguments contains -p3 then it creates a feature story with estimate as 3 points.
   # * If there are no arguments passed then it creates a feature story in icebox top of the list if you wish to create
   def run(args)
-    my_projects = PivotalTracker::Project.all
+
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = nil
     if (!args.empty? && args.any?{|arg| arg.include?("-i")})
