@@ -45,7 +45,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
     if story.nil?
       abort "There are no available stories."
     end
-    if story.story_type == "feature" && story.estimate < 0
+    if story.story_type == "feature" && story.estimate.to_i < 0
       story.estimate = estimate_story
       story.save
     end
@@ -61,48 +61,42 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   end
 
   def check_branch
+    current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
+    # suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
+    suggested_branch = "develop"
 
-      current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
-      # suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
-      suggested_branch = "develop"
-
-      if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
-          $LOG.warn("Currently checked out branch is '#{current_branch}'.")
-          should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
-          if should_chage_branch != "n"
-              $LOG.debug("Checking out branch '#{suggested_branch}'")
-              print "Checking out branch '#{suggested_branch}'...\n\n"
-              $LOG.debug(GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}")
-          end
-
+    if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
+      $LOG.warn("Currently checked out branch is '#{current_branch}'.")
+      should_change_branch = ask("Your currently checked out branch is '#{current_branch}'. Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
+      if should_change_branch != "n"
+        $LOG.debug("Checking out branch '#{suggested_branch}'")
+        print "Checking out branch '#{suggested_branch}'...\n\n"
+        $LOG.debug(GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}")
       end
-
+    end
   end
 
   private
 
   def development_branch_name(story)
-      prefix = "#{story.id}-"
-      story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
-      if(story_name.length > 30)
-          suggested_suffix = story_name[0..27]
-          suggested_suffix << "__"
-      else
-          suggested_suffix = story_name
-      end
-      branch_name = "#{prefix}" + ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
-      puts
-      if branch_name == "#{prefix}"
-          branch_name << suggested_suffix
-      end
-      branch_name.gsub(/[^0-9a-z\\s\-]/i, '_')
+    prefix = "#{story.id}-"
+    story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
+    if(story_name.length > 30)
+      suggested_suffix = story_name[0..27]
+      suggested_suffix << "__"
+    else
+      suggested_suffix = story_name
+    end
+    branch_name = ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
+    branch_name = branch_name.empty? ? "#{prefix}#{suggested_suffix}" : "#{prefix}#{branch_name}"
+    branch_name.gsub(/[^0-9a-z\\s\-]/i, '_')
   end
 
   def start_on_tracker(story)
     print 'Starting story on Pivotal Tracker... '
     story.attributes = {
-        :current_state => 'started',
-        :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
+        :current_state  => 'started',
+        :owned_by       => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
     }
     story.save
     puts 'OK'

@@ -48,14 +48,13 @@ class GitPivotalTrackerIntegration::Command::Report < GitPivotalTrackerIntegrati
     current_user_email  = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.email").chomp
     bug_description     = "#{@project.name}\n#{current_user_email}\n#{report_note}"
 
-    bug_story = PivotalTracker::Story.new
-    bug_story.project_id    = "1067990"
-    bug_story.owned_by      = owned_by
-    bug_story.story_type    = "bug"
-    bug_story.name          = bug_title
-    bug_story.description   = bug_description
-    bug_story.labels        = "userreported"
-    uploaded_story          = bug_story.create
+    project = @client.project(1067990)
+
+    story_params = {:owned_by => owned_by, :story_type => "bug",
+                    :name => bug_title,    :description => bug_description,
+                    :labels => "userreported"}
+
+    project.create_story
 
     uploaded_story.upload_attachment(self.logger_filename)
   end
