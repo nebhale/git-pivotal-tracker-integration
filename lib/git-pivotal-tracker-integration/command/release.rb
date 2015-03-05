@@ -34,6 +34,7 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
   #   * +nil+
   # @return [void]
   def run(filter)
+
     $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
     story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
     place_version_release story
@@ -81,14 +82,14 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
       # cd back to the working_directory
       Dir.chdir(working_directory)
     end
-    
+
     # Change spec version
     change_spec_version(version_number) if has_spec_path?
 
     # Create a new build commit, push to QA
     puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
-    
+
     # Create release tag
     create_release_tag(version_number) if has_spec_path?
 
@@ -98,28 +99,21 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
       puts GitPivotalTrackerIntegration::Util::Shell.exec "pod repo push V2PodSpecs #{@configuration.pconfig["spec"]["spec-path"]}"
       puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
     end
-    
+
     #checkout develop branch
     puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
 
-    s_labels_string = story.labels
-    s_labels = ""
-    if (s_labels_string)
-      s_labels = s_labels_string.split(",")
-      s_labels << story.name
-      s_labels_string = s_labels.uniq.join(",")
-    else
-      s_labels_string = story.name
-    end
-
-    puts "labels:#{s_labels_string}"
-    story.update(:labels => s_labels_string)
+    #add story name as one of the labels for the story
+    labels = story.labels.map(&:name)
+    labels << story.name unless labels.include?(story.name)
+    puts "labels: #{labels.join(', ')}"
+    story.add_labels(*labels) unless labels.include?(story.name)
 
     i_stories = included_stories @project, story
     add_version_tag_to_stories i_stories, story
 
   end
-  
+
   private
 
   CANDIDATE_STATES = %w(delivered unstarted).freeze
@@ -130,109 +124,71 @@ class GitPivotalTrackerIntegration::Command::Release < GitPivotalTrackerIntegrat
     all_stories << release_story
     puts "Included stories:\n"
     all_stories.each {|story|
-      s_labels_string = story.labels
-      s_labels = ""
-      if (s_labels_string)
-        s_labels = s_labels_string.split(",")
-        s_labels << release_story.name
-        s_labels_string = s_labels.uniq.join(",")
-      else
-        s_labels_string = release_story.name
-      end
+      labels = story.labels.map(&:name)
+      origin_labels = lables.dup
+      labels << release_story.name
+      labels.uniq!
 
-      unless story.labels.nil?
-        if story.labels.scan(/b\d{1}/).size > story.labels.scan(/v\d{1}/).size
-          story.update(:labels => s_labels_string)
+      unless origin_labels.empty?
+        if origin_labels.to_s.scan(/b\d{1}/).size > origin_labels.to_s.scan(/v\d{1}/).size
+          story.add_labels(*labels)
           puts story.id
         end
-      end 
+      end
     }
   end
 
   def included_stories(project, release_story)
-
-    criteria = {
-      :current_state => CANDIDATE_STATES,
-      :limit => 1000,
-      :story_type => CANDIDATE_TYPES
-    }
-
-
-    candidates = project.stories.all criteria
-
-    estimated_candidates = Array.new
-    val_is_valid = true
-    
-    candidates.each do |val|
-      val_is_valid = true
-      if (val.id == release_story.id)
-        next
-      end
-      if (val.current_state != "delivered")
-        val_is_valid = false
-      end
-      if (val.story_type == "release")
-        val_is_valid = false
-      end
-      if val_is_valid
-         estimated_candidates << val
-      end
-    end
-    candidates = estimated_candidates
+    project.stories filter: "current_state:delivered type:bug,chore,feature -id:#{release_story.id}"
   end
-  
+
   def place_version_release(release_story)
-	not_accepted_releases = nil
-	not_accepted_releases_ids = nil
-	not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
-	not_accepted_releases_ids = Array.new
-	not_accepted_releases.collect{|not_accepted_release| not_accepted_releases_ids.push not_accepted_release.id.to_i }
-	unless (not_accepted_releases_ids.include?(release_story.id))
-		not_accepted_releases << release_story
-		not_accepted_releases_ids.clear
-		not_accepted_releases.collect{|not_accepted_release| not_accepted_releases_ids.push not_accepted_release.id.to_i }
-	end
-    specified_pt_story = @project.stories.all(:current_state => ['unstarted', 'started', 'finished', 'delivered', 'rejected']).first
-    last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
+    not_accepted_releases     = @project.stories(filter: "current_state:unstarted type:release")
+    not_accepted_releases_ids = not_accepted_releases.map(&:id)
+    unless (not_accepted_releases_ids.include?(release_story.id))
+      not_accepted_releases     << release_story
+      not_accepted_releases_ids << release_story.id
+    end
+    specified_pt_story = @project.stories(filter: "current_state:unstarted,started,finished,delivered,rejected").first
+    last_accepted_release_story = @project.stories(filter: "current_state:accepted type:release").last
     if not_accepted_releases.size > 1
-		release_story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
+      release_story.after_id  = not_accepted_releases[-2].id
+      release_story.save
     elsif !specified_pt_story.nil?
-		release_story.move(:before, specified_pt_story)
+      release_story.before_id = specified_pt_story.id
+      release_story.save
     end
   end
-  
+
   def pull_out_rejected_stories(release_story)
-      rejected_stories=@project.stories.all(:current_state => ['rejected'], :story_type => ['bug', 'chore', 'feature'])
-      rejected_stories.each{|rejected_story|
-          rejected_story.move(:after, release_story)
-      }	
+    rejected_stories = @project.stories(filter: "current_state:rejected type:bug,chore,feature")
+    rejected_stories.each do |rejected_story|
+      rejected_stories.after_id = release_story.id
+      rejected_stories.save
+    end
   end
-  
+
   def has_spec_path?
-      config_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
-      config_file_text = File.read(config_file_path)
-      spec_pattern_check = /spec-path(.*)=/.match("#{config_file_text}")
-      if spec_pattern_check.nil?
-          return false
-          else
-          spec_file_path = @configuration.pconfig["spec"]["spec-path"]
-          if spec_file_path.nil?
-              return false
-              else
-              return true
-          end
-      end
+    config_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+    config_file_text = File.read(config_file_path)
+    spec_pattern_check = /spec-path(.*)=/.match("#{config_file_text}")
+    if spec_pattern_check.nil?
+      return false
+    else
+      spec_file_path = @configuration.pconfig["spec"]["spec-path"]
+      return !spec_file_path.nil?
+    end
   end
-  
+
   def change_spec_version(version_number)
-      spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
-      spec_file_text = File.read(spec_file_path)
-      File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/(?<!_)version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
+    spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
+    spec_file_text = File.read(spec_file_path)
+    File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/(?<!_)version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
   end
-                                                                           
+
   def create_release_tag(version_number)
-      GitPivotalTrackerIntegration::Util::Shell.exec "git tag -a #{version_number} -m \"release #{version_number}\""
-      puts GitPivotalTrackerIntegration::Util::Shell.exec "git push origin #{version_number}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git tag -a #{version_number} -m \"release #{version_number}\""
+    puts GitPivotalTrackerIntegration::Util::Shell.exec "git push origin #{version_number}"
   end
 
 end

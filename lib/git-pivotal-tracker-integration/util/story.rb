@@ -20,6 +20,12 @@ require 'pivotal-tracker'
 # Utilities for dealing with +PivotalTracker::Story+s
 class GitPivotalTrackerIntegration::Util::Story
 
+  CANDIDATE_STATES  = %w(rejected unstarted unscheduled).freeze
+  LABEL_DESCRIPTION = 'Description'.freeze
+  LABEL_TITLE       = 'Title'.freeze
+  LABEL_WIDTH       = (LABEL_DESCRIPTION.length + 2).freeze
+  CONTENT_WIDTH     = (HighLine.new.output_cols - LABEL_WIDTH).freeze
+
   # Print a human readable version of a story.  This pretty prints the title,
   # description, and notes for the story.
   #
@@ -35,11 +41,10 @@ class GitPivotalTrackerIntegration::Util::Story
       print_value description
     end
 
-    #Todo Need to implement for comments in v5 api
-    # PivotalTracker::Note.all(story).sort_by { |note| note.noted_at }.each_with_index do |note, index|
-    #   print_label "Note #{index + 1}"
-    #   print_value note.text
-    # end
+    story.comments.sort_by{ |comment| comment.updated_at }.each_with_index do |comment, index|
+      print_label "Note #{index + 1}"
+      print_value comment.text
+    end
 
     puts
   end
@@ -56,10 +61,26 @@ class GitPivotalTrackerIntegration::Util::Story
   # @param [Fixnum] limit The number maximum number of stories the user can choose from
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
   def self.select_story(project, filter = nil, limit = 12)
+    story = nil
+
     if filter =~ /[[:digit:]]/
       story = project.story filter.to_i
     else
-      story = find_story project, filter, limit
+      # story type from (feature, bug, chore)
+      # state from (rejected unstarted unscheduled)
+      # if story type is "feature", then retrieve only estimated ones.
+      criteria = "current_state:#{CANDIDATE_STATES.join(',')}"
+      if filter.nil?
+        criteria << " type:feature,bug,chore"
+      elsif %w(feature bug chore).include?(filter)
+        criteria << " type:#{type}"
+        criteria << " -estimate:-1" if type == "feature"
+      end
+
+      candidates = project.stories(filter: criteria, limit: limit)
+
+      story = choose_story(candidates) unless candidates.empty?
+
     end
 
     story
@@ -67,31 +88,20 @@ class GitPivotalTrackerIntegration::Util::Story
 
   def self.select_release(project, filter = 'b', limit = 10)
     if filter =~ /[[:digit:]]/
-      story = project.stories.find filter.to_i
-      if story.(story_type != "release")
-        story = nil
+      story = project.story filter.to_i
+      if story.story_type != "release"
         $LOG.fatal("Specified story##{filter} is not a valid release story")
         puts "Specified story##{filter} is not a valid release story"
         abort 'FAIL'
       end
     else
-      story = find_story project, filter, limit
+      story = find_release_story project, filter, limit
     end
 
     story
   end
 
   private
-
-  CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze
-
-  LABEL_DESCRIPTION = 'Description'.freeze
-
-  LABEL_TITLE = 'Title'.freeze
-
-  LABEL_WIDTH = (LABEL_DESCRIPTION.length + 2).freeze
-
-  CONTENT_WIDTH = (HighLine.new.output_cols - LABEL_WIDTH).freeze
 
   def self.print_label(label)
     print "%#{LABEL_WIDTH}s" % ["#{label}: "]
@@ -111,107 +121,75 @@ class GitPivotalTrackerIntegration::Util::Story
     end
   end
 
-  def self.find_story(project, type, limit)
-    if (type == "b" || type == "v")
-      release_type = type
-      type = "release"
-    end
-    criteria = {
-      :current_state => CANDIDATE_STATES
-    }
-    if type && %w(feature bug chore release).include?(type)
-      criteria[:story_type] = type
-    end
+  def self.choose_story(candidates, type = nil)
+    choose do |menu|
+      puts "\nUnestimated features can not be started.\n\n" if type != "release"
 
-    candidates = project.stories filter: self.params_to_string(criteria)  #limit parameter wont work with filter parameter
+      menu.prompt = 'Choose a story to start: '
 
-    # only include stories that have been estimated
-    estimated_candidates = Array.new
-    val_is_valid = true
-
-    candidates.each {|val|
-        val_is_valid = true
-        if (val.story_type == "feature" )
-          # puts "#{val.story_type} #{val.name}.estimate:#{val.estimate} "
-          if (val.estimate.to_i < 0)
-            # puts "#{val.estimate} < 0"
-            val_is_valid = false
-          end
-        elsif (val.story_type == "release")
-          label_string = val.labels
-          if label_string.nil?
-            label_string = "";
-          end
-          if (val.name[0] != release_type) || (label_string.include? val.name)
-            val_is_valid = false
-          end
-        end
-
-        if val_is_valid
-          # puts "val_is_valid:#{val_is_valid}"
-           estimated_candidates << val
-        end
-    }
-    candidates = estimated_candidates
-
-    if candidates.length != 0
-      story = choose do |menu|
-        if type != "release"
-          puts "\nUnestimated features can not be started.\n\n"
-        end
-
-        menu.prompt = 'Choose a story to start: '
-
-        candidates.each do |story|
-          name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
-          menu.choice(name) { story }
-        end
-        menu.choice('Quit') do
-          say "Thank you for using v2gpti"
-          exit 0
-        end
+      candidates.each do |story|
+        name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
+        menu.choice(name) { story }
       end
+      menu.choice('Quit') do
+        say "Thank you for using v2gpti"
+        exit 0
+      end
+    end
+  end
 
-      puts
+  # story type  is release with story name starting with "v"/"b" or story labels includes story name.
+  # state from (rejected unstarted unscheduled)
+  # sort stories based on version (version number part of the story name) and pick the latest  one.
+  def self.find_release_story(project, type, limit)
+    release_type = (type == "b") ? "build" : "version"
+
+    criteria =  "type:release"
+    criteria <<  " current_state:#{CANDIDATE_STATES.join(',')}"
+
+    candidates = project.stories(filter: criteria, limit: limit)
+
+    candidates = candidates.select do |story|
+      labels = story.labels.map(&:name)
+      story.name.start_with?(type) || labels.include?(story.name)
+    end
+
+    unless candidates.empty?
+      story = choose_story(candidates, "release")
     else
-      if type == "release"
-        last_release = last_release_story(project, release_type)
-        last_release_number = last_release.name if !last_release.nil?
-        last_release_type_string = (release_type == "b") ? "build" : "version"
-        puts "There are no available release stories."
-        puts " The last #{last_release_type_string} release was #{last_release_number}." if !last_release.nil?
-        next_release_number = set_next_release_number(last_release, release_type, last_release_number) if !last_release.nil?
-        next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:") if last_release.nil?
+      puts "There are no available release stories."
+      last_release = last_release_story(project, type)
+      if last_release
+        puts " The last #{release_type} release was #{last_release.name}."
+        next_release_number = set_next_release_number(last_release, release_type)
+        next_release_number = ask("To create a new #{last_release_type_string}, enter a name for the new release story:")
         puts "New #{last_release_type_string} release number is: #{next_release_number}"
         story = self.create_new_release(project, next_release_number)
-      else
-        puts
       end
     end
-
-
 
     story
   end
 
+  # sort stories based on version (version number part of the story name) and pick the latest  one.
   def self.last_release_story (project, release_type)
-    criteria = {
-        :story_type => "release"
-    }
 
-    candidates = project.stories filter: (self.params_to_string criteria)
-    candidates = candidates.select {|x| (x.name[0]==release_type) && !(x.labels.nil? || (!x.labels.include? x.name))}
+    candidates = project.stories filter: "type:release"
+    candidates = candidates.select do |story|
+      labels = story.labels.map(&:name)
+      story.name.start_with?(release_type) || labels.include?(story.name)
+    end
     candidates.sort! { |x,y| Gem::Version.new(y.name[1 .. -1]) <=> Gem::Version.new(x.name[1 .. -1]) }
 
     candidates.first
   end
-  
-  def self.set_next_release_number(last_release, release_type, last_release_number)
+
+  def self.set_next_release_number(last_release, release_type)
     if release_type == "b"
-      return last_release_number.next
+      return last_release.name.next  # just increment the last number
     end
     if release_type == "v"
-      version_split = last_release_number.split(/\./)
+      version_split = last_release.name.split(/\./)
       last_incremented_number=version_split.last.next
       version_split.pop
       version_split.push(last_incremented_number)
@@ -223,7 +201,4 @@ class GitPivotalTrackerIntegration::Util::Story
     project.create_story(:story_type => 'release', :current_state => 'unstarted', :name => next_release_number)
   end
 
-  def self.params_to_string(input= {})
-    input.inject(''){|rslt,ip| rslt << "#{ip.first.to_s}:#{ip.last.is_a?(Array) ? ip.last.join(',') : ip.last} "}
-  end
 end
