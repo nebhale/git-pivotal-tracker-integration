@@ -60,7 +60,7 @@ class GitPivotalTrackerIntegration::Util::Story
   #   * +nil+: offers the user a selection of stories of all types
   # @param [Fixnum] limit The number maximum number of stories the user can choose from
   # @return [PivotalTracker::Story] The Pivotal Tracker story selected by the user
-  def self.select_story(project, filter = nil, limit = 12)
+  def self.select_story(project, filter = nil, limit = 5)
     story = nil
 
     if filter =~ /[[:digit:]]/

@@ -108,30 +108,23 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
 
   private
 
-  CANDIDATE_STATES = %w(finished unstarted).freeze
-  CANDIDATE_TYPES = %w(bug chore feature release)
-
   def deliver_stories(stories, build_story)
     all_stories = stories.dup
     all_stories << build_story
-    all_stories.each {|story|
-      # puts "story class:#{story.class}"
-      s_labels_string = story.labels
-      s_labels = ""
-      if (s_labels_string)
-        s_labels = s_labels_string.split(",")
-        s_labels << build_story.name
-        s_labels_string = s_labels.uniq.join(",")
-      else
-        s_labels_string = build_story.name
-      end
 
-      # puts "labels:#{s_labels_string}"
-      story.update(:labels => s_labels_string)
+    all_stories.each {|story|
+      labels = story.labels.map(&:name)
+      labels << build_story.name
+      labels.uniq!
+
+      story.add_labels(*labels)
+
       if (story.story_type == "feature") || (story.story_type == "bug")
-        story.update(:current_state => "delivered")
+        story.current_state = 'delivered'
+        story.save
       elsif (story.story_type == "chore")
-        story.update(:current_state => "accepted")
+        story.current_state = 'accepted'
+        story.save
       end
     }
   end
@@ -142,93 +135,42 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     output = File.open( notes_file, "w")
     output << "Included stories:\n"
 
-    criteria = {
-      :current_state => CANDIDATE_STATES,
-      :limit => 1000,
-      :story_type => CANDIDATE_TYPES
-    }
+    stories = project.stories(filter: "current_state:unstarted type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
 
-
-    candidates = project.stories.all criteria
-
-    # only include stories that have been estimated
-    estimated_candidates = Array.new
-    val_is_valid = true
     puts "Included stories:\n"
-    candidates.each do |val|
-      val_is_valid = true
-      if (val.id == build_story.id)
-        next
-      end
-      if (val.current_state != "finished")
-        val_is_valid = false
-      end
-      if (val.story_type == "release")
-        val_is_valid = false
-      end
-      if val_is_valid
-        # puts "val_is_valid:#{val_is_valid}"
-         estimated_candidates << val
-         output << "#{val.id}\n"
-         puts "#{val.id}"
 
-      end
+    stories.each do |story|
+      output << "#{story.id}\n"
+      puts "#{story.id}"
     end
+
     output.close
-    candidates = estimated_candidates
-  end
-
-
-  def development_branch_name(story)
-    prefix = "#{story.id}-"
-    story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
-    if(story_name.length > 30)
-      suggested_suffix = story_name[0..27]
-      suggested_suffix << "__"
-    else
-      suggested_suffix = story_name
-    end
-    branch_name = "#{prefix}" + ask("Enter branch name (#{story.id}-<#{suggested_suffix}>): ")
-    puts
-    if branch_name == "#{prefix}"
-      branch_name << suggested_suffix
-    end
-    branch_name.gsub(/[^0-9a-z\\s\-]/i, '_')
-  end
-
-  def start_on_tracker(story)
-    print 'Starting story on Pivotal Tracker... '
-    story.update(
-      :current_state => 'started',
-      :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
-    )
-    puts 'OK'
+    stories
   end
 
   def sort_for_deliver(release_story)
-    last_release = GitPivotalTrackerIntegration::Util::Story.last_release_story(@project, "b")
-    stories = included_stories(@project, release_story)
-    if last_release.nil?
-      last_release = stories[0]
-      stories.shift
-    end
+    last_release  = GitPivotalTrackerIntegration::Util::Story.last_release_story(@project, "b")
+    stories       = included_stories(@project, release_story)
+    last_release  = stories.shift if last_release.nil?
+
     abort "\nThere are no last release stories or finished stories to deliver" if last_release.nil?
     stories << release_story
     previous_story = last_release.dup
 
     puts "Last release:#{previous_story.name}"
-    last_accepted_release_story=@project.stories.all(:current_state => 'accepted', :story_type => 'release').last
-    not_accepted_releases = @project.stories.all(:current_state => 'unstarted', :story_type => 'release')
+    last_accepted_release_story = @project.stories(filter: "current_state:accepted type:release").last
+    not_accepted_releases       = @project.stories(filter: "current_state:unstarted type:release")
     stories.reverse!
 
     stories.each do |story|
       if not_accepted_releases.size == 1 && !last_accepted_release_story.nil?
-        story.move(:after, last_accepted_release_story)
+        story.after_id = last_accepted_release_story.id
       elsif previous_story.current_state == 'accepted'
-        story.move(:after, not_accepted_releases[not_accepted_releases.size - 2])
+        story.after_id = not_accepted_releases[not_accepted_releases.size - 2].id
       else
-        story.move(:after, previous_story)
+        story.after_id = previous_story.id
       end
+      story.save
     end
   end
 
