@@ -15,7 +15,6 @@
 
 require 'git-pivotal-tracker-integration/util/util'
 require 'highline/import'
-require 'pivotal-tracker'
 
 # Utilities for dealing with +PivotalTracker::Story+s
 class GitPivotalTrackerIntegration::Util::Story

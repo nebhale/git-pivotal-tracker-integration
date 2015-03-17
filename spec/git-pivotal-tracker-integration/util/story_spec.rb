@@ -50,7 +50,7 @@ describe GitPivotalTrackerIntegration::Util::Story do
     story = double('story')
     story.should_receive(:name)
     story.should_receive(:description)
-    # PivotalTracker::Note.should_receive(:all).and_return([])
+    story.should_receive(:comments).and_return([])
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 
@@ -63,7 +63,8 @@ describe GitPivotalTrackerIntegration::Util::Story do
     story = double('story')
     story.should_receive(:name)
     story.should_receive(:description).and_return('')
-    # PivotalTracker::Note.should_receive(:all).and_return([])
+    story.should_receive(:comments).and_return([])
+
 
     GitPivotalTrackerIntegration::Util::Story.pretty_print story
 

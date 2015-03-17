@@ -16,7 +16,6 @@
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
 require 'highline/import'
-require 'pivotal-tracker'
 require 'git-pivotal-tracker-integration/util/togglV8'
 require 'time'
 
