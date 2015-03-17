@@ -135,7 +135,7 @@ class GitPivotalTrackerIntegration::Command::Deliver < GitPivotalTrackerIntegrat
     output = File.open( notes_file, "w")
     output << "Included stories:\n"
 
-    stories = project.stories(filter: "current_state:unstarted type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
+    stories = project.stories(filter: "current_state:finished type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
 
     puts "Included stories:\n"
 

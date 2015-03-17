@@ -40,7 +40,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
       api_token = ask('Pivotal API Token (found at https://www.pivotaltracker.com/profile): ').strip
       GitPivotalTrackerIntegration::Util::Git.set_config KEY_API_TOKEN, api_token, :global
       puts
-    end  
+    end
     self.check_config_project_id
 
     api_token
@@ -92,7 +92,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
 
     project_id
   end
-  
+
   def platform_name
     platform_name = self.pconfig["platform"]["platform-name"].downcase
 
@@ -120,7 +120,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
     $LOG.debug("#{self.class}:#{__method__}")
     story_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_STORY_ID, :branch
     $LOG.debug("story_id:#{story_id}")
-    project.stories.find story_id.to_i
+    project.story story_id.to_i
   end
 
   # Stores the story associated with the current development branch
@@ -205,7 +205,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
 
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
-  
+
   KEY_PLATFORM_NAME = 'platform.platform-name'.freeze
 
   KEY_STORY_ID = 'pivotal-story-id'.freeze
