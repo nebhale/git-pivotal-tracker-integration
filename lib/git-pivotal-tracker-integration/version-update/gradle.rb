@@ -13,52 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'git-pivotal-tracker-integration/version-update/version_update'
+module GitPivotalTrackerIntegration
+  module VersionUpdate
 
-# A version updater for dealing with _typical_ Gradle projects.  This updater
-# assumes that the version of the current project is stored within a
-# +gradle.properties+ file in the root of the repository.  This properties
-# file should have an entry with a key of +version+ and version number as the key.
-class GitPivotalTrackerIntegration::VersionUpdate::Gradle
+    # A version updater for dealing with _typical_ Gradle projects.  This updater
+    # assumes that the version of the current project is stored within a
+    # +gradle.properties+ file in the root of the repository.  This properties
+    # file should have an entry with a key of +version+ and version number as the key.
+    class Gradle
 
-  # Creates an instance of this updater
-  #
-  # @param [String] root The root of the repository
-  def initialize(root)
-    @gradle_properties = File.expand_path 'gradle.properties', root
+      # Creates an instance of this updater
+      #
+      # @param [String] root The root of the repository
+      def initialize(root)
+        @gradle_properties = File.expand_path 'gradle.properties', root
 
-    if File.exist? @gradle_properties
-      groups = nil
-      File.open(@gradle_properties, 'r') do |file|
-        groups = file.read().scan(/version[=:](.*)/)
+        if File.exist? @gradle_properties
+          groups = nil
+          File.open(@gradle_properties, 'r') do |file|
+            groups = file.read().scan(/version[=:](.*)/)
+          end
+          @version = groups[0] ? groups[0][0]: nil
+        end
       end
-      @version = groups[0] ? groups[0][0]: nil
+
+      # Whether this updater supports updating this project
+      #
+      # @return [Boolean] +true+ if a valid version number was found on
+      #   initialization, +false+ otherwise
+      def supports?
+        !@version.nil?
+      end
+
+      # The current version of the project
+      #
+      # @return [String] the current version of the project
+      def current_version
+        @version
+      end
+
+      # Update the version of the project
+      #
+      # @param [String] new_version the version to update the project to
+      # @return [void]
+      def update_version(new_version)
+        contents = File.read(@gradle_properties)
+        contents = contents.gsub(/(version[=:])#{@version}/, "\\1#{new_version}")
+        File.open(@gradle_properties, 'w') { |file| file.write(contents) }
+      end
+
     end
-  end
 
-  # Whether this updater supports updating this project
-  #
-  # @return [Boolean] +true+ if a valid version number was found on
-  #   initialization, +false+ otherwise
-  def supports?
-    !@version.nil?
   end
-
-  # The current version of the project
-  #
-  # @return [String] the current version of the project
-  def current_version
-    @version
-  end
-
-  # Update the version of the project
-  #
-  # @param [String] new_version the version to update the project to
-  # @return [void]
-  def update_version(new_version)
-    contents = File.read(@gradle_properties)
-    contents = contents.gsub(/(version[=:])#{@version}/, "\\1#{new_version}")
-    File.open(@gradle_properties, 'w') { |file| file.write(contents) }
-  end
-
 end
