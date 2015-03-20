@@ -30,23 +30,23 @@ module GitPivotalTrackerIntegration
       #   * +nil+
       # @return [void]
       def run(filter)
-        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         self.check_branch
-        story = GitPivotalTrackerIntegration::Util::Story.select_release @project
+        story = Util::Story.select_release @project
         $LOG.debug("story:#{story.name}")
         sort_for_deliver story
-        GitPivotalTrackerIntegration::Util::Story.pretty_print story
+        Util::Story.pretty_print story
 
-        current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
+        current_branch = Util::Git.branch_name
 
         puts "Merging from orgin develop..."
-        GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
+        Util::Shell.exec "git pull"
 
         # checkout QA branch
         # Merge develop into QA
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
-        GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
-        if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
+        Util::Shell.exec "git checkout QA"
+        Util::Shell.exec "git pull"
+        if (Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
           puts "Merged 'develop' in to 'QA'"
         else
           abort "FAILED to merge 'develop' in to 'QA'"
@@ -62,24 +62,24 @@ module GitPivotalTrackerIntegration
         puts "working_directory:#{working_directory}*"
 
         if (OS.mac? && @platform.downcase == "ios")
-          project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+          project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
 
           # cd to the project_directory
           Dir.chdir(project_directory)
 
           # set build number and project number in project file
           pwd
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
+          puts Util::Shell.exec "xcrun agvtool new-version -all #{build_number}", false
+          puts Util::Shell.exec "xcrun agvtool new-marketing-version SNAPSHOT"
 
           # cd back to the working_directory
           Dir.chdir(working_directory)
         end
 
         # Create a new build commit, push to QA, checkout develop
-        GitPivotalTrackerIntegration::Util::Git.create_commit( "Update build number to #{build_number} for delivery to QA", story)
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
+        Util::Git.create_commit( "Update build number to #{build_number} for delivery to QA", story)
+        puts Util::Shell.exec "git push"
+        puts Util::Shell.exec "git checkout develop"
 
         i_stories = included_stories @project, story
         deliver_stories i_stories, story
@@ -87,15 +87,15 @@ module GitPivotalTrackerIntegration
 
       def check_branch
 
-        current_branch    = GitPivotalTrackerIntegration::Util::Git.branch_name
+        current_branch    = Util::Git.branch_name
         suggested_branch  = "develop"
 
         if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
           should_chage_branch = ask("Your currently checked out branch is '#{current_branch}'. You must be on the #{suggested_branch} branch to run this command.\n\n Do you want to checkout '#{suggested_branch}' before starting?(Y/n)")
           if should_chage_branch != "n"
             print "Checking out branch '#{suggested_branch}'...\n\n"
-            GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{suggested_branch}"
-            GitPivotalTrackerIntegration::Util::Shell.exec 'git pull'
+            Util::Shell.exec "git checkout #{suggested_branch}"
+            Util::Shell.exec 'git pull'
           else
               abort "You must be on the #{suggested_branch} branch to run this command."
           end
@@ -145,7 +145,7 @@ module GitPivotalTrackerIntegration
       end
 
       def sort_for_deliver(release_story)
-        last_release  = GitPivotalTrackerIntegration::Util::Story.last_release_story(@project, "b")
+        last_release  = Util::Story.last_release_story(@project, "b")
         stories       = included_stories(@project, release_story)
         last_release  = stories.shift if last_release.nil?
 

@@ -32,26 +32,26 @@ module GitPivotalTrackerIntegration
       # @return [void]
       def run(filter)
 
-        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
-        story = GitPivotalTrackerIntegration::Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
+        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
+        story = Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
         place_version_release story
         pull_out_rejected_stories story
-        GitPivotalTrackerIntegration::Util::Story.pretty_print story
+        Util::Story.pretty_print story
         $LOG.debug("story:#{story.name}")
 
-        current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
+        current_branch = Util::Git.branch_name
 
         # checkout QA branch
         # Update QA from origin
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout QA"
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git fetch"
-        GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
+        puts Util::Shell.exec "git checkout QA"
+        puts Util::Shell.exec "git fetch"
+        Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
 
         # checkout master branch
         # Merge QA into master
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout master"
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git pull"
-        if (GitPivotalTrackerIntegration::Util::Shell.exec "git merge -s recursive --strategy-option theirs QA")
+        puts Util::Shell.exec "git checkout master"
+        puts Util::Shell.exec "git pull"
+        if (Util::Shell.exec "git merge -s recursive --strategy-option theirs QA")
           puts "Merged 'QA' in to 'master'"
         else
           abort "FAILED to merge 'QA' in to 'master'"
@@ -67,38 +67,50 @@ module GitPivotalTrackerIntegration
         puts "working_directory:#{working_directory}*"
 
         if (OS.mac? && @platform.downcase == "ios")
-          project_directory = ((GitPivotalTrackerIntegration::Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+          project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
 
           # cd to the project_directory
           Dir.chdir(project_directory)
 
           # set project number in project file
           pwd
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
+          puts Util::Shell.exec "xcrun agvtool new-marketing-version #{version_number}"
 
           # cd back to the working_directory
           Dir.chdir(working_directory)
+          # Change spec version
+          change_spec_version(version_number) if has_spec_path?
+        elsif @platform.downcase == 'android'
+          updater = [
+              VersionUpdate::Gradle.new(@repository_root)
+            ].find { |candidate| candidate.supports? }
+
+          updater.update_version version_number
+
+        elsif @platform.downcase == 'ruby-gem'
+          file = Dir["#{Util::Git.repository_root}/*.gemspec"].first
+          if file
+            file_text = File.read(file)
+            File.open(file, "w") {|gemspec| gemspec.puts file_text.gsub(/(?<!_)version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
+          end
         end
 
-        # Change spec version
-        change_spec_version(version_number) if has_spec_path?
-
         # Create a new build commit, push to QA
-        puts GitPivotalTrackerIntegration::Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git push"
+        puts Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
+        puts Util::Shell.exec "git push"
 
         # Create release tag
-        create_release_tag(version_number) if has_spec_path?
+        #create_release_tag(version_number)
 
         #Created tag should be pushed to private Podspec repo
         if has_spec_path? && @platform == "ios"
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{version_number}"
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "pod repo push V2PodSpecs #{@configuration.pconfig["spec"]["spec-path"]}"
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout develop"
+          puts Util::Shell.exec "git checkout #{version_number}"
+          puts Util::Shell.exec "pod repo push V2PodSpecs #{@configuration.pconfig["spec"]["spec-path"]}"
+          puts Util::Shell.exec "git checkout develop"
         end
 
         #checkout develop branch
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git checkout #{current_branch}"
+        puts Util::Shell.exec "git checkout #{current_branch}"
 
         #add story name as one of the labels for the story
         labels = story.labels.map(&:name)
@@ -122,7 +134,7 @@ module GitPivotalTrackerIntegration
         puts "Included stories:\n"
         all_stories.each {|story|
           labels = story.labels.map(&:name)
-          origin_labels = lables.dup
+          origin_labels = labels.dup
           labels << release_story.name
           labels.uniq!
 
@@ -166,7 +178,7 @@ module GitPivotalTrackerIntegration
       end
 
       def has_spec_path?
-        config_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+        config_file_path = "#{Util::Git.repository_root}/.v2gpti/config"
         config_file_text = File.read(config_file_path)
         spec_pattern_check = /spec-path(.*)=/.match("#{config_file_text}")
         if spec_pattern_check.nil?
@@ -178,14 +190,14 @@ module GitPivotalTrackerIntegration
       end
 
       def change_spec_version(version_number)
-        spec_file_path = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
+        spec_file_path = "#{Util::Git.repository_root}/#{@configuration.pconfig["spec"]["spec-path"]}"
         spec_file_text = File.read(spec_file_path)
         File.open(spec_file_path, "w") {|file| file.puts spec_file_text.gsub(/(?<!_)version(.*)=(.*)['|"]/, "version     = '#{version_number}'")}
       end
 
       def create_release_tag(version_number)
-        GitPivotalTrackerIntegration::Util::Shell.exec "git tag -a #{version_number} -m \"release #{version_number}\""
-        puts GitPivotalTrackerIntegration::Util::Shell.exec "git push origin #{version_number}"
+        Util::Shell.exec "git tag -a #{version_number} -m \"release #{version_number}\""
+        puts Util::Shell.exec "git push origin #{version_number}"
       end
 
     end

@@ -32,13 +32,13 @@ module GitPivotalTrackerIntegration
       # @return [void]
       def run(args)
         filter = args[0]
-        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name} args:#{filter}")
+        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name} args:#{filter}")
         self.check_branch
         story = nil
         if (!args.nil? && args.any?{|arg| arg.include?("-n")})
           story = self.create_story(args)
         else
-          story = GitPivotalTrackerIntegration::Util::Story.select_story @project, filter
+          story = Util::Story.select_story @project, filter
         end
         if story.nil?
           abort "There are no available stories."
@@ -48,19 +48,19 @@ module GitPivotalTrackerIntegration
           story.save
         end
         $LOG.debug("story:#{story.name}")
-        GitPivotalTrackerIntegration::Util::Story.pretty_print story
+        Util::Story.pretty_print story
 
         development_branch_name = development_branch_name story
-        GitPivotalTrackerIntegration::Util::Git.create_branch development_branch_name
+        Util::Git.create_branch development_branch_name
         @configuration.story = story
-        GitPivotalTrackerIntegration::Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), !OS.windows? ? 'prepare-commit-msg.sh' : 'prepare-commit-msg-win.sh' )
+        Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), !OS.windows? ? 'prepare-commit-msg.sh' : 'prepare-commit-msg-win.sh' )
 
         start_on_tracker story
       end
 
       def check_branch
-        current_branch = GitPivotalTrackerIntegration::Util::Git.branch_name
-        # suggested_branch = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
+        current_branch = Util::Git.branch_name
+        # suggested_branch = (Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
         suggested_branch = "develop"
 
         if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
@@ -69,7 +69,7 @@ module GitPivotalTrackerIntegration
           if should_change_branch != "n"
             $LOG.debug("Checking out branch '#{suggested_branch}'")
             print "Checking out branch '#{suggested_branch}'...\n\n"
-            $LOG.debug(GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{suggested_branch}")
+            $LOG.debug(Util::Shell.exec "git checkout --quiet #{suggested_branch}")
           end
         end
       end
@@ -94,7 +94,7 @@ module GitPivotalTrackerIntegration
         print 'Starting story on Pivotal Tracker... '
         story.attributes = {
             :current_state  => 'started',
-            :owned_by       => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
+            :owned_by       => Util::Git.get_config('user.name')
         }
         story.save
         puts 'OK'

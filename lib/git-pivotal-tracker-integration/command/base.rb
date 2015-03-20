@@ -30,22 +30,26 @@ module GitPivotalTrackerIntegration
         self.start_logging
         self.check_version
 
-        git_global_push_default = (GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default", false).chomp
+        git_global_push_default = (Util::Shell.exec "git config --global push.default", false).chomp
         if git_global_push_default != "simple"
           puts "git config --global push.default simple"
-          puts GitPivotalTrackerIntegration::Util::Shell.exec "git config --global push.default simple"
+          puts Util::Shell.exec "git config --global push.default simple"
         end
 
-        @repository_root = GitPivotalTrackerIntegration::Util::Git.repository_root
-        @configuration   = GitPivotalTrackerIntegration::Command::Configuration.new
-        @toggl           = Toggl.new
+        @repository_root  = Util::Git.repository_root
+        @toggl            = Toggl.new
+        @configuration    = Command::Configuration.new
 
-        @client = TrackerApi::Client.new(:token => @configuration.api_token)
-        @platform = @configuration.platform_name
+        @configuration.check_for_config_file
+        @configuration.check_for_config_contents
 
-        current_project_id = @configuration.project_id.to_i
-        @project = @client.project current_project_id
+        @client           = TrackerApi::Client.new(:token => @configuration.api_token)
+        @platform         = @configuration.platform_name
+
+        current_project_id  = @configuration.project_id.to_i
+        @project            = @client.project current_project_id
         my_projects         = @client.projects
+
         unless my_projects && my_projects.map(&:id).include?(current_project_id)
           project_manager_name  = @configuration.pconfig["project"]["project-manager"]
           project_manager_email = @configuration.pconfig["project"]["project-manager-email"]
@@ -84,7 +88,7 @@ module GitPivotalTrackerIntegration
       end
 
       def check_version
-        gem_latest_version    = (GitPivotalTrackerIntegration::Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
+        gem_latest_version    = (Util::Shell.exec "gem list v2gpti --remote")[/\(.*?\)/].delete "()"
         gem_installed_version = Gem.loaded_specs["v2gpti"].version.version
         if (gem_installed_version == gem_latest_version)
             $LOG.info("v2gpti verison #{gem_installed_version} is up to date.")
@@ -131,7 +135,7 @@ module GitPivotalTrackerIntegration
         params[:uid]               = @toggl.me["id"]
         params[:tags]              = [current_story.story_type]
         params[:active]            = false
-        params[:description]       = "#{current_story.id}" + " commit:" + "#{(GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
+        params[:description]       = "#{current_story.id}" + " commit:" + "#{(Util::Shell.exec "git rev-parse HEAD").chomp[0..6]}"
         params[:created_with]      = "v2gpti"
         params[:duration]          = seconds_spent(time_spent)
         params[:start]             = (Time.now - params[:duration]).iso8601
@@ -216,7 +220,7 @@ module GitPivotalTrackerIntegration
 
       def pwd
         command = OS.windows? ? 'echo %cd%': 'pwd'
-        GitPivotalTrackerIntegration::Util::Shell.exec(command).chop
+        Util::Shell.exec(command).chop
       end
 
       def estimate_story

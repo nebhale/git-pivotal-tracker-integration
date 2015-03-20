@@ -78,6 +78,8 @@ module GitPivotalTrackerIntegration
           end
 
           candidates  = project.stories(filter: criteria, limit: limit)
+          #limit is not working as expected. Need to find the reason. For now handle via ruby
+          candidates  = candidates[0...5]
           story       = choose_story(candidates) unless candidates.empty?
         end
 
@@ -167,7 +169,6 @@ module GitPivotalTrackerIntegration
           end
           puts "New #{release_type} release number is: #{next_release_number}"
           story = self.create_new_release(project, next_release_number)
-
         end
 
         story

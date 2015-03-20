@@ -48,7 +48,7 @@ module GitPivotalTrackerIntegration
       #
       # @return [String] the name of the currently checked out branch
       def self.branch_name
-        GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
+        Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
       end
 
       # Creates a branch with a given +name+.  First pulls the current branch to
@@ -63,12 +63,12 @@ module GitPivotalTrackerIntegration
         root_remote = get_config KEY_REMOTE, :branch
 
         if print_messages; print "Pulling #{root_branch}... " end
-        GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
+        Util::Shell.exec 'git pull --quiet --ff-only'
         if print_messages; puts 'OK'
         end
 
         if print_messages; print "Creating and checking out #{name}... " end
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -b #{name}"
+        Util::Shell.exec "git checkout --quiet -b #{name}"
         set_config KEY_ROOT_BRANCH, root_branch, :branch
         set_config KEY_ROOT_REMOTE, root_remote, :branch
         if print_messages; puts 'OK'
@@ -84,7 +84,7 @@ module GitPivotalTrackerIntegration
       #   commit
       # @return [void]
       def self.create_commit(message, story)
-        GitPivotalTrackerIntegration::Util::Shell.exec "git commit --quiet --all --allow-empty --message \"#{message}\n\n[##{story.id}]\""
+        Util::Shell.exec "git commit --quiet --all --allow-empty --message \"#{message}\n\n[##{story.id}]\""
       end
 
       # Creates a tag with the given name.  Before creating the tag, commits all
@@ -102,9 +102,9 @@ module GitPivotalTrackerIntegration
 
         create_branch RELEASE_BRANCH_NAME, false
         create_commit "#{name} Release", story
-        GitPivotalTrackerIntegration::Util::Shell.exec "git tag v#{name}"
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-        GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
+        Util::Shell.exec "git tag v#{name}"
+        Util::Shell.exec "git checkout --quiet #{root_branch}"
+        Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
 
         puts 'OK'
       end
@@ -121,9 +121,9 @@ module GitPivotalTrackerIntegration
       # @raise if the specified scope is not +:branch+ or +:inherited+
       def self.get_config(key, scope = :inherited)
         if :branch == scope
-          GitPivotalTrackerIntegration::Util::Shell.exec("git config branch.#{branch_name}.#{key}", false).strip
+          Util::Shell.exec("git config branch.#{branch_name}.#{key}", false).strip
         elsif :inherited == scope
-          GitPivotalTrackerIntegration::Util::Shell.exec("git config #{key}", false).strip
+          Util::Shell.exec("git config #{key}", false).strip
         else
           raise "Unable to get Git configuration for scope '#{scope}'"
         end
@@ -139,12 +139,12 @@ module GitPivotalTrackerIntegration
         root_branch = get_config KEY_ROOT_BRANCH, :branch
 
         print "Merging #{development_branch} to #{root_branch}... "
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-        GitPivotalTrackerIntegration::Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
+        Util::Shell.exec "git checkout --quiet #{root_branch}"
+        Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
         puts 'OK'
 
         print "Deleting #{development_branch}... "
-        GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
+        Util::Shell.exec "git branch --quiet -D #{development_branch}"
         puts 'OK'
       end
 
@@ -156,7 +156,7 @@ module GitPivotalTrackerIntegration
         remote = get_config KEY_REMOTE, :branch
 
         print "Pushing to #{remote}... "
-        GitPivotalTrackerIntegration::Util::Shell.exec "git push --quiet #{remote} " + refs.join(' ')
+        Util::Shell.exec "git push --quiet #{remote} " + refs.join(' ')
         puts 'OK'
       end
 
@@ -193,11 +193,11 @@ module GitPivotalTrackerIntegration
       # @raise if the specified scope is not +:branch+, +:global+, or +:local+
       def self.set_config(key, value, scope = :local)
         if :branch == scope
-          GitPivotalTrackerIntegration::Util::Shell.exec "git config --local branch.#{branch_name}.#{key} #{value}"
+          Util::Shell.exec "git config --local branch.#{branch_name}.#{key} #{value}"
         elsif :global == scope
-          GitPivotalTrackerIntegration::Util::Shell.exec "git config --global #{key} #{value}"
+          Util::Shell.exec "git config --global #{key} #{value}"
         elsif :local == scope
-          GitPivotalTrackerIntegration::Util::Shell.exec "git config --local #{key} #{value}"
+          Util::Shell.exec "git config --local #{key} #{value}"
         else
           raise "Unable to set Git configuration for scope '#{scope}'"
         end
@@ -216,12 +216,12 @@ module GitPivotalTrackerIntegration
 
         print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
 
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"
-        GitPivotalTrackerIntegration::Util::Shell.exec 'git pull --quiet --ff-only'
-        GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{development_branch}"
+        Util::Shell.exec "git checkout --quiet #{root_branch}"
+        Util::Shell.exec 'git pull --quiet --ff-only'
+        Util::Shell.exec "git checkout --quiet #{development_branch}"
 
-        root_tip = GitPivotalTrackerIntegration::Util::Shell.exec "git rev-parse #{root_branch}"
-        common_ancestor = GitPivotalTrackerIntegration::Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
+        root_tip = Util::Shell.exec "git rev-parse #{root_branch}"
+        common_ancestor = Util::Shell.exec "git merge-base #{root_branch} #{development_branch}"
 
         if root_tip != common_ancestor
           abort "\n#{root_branch} branch is ahead of your #{development_branch} branch. \nSo please merge #{root_branch} to #{development_branch} and resolve any conflicts if any. Run 'git merge #{root_branch}' and try git finish again."

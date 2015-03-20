@@ -26,7 +26,7 @@ module GitPivotalTrackerIntegration
       # * If arguments contains -bl then it creates a bug story at bottom of specified list
       # * If there are no arguments passed then it creates a bug story in icebox top of the list if you wish to create
       def run(args)
-        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         story = nil
         if (args.include?("-i")) #icebox
           story = create_icebox_bug_story(args)

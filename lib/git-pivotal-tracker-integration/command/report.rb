@@ -21,7 +21,7 @@ module GitPivotalTrackerIntegration
       def run(args)
         owned_by = "Jeff Wolski" # hard coded to Jeff Wolski for now
 
-        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{GitPivotalTrackerIntegration::Util::Git.branch_name}")
+        $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         bug_title = nil
         bug_title = args[0] if args.length == 1
 
@@ -35,9 +35,9 @@ module GitPivotalTrackerIntegration
           report_note = ask("Description of bug:")
         end
 
-        current_user        = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.name").chomp
+        current_user        = (Util::Shell.exec "git config user.name").chomp
         bug_title           = "User Reported - #{current_user} - #{bug_title}"
-        current_user_email  = (GitPivotalTrackerIntegration::Util::Shell.exec "git config user.email").chomp
+        current_user_email  = (Util::Shell.exec "git config user.email").chomp
         bug_description     = "#{@project.name}\n#{current_user_email}\n#{report_note}"
 
         project = @client.project(1067990)

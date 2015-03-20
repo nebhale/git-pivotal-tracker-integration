@@ -26,16 +26,11 @@ module GitPivotalTrackerIntegration
       #
       # @return [String] The user's Pivotal Tracker API token
 
-      def initialize
-        check_for_config_file
-        check_for_config_contents
-      end
-
       def api_token
-        api_token = GitPivotalTrackerIntegration::Util::Git.get_config KEY_API_TOKEN, :inherited
+        api_token = Util::Git.get_config KEY_API_TOKEN, :inherited
         if api_token.empty?
           api_token = ask('Pivotal API Token (found at https://www.pivotaltracker.com/profile): ').strip
-          GitPivotalTrackerIntegration::Util::Git.set_config KEY_API_TOKEN, api_token, :global
+          Util::Git.set_config KEY_API_TOKEN, api_token, :global
           puts
         end
         self.check_config_project_id
@@ -53,13 +48,13 @@ module GitPivotalTrackerIntegration
       end
 
       def check_config_project_id
-        GitPivotalTrackerIntegration::Util::Git.set_config("pivotal.project-id", self.pconfig["pivotal-tracker"]["project-id"])
+        Util::Git.set_config("pivotal.project-id", self.pconfig["pivotal-tracker"]["project-id"])
         nil
       end
 
       def pconfig
         pc = nil
-        config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+        config_filename = "#{Util::Git.repository_root}/.v2gpti/config"
         if File.file?(config_filename)
           pc = ParseConfig.new(config_filename)
         end
@@ -72,18 +67,20 @@ module GitPivotalTrackerIntegration
       #
       # @return [String] The repository's Pivotal Tracker project id
       def project_id
-        project_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_PROJECT_ID, :inherited
+        project_id = Util::Git.get_config KEY_PROJECT_ID, :inherited
 
         if project_id.empty?
           project_id = choose do |menu|
             menu.prompt = 'Choose project associated with this repository: '
 
-            PivotalTracker::Project.all.sort_by { |project| project.name }.each do |project|
+            client = TrackerApi::Client.new(:token => api_token)
+
+            client.projects.sort_by { |project| project.name }.each do |project|
               menu.choice(project.name) { project.id }
             end
           end
 
-          GitPivotalTrackerIntegration::Util::Git.set_config KEY_PROJECT_ID, project_id, :local
+          Util::Git.set_config KEY_PROJECT_ID, project_id, :local
           puts
         end
 
@@ -91,19 +88,23 @@ module GitPivotalTrackerIntegration
       end
 
       def platform_name
-        platform_name = self.pconfig["platform"]["platform-name"].downcase
+        supported_platforms = ["ios", "android", "ruby-gem", "others"]
+        config              = self.pconfig
+        platform_name       = config["platform"]["platform-name"].downcase
 
-        if platform_name.empty?
-    		platforms = ["ios", "non-ios"]
-    		platform_name = choose do |menu|
-    			menu.prompt = 'Please choose your project platform:'
-    			menu.choices(*platforms) do |chosen|
-    				chosen
-    			end
-    		end
-    		config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
-            pc_text = File.read(config_filename)
-            File.open(config_filename, "w") {|file| file.puts pc_text.gsub(/platform-name[\s+]?=/, "platform-name = #{platform_name}")}
+        if platform_name.empty? || !supported_platforms.include?(platform_name)
+          platform_name = choose do |menu|
+            menu.header = 'Project Platforms'
+            menu.prompt = 'Please choose your project platform:'
+              menu.choices(*supported_platforms) do |chosen|
+              chosen
+            end
+          end
+          config["platform"]["platform-name"] = platform_name
+          config_filename = "#{Util::Git.repository_root}/.v2gpti/config"
+          file = File.open(config_filename, 'w')
+          config.write(file)
+          file.close
         end
         puts "Your project platform is:#{platform_name}"
         platform_name
@@ -115,7 +116,7 @@ module GitPivotalTrackerIntegration
       # @return [PivotalTracker::Story] the story associated with the current development branch
       def story(project)
         $LOG.debug("#{self.class}:#{__method__}")
-        story_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_STORY_ID, :branch
+        story_id = Util::Git.get_config KEY_STORY_ID, :branch
         $LOG.debug("story_id:#{story_id}")
         project.story story_id.to_i
       end
@@ -125,13 +126,13 @@ module GitPivotalTrackerIntegration
       # @param [PivotalTracker::Story] story the story associated with the current development branch
       # @return [void]
       def story=(story)
-        GitPivotalTrackerIntegration::Util::Git.set_config KEY_STORY_ID, story.id, :branch
+        Util::Git.set_config KEY_STORY_ID, story.id, :branch
       end
 
-      private
+
 
       def check_for_config_file
-        rep_path = GitPivotalTrackerIntegration::Util::Git.repository_root
+        rep_path = Util::Git.repository_root
         FileUtils.mkdir_p(rep_path + '/.v2gpti') unless Dir.exists?( rep_path + '/.v2gpti/')
         unless File.exists?(rep_path + '/.v2gpti/config')
           FileUtils.cp(File.expand_path(File.dirname(__FILE__) + '/../../..') + '/config_template', rep_path + '/.v2gpti/config')
@@ -140,7 +141,7 @@ module GitPivotalTrackerIntegration
       end
 
       def check_for_config_contents
-        config_filename = "#{GitPivotalTrackerIntegration::Util::Git.repository_root}/.v2gpti/config"
+        config_filename = "#{Util::Git.repository_root}/.v2gpti/config"
         pc = ParseConfig.new(config_filename) if File.file?(config_filename)
 
         config_content = {}
@@ -162,6 +163,8 @@ module GitPivotalTrackerIntegration
 
         puts "For any modification, please update the details in #{config_filename}" if @new_config
       end
+
+      private
 
       def populate_and_save(key,value,hash, parent=nil)
         mandatory_details = %w(pivotal-tracker-project-id platform-platform-name)
