@@ -81,12 +81,8 @@ module GitPivotalTrackerIntegration
           # Change spec version
           change_spec_version(version_number) if has_spec_path?
         elsif @platform.downcase == 'android'
-          updater = [
-              VersionUpdate::Gradle.new(@repository_root)
-            ].find { |candidate| candidate.supports? }
-
-          updater.update_version version_number
-
+          updater = VersionUpdate::Gradle.new(@repository_root)
+          updater.update_uat_version(version_number)
         elsif @platform.downcase == 'ruby-gem'
           file = Dir["#{Util::Git.repository_root}/*.gemspec"].first
           if file

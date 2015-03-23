@@ -74,6 +74,9 @@ module GitPivotalTrackerIntegration
 
           # cd back to the working_directory
           Dir.chdir(working_directory)
+        elsif @platform == 'android'
+          updater = VersionUpdate::Gradle.new(@repository_root)
+          updater.update_qa_version(build_number)
         end
 
         # Create a new build commit, push to QA, checkout develop

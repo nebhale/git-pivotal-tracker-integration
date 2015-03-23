@@ -64,7 +64,7 @@ module GitPivotalTrackerIntegration
         puts "build_number:#{build_number}"
         puts "working_directory:#{working_directory}*"
 
-        if (OS.mac? && @platform.downcase == "ios")
+        if (OS.mac? && @platform.downcase == 'ios')
           project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
           return if project_directory.nil?
 
@@ -78,8 +78,10 @@ module GitPivotalTrackerIntegration
 
           # cd back to the working_directory
           Dir.chdir(working_directory)
+        elsif @platform == 'android'
+          updater = VersionUpdate::Gradle.new(@repository_root)
+          updater.update_dev_version(build_number)
         end
-
         # Create a new build commit, push to develop
         Util::Git.create_commit( "Update build number to #{build_number}", @configuration.story(@project))
       end
