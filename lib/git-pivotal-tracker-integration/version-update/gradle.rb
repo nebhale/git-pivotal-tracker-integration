@@ -42,11 +42,11 @@ module GitPivotalTrackerIntegration
       end
 
       def update_uat_version(new_version)
-        update_version('UAT', 'UAT', new_version)
+        update_version('UAT', new_version, new_version)
       end
 
       def update_prod_version(new_version)
-        update_version('PROD', 'PROD', new_version)
+        update_version('PROD', new_version, new_version)
       end
 
       private
