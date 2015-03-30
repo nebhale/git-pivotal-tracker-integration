@@ -18,17 +18,17 @@ module GitPivotalTrackerIntegration
 
     class Report < Base
 
+      V2GPTI_PROJECT_ID = 1067990
+
       def run(args)
-        owned_by = "Jeff Wolski" # hard coded to Jeff Wolski for now
+        owned_by = 611593   # hard coded to Jeff Wolski for now
 
         $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         bug_title = nil
         bug_title = args[0] if args.length == 1
 
         # puts bug_title
-        if bug_title.nil? || bug_title.empty?
-          abort "\nUsage example:\n\n git report \"Issue running deliver command\" \n"
-        end
+        abort "\nUsage example:\n\n git report \"Issue running deliver command\" \n" if bug_title.nil? || bug_title.empty?
 
         report_note = ""
         while (report_note.nil? || report_note.empty?)
@@ -40,15 +40,20 @@ module GitPivotalTrackerIntegration
         current_user_email  = (Util::Shell.exec "git config user.email").chomp
         bug_description     = "#{@project.name}\n#{current_user_email}\n#{report_note}"
 
-        project = @client.project(1067990)
+        project     = @client.project(V2GPTI_PROJECT_ID)
+        attachment  = project.add_attachment(self.logger_filename, 'text/plain')
 
-        story_params = {:owned_by => owned_by, :story_type => "bug",
-                        :name => bug_title,    :description => bug_description,
-                        :labels => "userreported"}
+        story_params  = {
+                          :owner_ids    => [owned_by],
+                          :story_type   => "bug",
+                          :name         => bug_title,
+                          :description  => bug_description,
+                          :labels       => ["userreported"]
+                        }
 
-        project.create_story
+        story = project.create_story story_params
 
-        uploaded_story.upload_attachment(self.logger_filename)
+        story.add_comment_with_attachment('Log file', attachment)
       end
 
     end
