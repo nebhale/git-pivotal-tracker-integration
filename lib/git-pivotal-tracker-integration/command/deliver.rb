@@ -33,7 +33,7 @@ module GitPivotalTrackerIntegration
         $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         self.check_branch
         story = Util::Story.select_release @project
-        $LOG.debug("story:#{story.name}")
+        $LOG.debug("Release Story:#{story.name}")
         sort_for_deliver story
         Util::Story.pretty_print story
 
@@ -52,14 +52,13 @@ module GitPivotalTrackerIntegration
           abort "FAILED to merge 'develop' in to 'QA'"
         end
 
-        # Update version and build numbers
-        build_number      = story.name.dup
-        build_number[0]   = ""
+        # retrieve build number from story name
+        build_number      = story.name.slice(1..-1)
         working_directory = pwd
 
-        puts "storyNAME:#{story.name}"
-        puts "build_number:#{build_number}"
-        puts "working_directory:#{working_directory}*"
+        puts "Story Name:         #{story.name}"
+        puts "Build Number:       #{build_number}"
+        puts "Working Directory:  #{working_directory}*"
 
         if (OS.mac? && @platform.downcase == "ios")
           project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
@@ -111,39 +110,40 @@ module GitPivotalTrackerIntegration
         all_stories = stories.dup
         all_stories << build_story
 
-        all_stories.each {|story|
+        all_stories.each do |story|
           labels = story.labels.map(&:name)
           labels << build_story.name
           labels.uniq!
 
           story.add_labels(*labels)
 
-          if (story.story_type == "feature") || (story.story_type == "bug")
+          case story.story_type
+          when 'feature', 'bug'
             story.current_state = 'delivered'
-            story.save
-          elsif (story.story_type == "chore")
+          when 'chore'
             story.current_state = 'accepted'
-            story.save
           end
-        }
+          story.save
+        end
       end
 
       def included_stories(project, build_story)
 
+        stories = project.stories(filter: "current_state:finished  type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
+
+        # capture story details in a file as well as to stdout
         notes_file = ENV['HOME']+"/#{project.name}-#{build_story.name}"
-        output = File.open( notes_file, "w")
-        output << "Included stories:\n"
 
-        stories = project.stories(filter: "current_state:finished type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
+        File.open(notes_file, 'w') do |file|
+          puts "Included Stories"
+          file.puts "Included Stories"
 
-        puts "Included stories:\n"
-
-        stories.each do |story|
-          output << "#{story.id}\n"
-          puts "#{story.id} - #{story.name}"
+          stories.each do |story|
+            file.puts "#{story.id} - #{story.name}"
+            puts "#{story.id} - #{story.name}"
+          end
         end
 
-        output.close
         stories
       end
 
