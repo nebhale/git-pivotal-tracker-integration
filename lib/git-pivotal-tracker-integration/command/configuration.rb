@@ -19,6 +19,12 @@ module GitPivotalTrackerIntegration
     # A class that exposes configuration that commands can use
     class Configuration
 
+      SUPPORTED_PLATFORMS = ["ios", "android", "ruby-gem", "others"]
+      KEY_API_TOKEN       = 'pivotal.api-token'.freeze
+      KEY_PROJECT_ID      = 'pivotal.project-id'.freeze
+      KEY_PLATFORM_NAME   = 'platform.platform-name'.freeze
+      KEY_STORY_ID        = 'pivotal-story-id'.freeze
+
       # Returns the user's Pivotal Tracker API token.  If this token has not been
       # configured, prompts the user for the value.  The value is checked for in
       # the _inherited_ Git configuration, but is stored in the _global_ Git
@@ -88,15 +94,14 @@ module GitPivotalTrackerIntegration
       end
 
       def platform_name
-        supported_platforms = ["ios", "android", "ruby-gem", "others"]
         config              = self.pconfig
         platform_name       = config["platform"]["platform-name"].downcase
 
-        if platform_name.empty? || !supported_platforms.include?(platform_name)
+        if platform_name.empty? || !SUPPORTED_PLATFORMS.include?(platform_name)
           platform_name = choose do |menu|
             menu.header = 'Project Platforms'
             menu.prompt = 'Please choose your project platform:'
-              menu.choices(*supported_platforms) do |chosen|
+              menu.choices(*SUPPORTED_PLATFORMS) do |chosen|
               chosen
             end
           end
@@ -180,7 +185,7 @@ module GitPivotalTrackerIntegration
                   say("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: \n")
                   choose do |menu|
                     menu.prompt = 'Enter any of the above choices: '
-                    menu.choices('ios','non-ios')
+                    menu.choices(*SUPPORTED_PLATFORMS)
                   end
                 else
                   ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ")
@@ -201,14 +206,6 @@ module GitPivotalTrackerIntegration
         end
         hash
       end
-
-      KEY_API_TOKEN = 'pivotal.api-token'.freeze
-
-      KEY_PROJECT_ID = 'pivotal.project-id'.freeze
-
-      KEY_PLATFORM_NAME = 'platform.platform-name'.freeze
-
-      KEY_STORY_ID = 'pivotal-story-id'.freeze
 
     end
   end

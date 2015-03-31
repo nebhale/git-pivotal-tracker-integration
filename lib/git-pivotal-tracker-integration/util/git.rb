@@ -140,6 +140,7 @@ module GitPivotalTrackerIntegration
 
         print "Merging #{development_branch} to #{root_branch}... "
         Util::Shell.exec "git checkout --quiet #{root_branch}"
+        Util::Shell.exec 'git pull --quiet --ff-only'
         Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
         puts 'OK'
 
