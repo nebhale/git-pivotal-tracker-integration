@@ -59,6 +59,7 @@ module GitPivotalTrackerIntegration
         puts "Story Name:         #{story.name}"
         puts "Build Number:       #{build_number}"
         puts "Working Directory:  #{working_directory}*"
+        puts ""
 
         if (OS.mac? && @platform.downcase == "ios")
           project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]

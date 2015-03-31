@@ -62,9 +62,10 @@ module GitPivotalTrackerIntegration
         version_number[0] = ""
         working_directory = pwd
 
-        puts "storyNAME:#{story.name}"
-        puts "version_number:#{version_number}"
-        puts "working_directory:#{working_directory}*"
+        puts "Story Name:         #{story.name}"
+        puts "Version Number:     #{version_number}"
+        puts "Working Directory:  #{working_directory}*"
+        puts ""
 
         if (OS.mac? && @platform.downcase == "ios")
           project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
@@ -138,7 +139,7 @@ module GitPivotalTrackerIntegration
           unless origin_labels.empty?
             if origin_labels.to_s.scan(/b\d{1}/).size > origin_labels.to_s.scan(/v\d{1}/).size
               story.add_labels(*labels)
-              puts story.id
+              puts "#{story.id} - #{story.name}"
             end
           end
         }
