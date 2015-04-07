@@ -178,7 +178,7 @@ module GitPivotalTrackerIntegration
           val =
               if mandatory_field || @new_config
                 if key.include?('project-id')
-                  ask("Please provide #{parent.nil? ? '' :parent.capitalize} #{key.capitalize} value: ", lambda{|ip| mandatory_field ? Integer(ip) : ip =~ /^$/ ? '' : Integer(ip) }) do |q|
+                  ask("Please provide #{parent.nil? ? '' : parent.capitalize} #{key.capitalize} value: ", lambda{|ip| mandatory_field ? Integer(ip) : ip =~ /^$/ ? '' : Integer(ip) }) do |q|
                     q.responses[:invalid_type] = "Please provide valid project-id#{mandatory_field ? '' : '(or blank line to skip)'}"
                   end
                 elsif key.include?('platform-name')

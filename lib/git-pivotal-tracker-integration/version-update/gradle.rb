@@ -53,7 +53,7 @@ module GitPivotalTrackerIntegration
 
       def update_version(version_type, new_name, new_version)
         content     = File.read(@gradle_file)
-        new_content = content.gsub(/productFlavors.*?#{version_type}.*?versionCode( )*=( )*(.*?)versionName( )*=( )*(.*?\s)/m) do |match|
+        new_content = content.gsub(/productFlavors.*?#{version_type}.*?versionCode( )*=?( )*(.*?)versionName( )*=?( )*(.*?\s)/m) do |match|
             version_code = $3.strip
             version_name = $6.strip
             match.gsub(version_code, new_version).gsub(version_name, "\"#{new_name}\"")
