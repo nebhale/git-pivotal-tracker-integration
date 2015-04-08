@@ -224,10 +224,11 @@ module GitPivotalTrackerIntegration
       end
 
       def estimate_story
-        ask("Please enter the estimate points(0/1/2/3) for this story.") do |q|
+        estimate = ask("Please enter the estimate points(0/1/2/3) for this story.") do |q|
           q.in = ["0", "1", "2", "3"]
           q.responses[:not_in_range] = "Invalid entry...Please enter the estimate points(0/1/2/3) for this story."
         end
+        estimate.to_i
       end
 
       def estimate_story_optional
@@ -235,8 +236,11 @@ module GitPivotalTrackerIntegration
                       q.in = ["0", "1", "2", "3", "n"]
                       q.responses[:not_in_range] = "Invalid entry...Please enter the estimate points(0/1/2/3) for this feature story.\nIf you don't want to estimate then enter n"
                     end
-        estimate = nil if estimate == "n"
-        estimate
+        if estimate == "n"
+          estimate = nil
+        else
+          estimate.to_i
+        end
       end
 
       def create_story_with_type_state(type, state, args)

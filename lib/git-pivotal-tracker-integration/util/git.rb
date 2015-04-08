@@ -19,6 +19,11 @@ module GitPivotalTrackerIntegration
     # Utilities for dealing with Git
     class Git
 
+      KEY_REMOTE          = 'remote'.freeze
+      KEY_ROOT_BRANCH     = 'root-branch'.freeze
+      KEY_ROOT_REMOTE     = 'root-remote'.freeze
+      RELEASE_BRANCH_NAME = 'pivotal-tracker-release'.freeze
+
       # Adds a Git hook to the current repository
       #
       # @param [String] name the name of the hook to add
@@ -62,17 +67,16 @@ module GitPivotalTrackerIntegration
         root_branch = branch_name
         root_remote = get_config KEY_REMOTE, :branch
 
-        if print_messages; print "Pulling #{root_branch}... " end
+        print "Pulling #{root_branch}... " if print_messages
         Util::Shell.exec 'git pull --quiet --ff-only'
-        if print_messages; puts 'OK'
-        end
+        puts 'OK' if print_messages
 
-        if print_messages; print "Creating and checking out #{name}... " end
+        print "Creating and checking out #{name}... " if print_messages
+
         Util::Shell.exec "git checkout --quiet -b #{name}"
         set_config KEY_ROOT_BRANCH, root_branch, :branch
         set_config KEY_ROOT_REMOTE, root_remote, :branch
-        if print_messages; puts 'OK'
-        end
+        puts 'OK' if print_messages
       end
 
       # Creates a commit with a given message.  The commit includes all change
@@ -230,16 +234,6 @@ module GitPivotalTrackerIntegration
 
         puts 'OK'
       end
-
-      private
-
-      KEY_REMOTE = 'remote'.freeze
-
-      KEY_ROOT_BRANCH = 'root-branch'.freeze
-
-      KEY_ROOT_REMOTE = 'root-remote'.freeze
-
-      RELEASE_BRANCH_NAME = 'pivotal-tracker-release'.freeze
 
     end
 

@@ -26,7 +26,7 @@ module GitPivotalTrackerIntegration
       #
       # @param [String] root The root of the repository
       def initialize(root)
-        @gradle_file = File.expand_path 'build.gradle', root
+        @gradle_file = File.expand_path 'app/build.gradle', root
       end
 
       # Update the version of the project

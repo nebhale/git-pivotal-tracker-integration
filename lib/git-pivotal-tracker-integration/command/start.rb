@@ -40,18 +40,18 @@ module GitPivotalTrackerIntegration
         else
           story = Util::Story.select_story @project, filter
         end
-        if story.nil?
-          abort "There are no available stories."
-        end
-        if story.story_type == "feature" && story.estimate.to_i < 0
+
+        abort "There are no available stories." if story.nil?
+
+        if story.story_type == "feature" && story.estimate.to_i <= 0
           story.estimate = estimate_story
           story.save
         end
+
         $LOG.debug("story:#{story.name}")
         Util::Story.pretty_print story
 
-        development_branch_name = development_branch_name story
-        Util::Git.create_branch development_branch_name
+        Util::Git.create_branch feature_branch(story)
         @configuration.story = story
         Util::Git.add_hook 'prepare-commit-msg', File.join(File.dirname(__FILE__), !OS.windows? ? 'prepare-commit-msg.sh' : 'prepare-commit-msg-win.sh' )
 
@@ -61,7 +61,7 @@ module GitPivotalTrackerIntegration
       def check_branch
         current_branch = Util::Git.branch_name
         # suggested_branch = (Util::Shell.exec "git config --get git-pivotal-tracker-integration.feature-root 2>/dev/null", false).chomp
-        suggested_branch = "develop"
+        suggested_branch = 'develop'
 
         if !suggested_branch.nil? && suggested_branch.length !=0 && current_branch != suggested_branch
           $LOG.warn("Currently checked out branch is '#{current_branch}'.")
@@ -76,7 +76,7 @@ module GitPivotalTrackerIntegration
 
       private
 
-      def development_branch_name(story)
+      def feature_branch(story)
         prefix = "#{story.id}-"
         story_name = "#{story.name.gsub(/[^0-9a-z\\s]/i, '_')}"
         if(story_name.length > 30)

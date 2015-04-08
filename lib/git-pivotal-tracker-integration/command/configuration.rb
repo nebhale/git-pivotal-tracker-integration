@@ -66,6 +66,7 @@ module GitPivotalTrackerIntegration
         end
         pc
       end
+
       # Returns the Pivotal Tracker project id for this repository.  If this id
       # has not been configuration, prompts the user for the value.  The value is
       # checked for in the _inherited_ Git configuration, but is stored in the
