@@ -94,7 +94,7 @@ module GitPivotalTrackerIntegration
         end
 
         # Create a new build commit, push to QA
-        puts Util::Git.create_commit( "Update version number to #{version_number} for delivery to QA", story)
+        puts Util::Git.create_commit( "Update version number to #{version_number} for release to UAT", story)
         puts Util::Shell.exec "git push"
 
         # Create release tag
