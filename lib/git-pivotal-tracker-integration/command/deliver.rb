@@ -45,6 +45,7 @@ module GitPivotalTrackerIntegration
         # checkout QA branch
         # Merge develop into QA
         Util::Shell.exec "git checkout QA"
+        Util::Shell.exec "git reset --hard origin/QA"
         Util::Shell.exec "git pull"
         if (Util::Shell.exec "git merge -s recursive --strategy-option theirs develop")
           puts "Merged 'develop' in to 'QA'"
