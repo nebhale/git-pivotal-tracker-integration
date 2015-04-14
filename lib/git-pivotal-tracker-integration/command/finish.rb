@@ -58,7 +58,7 @@ module GitPivotalTrackerIntegration
 
       def commit_new_build
         # Update version and build numbers
-        build_number      = Time.now.utc.strftime("%y%m%d-%H%M")
+        build_number      = Time.now.utc.strftime("%y%m%d_%H%M")
         working_directory = pwd
 
         puts "build_number:#{build_number}"
