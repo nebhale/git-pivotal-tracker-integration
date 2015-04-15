@@ -35,9 +35,11 @@ module GitPivotalTrackerIntegration
 
         # ask("pause")
         Util::Git.trivial_merge?
+        story = @configuration.story(@project)
+
         $LOG.debug("configuration:#{@configuration}")
         $LOG.debug("project:#{@project}")
-        $LOG.debug("story:#{@configuration.story(@project)}")
+        $LOG.debug("story:#{story}")
 
         self.commit_new_build
 
@@ -53,6 +55,10 @@ module GitPivotalTrackerIntegration
 
         Util::Git.merge(@configuration.story(@project), no_complete)
         Util::Git.push Util::Git.branch_name
+
+        labels = story.labels.map(&:name)
+        labels << "Need code review"
+        story.add_labels(*labels)
       end
 
 
