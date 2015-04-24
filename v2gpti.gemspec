@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version     = '>= 1.9'
 
   s.add_dependency 'highline',        '~> 1.6'
-  s.add_dependency 'parseconfig',     '~> 1.0'
+  s.add_dependency 'parseconfig',     '~> 1.0.6'
   s.add_dependency 'faraday',         '~> 0.9.0'
   s.add_dependency 'awesome_print',   '~> 1.1.0'
   s.add_dependency 'json',            '~> 1.8.0'
