@@ -64,7 +64,10 @@ module GitPivotalTrackerIntegration
 
       def commit_new_build
         # Update version and build numbers
-        build_number      = Time.now.utc.strftime("%y%m%d_%H%M")
+        # For iOS project the build number separator should be "-"
+        separator = '_'    # default separator
+        separator = '-' if OS.mac? && @platform.downcase == 'ios'
+        build_number      = Time.now.utc.strftime("%y%m%d#{separator}%H%M")
         working_directory = pwd
 
         puts "build_number:#{build_number}"
