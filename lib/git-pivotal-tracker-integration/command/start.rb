@@ -43,7 +43,7 @@ module GitPivotalTrackerIntegration
 
         abort "There are no available stories." if story.nil?
 
-        if story.story_type == "feature" && story.estimate.to_i <= 0
+        if story.story_type == "feature" && story.estimate.to_i < 0
           story.estimate = estimate_story
           story.save
         end
@@ -93,8 +93,8 @@ module GitPivotalTrackerIntegration
       def start_on_tracker(story)
         print 'Starting story on Pivotal Tracker... '
         story.attributes = {
-            :current_state  => 'started',
-            :owned_by       => Util::Git.get_config('user.name')
+            :current_state   => 'started',
+            :owner_ids        => [@client.me.id],
         }
         story.save
         puts 'OK'
