@@ -68,7 +68,7 @@ module GitPivotalTrackerIntegration
           # story type from (feature, bug, chore)
           # state from (rejected unstarted unscheduled)
           # if story type is "feature", then retrieve only estimated ones.
-          criteria = "current_state:#{CANDIDATE_STATES.join(',')}"
+          criteria = " state:unstarted,rejected,unscheduled"
 
           if %w(feature bug chore).include?(filter)
             criteria << " type:#{filter}"
@@ -145,7 +145,7 @@ module GitPivotalTrackerIntegration
         release_type = (type == "b") ? "build" : "version"
 
         criteria =  "type:release"
-        criteria << " current_state:#{CANDIDATE_STATES.join(',')}"
+        criteria << " state:unstarted,rejected,unscheduled"
         criteria << " name:/#{type}*/"    #story name starts with  b or v
 
         candidates = project.stories(filter: criteria, limit: limit)
@@ -180,7 +180,7 @@ module GitPivotalTrackerIntegration
         candidates = project.stories filter: "type:release name:/#{type}*/"
         candidates = candidates.select do |story|
           labels = story.labels.map(&:name)
-          !labels.include?(story.name)
+          labels.include?(story.name)
         end
         candidates.sort! { |x,y| Gem::Version.new(y.name[1 .. -1]) <=> Gem::Version.new(x.name[1 .. -1]) }
 
@@ -188,15 +188,16 @@ module GitPivotalTrackerIntegration
       end
 
       def self.set_next_release_number(last_release, release_type)
-        if release_type == "b"
-          return last_release.name.next  # just increment the last number
-        end
-        if release_type == "v"
-          version_split = last_release.name.split(/\./)
-          last_incremented_number=version_split.last.next
+        case release_type
+        when "b"
+          # just increment the last number
+          last_release.name.next
+        when "v"
+          version_split           = last_release.name.split(/\./)
+          last_incremented_number = version_split.last.next
           version_split.pop
           version_split.push(last_incremented_number)
-          return version_split.join(".")
+          version_split.join(".")
         end
       end
 
