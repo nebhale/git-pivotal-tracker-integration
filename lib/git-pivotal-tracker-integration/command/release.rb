@@ -19,6 +19,9 @@ module GitPivotalTrackerIntegration
     # The class that encapsulates releasing a Pivotal Tracker Story
     class Release < Base
 
+      CANDIDATE_STATES  = %w(delivered unstarted).freeze
+      CANDIDATE_TYPES   = %w(bug chore feature release)
+
       # Releases a Pivotal Tracker story by doing the following steps:
       # * Update the version to the release version
       # * Create a tag for the release version
@@ -125,9 +128,6 @@ module GitPivotalTrackerIntegration
 
       private
 
-      CANDIDATE_STATES = %w(delivered unstarted).freeze
-      CANDIDATE_TYPES = %w(bug chore feature release)
-
       def add_version_tag_to_stories(stories, release_story)
         all_stories = stories.dup
         all_stories << release_story
@@ -172,8 +172,8 @@ module GitPivotalTrackerIntegration
       def pull_out_rejected_stories(release_story)
         rejected_stories = @project.stories(filter: "current_state:rejected type:bug,chore,feature")
         rejected_stories.each do |rejected_story|
-          rejected_stories.after_id = release_story.id
-          rejected_stories.save
+          rejected_story.after_id = release_story.id
+          rejected_story.save
         end
       end
 
