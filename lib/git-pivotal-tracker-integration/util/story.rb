@@ -189,10 +189,10 @@ module GitPivotalTrackerIntegration
 
       def self.set_next_release_number(last_release, release_type)
         case release_type
-        when "b"
+        when "build"
           # just increment the last number
           last_release.name.next
-        when "v"
+        when "version"
           version_split           = last_release.name.split(/\./)
           last_incremented_number = version_split.last.next
           version_split.pop
