@@ -135,7 +135,7 @@ module GitPivotalTrackerIntegration
 
         # capture story details in a file as well as to stdout
         FileUtils.mkdir_p 'release_notes'
-        notes_file = File.join("release_notes", "#{build_story.name}.txt")
+        notes_file = File.join("release_notes", "#{project.name}-#{build_story.name}.txt")
 
         File.open(notes_file, 'w') do |file|
           puts "Included Stories"
