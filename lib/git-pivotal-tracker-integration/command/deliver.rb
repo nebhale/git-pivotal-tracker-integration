@@ -134,7 +134,7 @@ module GitPivotalTrackerIntegration
         stories = project.stories(filter: "current_state:finished  type:bug,chore,feature -id:#{build_story.id}", limit: 1000)
 
         # capture story details in a file as well as to stdout
-        notes_file = ENV['HOME']+"/#{project.name}-#{build_story.name}"
+        notes_file = "#{project.name}-#{build_story.name}.txt"
 
         File.open(notes_file, 'w') do |file|
           puts "Included Stories"
