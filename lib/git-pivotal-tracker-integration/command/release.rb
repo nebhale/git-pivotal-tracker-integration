@@ -37,8 +37,10 @@ module GitPivotalTrackerIntegration
 
         $LOG.debug("#{self.class} in project:#{@project.name} pwd:#{pwd} branch:#{Util::Git.branch_name}")
         story = Util::Story.select_release(@project, filter.nil? ? 'v' : filter)
-        place_version_release story
-        pull_out_rejected_stories story
+
+        # commenting the 2 lines below before we find an acceptable solution for story sorting
+        #place_version_release story
+        #pull_out_rejected_stories story
         Util::Story.pretty_print story
         $LOG.debug("story:#{story.name}")
 
