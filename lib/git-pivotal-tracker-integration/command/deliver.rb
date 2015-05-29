@@ -34,7 +34,7 @@ module GitPivotalTrackerIntegration
         self.check_branch
         story = Util::Story.select_release @project
         $LOG.debug("Release Story:#{story.name}")
-        sort_for_deliver story
+        #sort_for_deliver story
         Util::Story.pretty_print story
 
         current_branch = Util::Git.branch_name
