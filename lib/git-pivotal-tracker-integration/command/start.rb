@@ -43,7 +43,7 @@ module GitPivotalTrackerIntegration
 
         abort "There are no available stories." if story.nil?
 
-        if story.story_type == "feature" && story.estimate.to_i < 0
+        if story.story_type == "feature" && story.estimate.nil?
           story.estimate = estimate_story
           story.save
         end
