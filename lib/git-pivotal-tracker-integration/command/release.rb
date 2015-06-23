@@ -118,10 +118,7 @@ module GitPivotalTrackerIntegration
         puts Util::Shell.exec "git checkout #{current_branch}"
 
         #add story name as one of the labels for the story
-        labels = story.labels.map(&:name)
-        labels << story.name unless labels.include?(story.name)
-        puts "labels: #{labels.join(', ')}"
-        story.add_labels(*labels) unless labels.include?(story.name)
+        story.add_label(story.name)
 
         i_stories = included_stories @project, story
         add_version_tag_to_stories i_stories, story
@@ -134,19 +131,10 @@ module GitPivotalTrackerIntegration
         all_stories = stories.dup
         all_stories << release_story
         puts "Included stories:\n"
-        all_stories.each {|story|
-          labels = story.labels.map(&:name)
-          origin_labels = labels.dup
-          labels << release_story.name
-          labels.uniq!
-
-          unless origin_labels.empty?
-            if origin_labels.to_s.scan(/b\d{1}/).size > origin_labels.to_s.scan(/v\d{1}/).size
-              story.add_labels(*labels)
-              puts "#{story.id} - #{story.name}"
-            end
-          end
-        }
+        all_stories.each do |story|
+          story.add_label(release_story.name)
+          puts "#{story.id} - #{story.name}"
+        end
       end
 
       def included_stories(project, release_story)
