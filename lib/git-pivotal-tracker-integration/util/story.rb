@@ -145,7 +145,7 @@ module GitPivotalTrackerIntegration
         release_type = (type == "b") ? "build" : "version"
 
         criteria =  "type:release"
-        criteria << " state:unstarted,rejected,unscheduled"
+        criteria << " state:unstarted,rejected,unscheduled,planned"
         criteria << " name:/#{type}*/"    #story name starts with  b or v
 
         candidates = project.stories(filter: criteria, limit: limit)

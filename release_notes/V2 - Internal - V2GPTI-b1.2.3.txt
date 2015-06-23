@@ -1,0 +1,4 @@
+Included Stories
+95226690 - drop the release notes into a folder called "release_notes" instead of in the machine's home folder
+95519244 - Disable the story sorting on QA and Release command for now till we figure out a better way to do this. 
+96059150 - Facing issue on git start on ticket type: feature
