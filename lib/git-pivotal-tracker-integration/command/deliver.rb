@@ -113,11 +113,8 @@ module GitPivotalTrackerIntegration
         all_stories << build_story
 
         all_stories.each do |story|
-          labels = story.labels.map(&:name)
-          labels << build_story.name
-          labels.uniq!
 
-          story.add_labels(*labels)
+          story.add_label(build_story.name)
 
           case story.story_type
           when 'feature', 'bug'
