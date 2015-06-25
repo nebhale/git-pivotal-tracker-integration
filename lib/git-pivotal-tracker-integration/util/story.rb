@@ -145,7 +145,7 @@ module GitPivotalTrackerIntegration
         release_type = (type == "b") ? "build" : "version"
 
         criteria =  "type:release"
-        criteria << " state:unstarted,rejected,unscheduled,planned"
+        criteria << " state:unstarted,rejected"
         criteria << " name:/#{type}*/"    #story name starts with  b or v
 
         candidates = project.stories(filter: criteria, limit: limit)
@@ -163,10 +163,15 @@ module GitPivotalTrackerIntegration
 
           if last_release
             puts " The last #{release_type} release was #{last_release.name}."
-            next_release_number = set_next_release_number(last_release, release_type)
+            if release_type == "version"
+              next_release_number = ask("To create a new #{release_type}, enter a name for the new release story:")
+            else
+              next_release_number = set_next_release_number(last_release, release_type)
+            end
           else
             next_release_number = ask("To create a new #{release_type}, enter a name for the new release story:")
           end
+
           puts "New #{release_type} release number is: #{next_release_number}"
           story = self.create_new_release(project, next_release_number)
         end
