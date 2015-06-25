@@ -43,7 +43,7 @@ module GitPivotalTrackerIntegration
         @configuration.check_for_config_file
         @configuration.check_for_config_contents
 
-        @client           = TrackerApi::Client.new(:token => @configuration.api_token)
+        @client           = TrackerApi::Client.new(:token => @configuration.api_token, :logger => Logger.new('faraday.log'))
         @platform         = @configuration.platform_name
 
         current_project_id  = @configuration.project_id.to_i
