@@ -68,7 +68,7 @@ module GitPivotalTrackerIntegration
           # story type from (feature, bug, chore)
           # state from (rejected unstarted unscheduled)
           # if story type is "feature", then retrieve only estimated ones.
-          criteria = " state:unstarted,rejected,unscheduled"
+          criteria = " state:unstarted,rejected,unscheduled,planned"
 
           if %w(feature bug chore).include?(filter)
             criteria << " type:#{filter}"
@@ -145,7 +145,7 @@ module GitPivotalTrackerIntegration
         release_type = (type == "b") ? "build" : "version"
 
         criteria =  "type:release"
-        criteria << " state:unstarted,rejected"
+        criteria << " state:unstarted,rejected,planned"
         criteria << " name:/#{type}*/"    #story name starts with  b or v
 
         candidates = project.stories(filter: criteria, limit: limit)
