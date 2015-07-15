@@ -85,7 +85,7 @@ module GitPivotalTrackerIntegration
 
           # cd back to the working_directory
           Dir.chdir(working_directory)
-        elsif @platform == 'android'
+        elsif @platform.downcase == 'android'
           updater = VersionUpdate::Gradle.new(@repository_root)
           updater.update_dev_version(build_number)
         end

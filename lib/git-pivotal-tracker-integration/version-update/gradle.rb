@@ -34,32 +34,42 @@ module GitPivotalTrackerIntegration
       # @param [String] new_version the version to update the project to
       # @return [void]
       def update_dev_version(new_version)
-        update_version('DEV', 'SNAPSHOT', new_version)
+        update_version_in_sec('DEV', new_version, 'SNAPSHOT')
       end
 
       def update_qa_version(new_version)
-        update_version('QA', 'SNAPSHOT', new_version)
+        update_version_in_sec('QA', new_version, 'SNAPSHOT')
       end
 
       def update_uat_version(new_version)
-        update_version('UAT', new_version, new_version)
+        update_version_in_sec('UAT', qa_version_code, new_version)
       end
 
       def update_prod_version(new_version)
-        update_version('PROD', new_version, new_version)
+        update_version_in_sec('PROD', qa_version_code, new_version)
       end
 
       private
 
-      def update_version(version_type, new_name, new_version)
+      def update_version_in_sec(section, new_code, new_version)
         content     = File.read(@gradle_file)
-        new_content = content.gsub(/productFlavors.*?#{version_type}.*?versionCode( )*=?( )*(.*?)versionName( )*=?( )*(.*?\s)/m) do |match|
-            version_code = $3.strip
-            version_name = $6.strip
-            match.gsub(version_code, new_version).gsub(version_name, "\"#{new_name}\"")
-        end
+
+        new_content = update_version(content, section, 'Code', new_code)  #update versionCode
+        new_content = update_version(new_content, section, 'Name', "\"#{new_version}\"") #update versionName
 
         File.open(@gradle_file, 'w') { |file| file.write(new_content) }
+      end
+
+      def qa_version_code
+        content     = File.read(@gradle_file)
+        match       = content.match(/productFlavors.*?QA.*?versionCode( )*=?( )*(.*?\s)/m)
+        match[3].strip
+      end
+
+      def update_version(file_content, section, type, new_value)
+        file_content.gsub(/productFlavors.*?#{section}.*?version#{type}( )*=?( )*(.*?\s)/m) do |match|
+          match.gsub($3.strip, new_value)
+        end
       end
 
     end
