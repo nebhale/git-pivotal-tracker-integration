@@ -16,10 +16,10 @@
 
 Gem::Specification.new do |s|
   s.name        = 'v2gpti'
-  s.version     = '1.2.3'
+  s.version     = '1.2.4'
   s.summary     = 'Git commands for integration with Pivotal Tracker'
   s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
-  s.authors     = ['Jeff Wolski', 'Ben Hale', 'Kanta Harikrishna']
+  s.authors     = ['Jeff Wolski', 'Ben Hale', 'Manoj P M']
   s.email       = 'jeff@xxxxxxxxx.com'
   s.homepage    = 'https://github.com/v2dev/V2GPTI'
   s.license     = 'Apache-2.0'

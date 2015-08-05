@@ -51,7 +51,7 @@ module GitPivotalTrackerIntegration
         puts Util::Shell.exec "git checkout QA"
         Util::Shell.exec "git reset --hard origin/QA"
         puts Util::Shell.exec "git fetch"
-        Util::Shell.exec "git merge -s recursive --strategy-option theirs origin QA"
+        Util::Shell.exec "git merge -s recursive --strategy-option theirs origin/QA"
 
 
         # checkout master branch
