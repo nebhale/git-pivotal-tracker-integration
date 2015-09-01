@@ -63,7 +63,8 @@ module GitPivotalTrackerIntegration
         puts ""
 
         if (OS.mac? && @platform.downcase == "ios")
-          project_directory = ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
+          project_directory = @configuration.xcode_project_path
+          project_directory ||= ((Util::Shell.exec 'find . -name "*.xcodeproj" 2>/dev/null').split /\/(?=[^\/]*$)/)[0]
 
           # cd to the project_directory
           Dir.chdir(project_directory)
