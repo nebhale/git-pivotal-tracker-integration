@@ -94,6 +94,11 @@ module GitPivotalTrackerIntegration
         project_id
       end
 
+      def xcode_project_path
+        config              = self.pconfig
+        config["project"]["xcode-project-path"]
+      end
+
       def platform_name
         config              = self.pconfig
         platform_name       = config["platform"]["platform-name"].downcase
