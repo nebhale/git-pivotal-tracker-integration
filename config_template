@@ -13,4 +13,4 @@ project-id =
 platform-name =
 
 [spec]
-spec-path = v2gpti.gemspec
+spec-path =
