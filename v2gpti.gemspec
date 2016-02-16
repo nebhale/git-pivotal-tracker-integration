@@ -16,7 +16,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'v2gpti'
-  s.version     = '1.2.6'
+  s.version     = '1.2.7'
   s.summary     = 'Git commands for integration with Pivotal Tracker'
   s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
   s.authors     = ['Jeff Wolski', 'Ben Hale', 'Manoj P M']
