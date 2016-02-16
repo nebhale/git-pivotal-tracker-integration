@@ -56,7 +56,7 @@ module GitPivotalTrackerIntegration
         Util::Git.merge(@configuration.story(@project), no_complete)
         Util::Git.push Util::Git.branch_name
 
-        story.add_label('Need code review')
+        story.add_label('need code review')
       end
 
 
