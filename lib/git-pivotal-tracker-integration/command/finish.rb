@@ -28,7 +28,7 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    GitPivotalTrackerIntegration::Util::Git.verify_uncommitted_changes
+    GitPivotalTrackerIntegration::Util::Git.verify_uncommitted_changes!
 
     github = @configuration.github
 
