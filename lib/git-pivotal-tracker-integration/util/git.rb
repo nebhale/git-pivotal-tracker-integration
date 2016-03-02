@@ -51,6 +51,14 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec('git branch').scan(/\* (.*)/)[0][0]
   end
 
+  def self.root_branch
+    get_config KEY_ROOT_BRANCH, :branch
+  end
+
+  def self.repo_name
+    GitPivotalTrackerIntegration::Util::Shell.exec('git config -l').scan(/spire\-inc\/(.*)\.git/)[0][0]
+  end
+
   # Creates a branch with a given +name+.  First pulls the current branch to
   # ensure that it is up to date and then creates and checks out the new
   # branch.  If specified, sets branch-specific properties that are passed in.
@@ -107,6 +115,18 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{RELEASE_BRANCH_NAME}"
 
     puts 'OK'
+  end
+
+  def self.verify_uncommitted_changes!
+    result = `git diff --exit-code`
+    if $?.exitstatus != 0
+      abort "You have uncommitted changes!"
+    end
+    result = `git diff --staged --exit-code`
+
+    if $?.exitstatus != 0
+      abort "You have uncommitted staged changes!"
+    end
   end
 
   # Returns a Git configuration value.  This value is read using the +git
@@ -212,8 +232,7 @@ class GitPivotalTrackerIntegration::Util::Git
   # @return [void]
   def self.trivial_merge?
     development_branch = branch_name
-    root_branch = get_config KEY_ROOT_BRANCH, :branch
-
+ 
     print "Checking for trivial merge from #{development_branch} to #{root_branch}... "
 
     GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet #{root_branch}"

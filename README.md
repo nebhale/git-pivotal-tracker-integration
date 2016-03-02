@@ -26,7 +26,7 @@ $ git start       # Creates branch and starts story
 $ git commit ...
 $ git commit ...  # Your existing development process
 $ git commit ...
-$ git finish      # Merges and destroys branch, pushes to origin, and finishes story
+$ git finish      # Finishes pivotal story, creates PR.
 ```
 
 
@@ -111,15 +111,13 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 #
 ```
 
-### `git finish [--no-complete]`
-This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can be run in two ways.  First it can be run without the `--no-complete` option.
+### `git finish`
+This command finishes a story and creates pull request on github.
 
 ```plain
 $ git finish
-Checking for trivial merge from 12345678-lorem-ipsum to master... OK
-Merging 12345678-lorem-ipsum to master... OK
-Deleting 12345678-lorem-ipsum... OK
-Pushing to origin... OK
+Creating PR on Github... OK
+Finishing story on Pivotal Tracker... OK
 ```
 
 The command checks that it will be able to do a trivial merge from the development branch to the target branch before it does anything.  The check has the following constraints
