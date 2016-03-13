@@ -50,7 +50,14 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
+    suggested = "#{story.id}-#{story.name.strip.gsub(/[^a-zA-Z0-9]/, '-').squeeze}"
+    puts "suggested name: #{suggested}"
+    user_choice = ask("Enter branch name (or enter to accept suggestion)").strip
+    if (user_choice == '')
+      branch_name = suggested
+    else
+      branch_name = "#{story.id}-" + user_choice.gsub(/[^a-zA-Z0-9]/, '-').squeeze
+    end
     puts
     branch_name
   end

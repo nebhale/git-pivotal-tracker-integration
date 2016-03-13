@@ -17,6 +17,7 @@ require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
 require 'highline/import'
 require 'pivotal-tracker'
+require 'github_api'
 
 # A class that exposes configuration that commands can use
 class GitPivotalTrackerIntegration::Command::Configuration
@@ -81,6 +82,19 @@ class GitPivotalTrackerIntegration::Command::Configuration
     GitPivotalTrackerIntegration::Util::Git.set_config KEY_STORY_ID, story.id, :branch
   end
 
+  def github
+    token = GitPivotalTrackerIntegration::Util::Git.get_config GITHUB_API_OAUTH_TOKEN
+
+    if (token.empty?)
+      token = ask("Github OAuth Token (help.github.com/articles/creating-an-access-token-for-command-line-use): ").strip
+      GitPivotalTrackerIntegration::Util::Git.set_config(GITHUB_API_OAUTH_TOKEN, token, :local)
+    end
+
+    repo = GitPivotalTrackerIntegration::Util::Git.repo_name
+
+    ::Github.new(:oauth_token => token)
+  end
+
   private
 
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
@@ -88,5 +102,8 @@ class GitPivotalTrackerIntegration::Command::Configuration
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
 
   KEY_STORY_ID = 'pivotal-story-id'.freeze
+
+  GITHUB_API_OAUTH_TOKEN = 'workflow.github.oauth'.freeze
+  GITHUB_API_REPO_TOKEN = 'workflow.github.repo'.freeze
 
 end

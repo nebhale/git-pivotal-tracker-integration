@@ -28,11 +28,28 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
   #
   # @return [void]
   def run(argument)
-    no_complete = argument =~ /--no-complete/
+    GitPivotalTrackerIntegration::Util::Git.verify_uncommitted_changes!
 
-    GitPivotalTrackerIntegration::Util::Git.trivial_merge?
-    GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story(@project), no_complete)
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    github = @configuration.github
+
+    story = @configuration.story(@project)
+
+    print "Creating PR on Github... \n"
+    pr = github.pull_requests.create(
+      user: GitPivotalTrackerIntegration::Util::Git.org_name,
+      repo: GitPivotalTrackerIntegration::Util::Git.repo_name,
+      base: GitPivotalTrackerIntegration::Util::Git.root_branch,
+      head: GitPivotalTrackerIntegration::Util::Git.branch_name,
+      title: "#{story.id} #{story.name}",
+      body: "#{story.name}\n#{story.description}\nPivotal Task: #{story.url}"
+    )
+    puts 'OK'
+    print 'Finishing story on Pivotal Tracker... '
+    story.update(
+      :current_state => 'finished',
+      :owned_by => GitPivotalTrackerIntegration::Util::Git.get_config('user.name')
+    )
+    puts 'OK'
   end
 
 end
