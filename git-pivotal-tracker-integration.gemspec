@@ -15,7 +15,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'spire-git-pivotal-tracker'
-  s.version     = '1.1.0'
+  s.version     = '1.1.1'
   s.summary     = 'Git commands for integration with Pivotal Tracker'
   s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
   s.authors     = ['Guo Lei']

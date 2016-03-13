@@ -34,15 +34,13 @@ class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegrati
 
     story = @configuration.story(@project)
 
-    branch_name = GitPivotalTrackerIntegration::Util::Git.branch_name
-
-    print 'Creating PR on Github... '
+    print "Creating PR on Github... \n"
     pr = github.pull_requests.create(
-      user: github.user,
-      repo: github.repo,
+      user: GitPivotalTrackerIntegration::Util::Git.org_name,
+      repo: GitPivotalTrackerIntegration::Util::Git.repo_name,
       base: GitPivotalTrackerIntegration::Util::Git.root_branch,
-      head: branch_name,
-      title: "Fixing #{branch_name}",
+      head: GitPivotalTrackerIntegration::Util::Git.branch_name,
+      title: "#{story.id} #{story.name}",
       body: "#{story.name}\n#{story.description}\nPivotal Task: #{story.url}"
     )
     puts 'OK'

@@ -56,7 +56,11 @@ class GitPivotalTrackerIntegration::Util::Git
   end
 
   def self.repo_name
-    GitPivotalTrackerIntegration::Util::Shell.exec('git config -l').scan(/spire\-inc\/(.*)\.git/)[0][0]
+    GitPivotalTrackerIntegration::Util::Shell.exec('git config remote.origin.url').scan(/:(.*)\/(.*)\.git/)[0][1]
+  end
+
+  def self.org_name
+    GitPivotalTrackerIntegration::Util::Shell.exec('git config remote.origin.url').scan(/:(.*)\/(.*)\.git/)[0][0]
   end
 
   # Creates a branch with a given +name+.  First pulls the current branch to

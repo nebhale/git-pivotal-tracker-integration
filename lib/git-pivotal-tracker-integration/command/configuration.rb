@@ -92,7 +92,7 @@ class GitPivotalTrackerIntegration::Command::Configuration
 
     repo = GitPivotalTrackerIntegration::Util::Git.repo_name
 
-    ::Github.new(:oauth_token => token, :org => "spire-inc", :repo => repo, :user => "spire-inc")
+    ::Github.new(:oauth_token => token)
   end
 
   private
