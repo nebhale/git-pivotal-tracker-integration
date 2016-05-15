@@ -20,16 +20,30 @@ module GitPivotalTrackerIntegration
   class PivotalTracker
 
     def initialize(api_token)
-      @headers = { :X_TrackerToken => api_token }
+      @api_token = api_token
     end
 
     def projects
-      JSON.parse(RestClient.get("#{ROOT}/projects", @headers).body)
+      get '/projects', fields: 'id,name'
+    end
+
+    def stories(project_id)
+      get "/projects/#{project_id}/stories", fields: 'comments,description,id,name,story_type', limit: 5, with_state: 'unstarted'
     end
 
     ROOT = 'https://www.pivotaltracker.com/services/v5'.freeze
 
     private_constant :ROOT
+
+    private
+
+    def get(path, params = {})
+      response = RestClient.get "#{ROOT}/#{path}", params: params, accept: 'json', X_TrackerToken: @api_token
+      JSON.parse(response.body)
+    rescue RestClient::Exception => e
+      payload = JSON.parse(e.http_body)
+      raise "#{payload['error']} #{payload['requirement']} #{payload['possible_fix']}"
+    end
 
   end
 

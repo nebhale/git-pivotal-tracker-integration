@@ -24,6 +24,10 @@ module GitPivotalTrackerIntegration
       Rugged::Config.global['pivotal.api-token'] ||= choose_api_token
     end
 
+    def pivotal_tracker
+      @pivotal_tracker ||= PivotalTracker.new(api_token)
+    end
+
     def project_id
       repository.config['pivotal.project-id'] ||= choose_project_id
     end
@@ -46,10 +50,6 @@ module GitPivotalTrackerIntegration
           menu.choice(project['name']) { project['id'] }
         end
       end
-    end
-
-    def pivotal_tracker
-      @pivotal_tracker ||= PivotalTracker.new(api_token)
     end
 
   end

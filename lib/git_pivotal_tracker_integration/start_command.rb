@@ -24,7 +24,9 @@ module GitPivotalTrackerIntegration
     end
 
     def run(args, options)
-      puts @configuration.project_id
+      project_id = @configuration.project_id
+
+      puts @configuration.pivotal_tracker.stories(project_id)
     end
 
   end
