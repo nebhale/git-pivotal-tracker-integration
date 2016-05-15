@@ -16,19 +16,19 @@
 
 
 require 'commander/import'
-require 'git_pivotal_tracker_integration/start_command'
+require 'git_pivotal_tracker_integration/join_command'
 require 'git_pivotal_tracker_integration/version'
 
 program :name, 'Git Pivotal Tracker Integration'
 program :version, GitPivotalTrackerIntegration::VERSION
 program :description, 'Commands for integrating Pivotal Tracker into a Git workflow'
 
-command :start do |c|
-  c.name = 'git-start'
-  c.syntax = 'git start [ type | story-id ]'
-  c.description = 'Starts a Pivotal Tracker story'
+command :join do |c|
+  c.name = 'git-join'
+  c.syntax = 'git join'
+  c.description = 'Joins a Pivotal Tracker story'
 
-  c.action GitPivotalTrackerIntegration::StartCommand, :run
+  c.action GitPivotalTrackerIntegration::JoinCommand, :run
 end
 
-default_command :start
+default_command :join

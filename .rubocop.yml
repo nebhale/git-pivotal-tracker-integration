@@ -1,0 +1,14 @@
+---
+require: rubocop-rspec
+
+Metrics/LineLength:
+  Max: 200
+
+Style/Documentation:
+  Enabled: false
+
+Style/EmptyLinesAroundClassBody:
+  EnforcedStyle: empty_lines
+
+Style/EmptyLinesAroundModuleBody:
+  EnforcedStyle: empty_lines

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
 require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'

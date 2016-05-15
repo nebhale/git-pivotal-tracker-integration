@@ -1,6 +1,6 @@
-#!/usr/bin/env ruby -U
+#!/usr/bin/env ruby
 # Git Pivotal Tracker Integration
-# Copyright (c) 2013 the original author or authors.
+# Copyright 2013-2016 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'git-pivotal-tracker-integration/command/finish'
 
-GitPivotalTrackerIntegration::Command::Finish.new().run ARGV[0]
+require 'commander/import'
+require 'git_pivotal_tracker_integration/finish_command'
+require 'git_pivotal_tracker_integration/version'
+
+program :name, 'Git Pivotal Tracker Integration'
+program :version, GitPivotalTrackerIntegration::VERSION
+program :description, 'Commands for integrating Pivotal Tracker into a Git workflow'
+
+command :finish do |c|
+  c.name = 'git-finish'
+  c.syntax = 'git finish [ --no-complete ]'
+  c.description = 'Finish a Pivotal Tracker story'
+
+  c.option '--no-complete', "Suppress the 'Completes' statement in the commit message"
+
+  c.action GitPivotalTrackerIntegration::FinishCommand, :run
+end
+
+default_command :finish

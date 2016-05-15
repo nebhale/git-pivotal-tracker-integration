@@ -1,5 +1,5 @@
 # Git Pivotal Tracker Integration
-# Copyright (c) 2013 the original author or authors.
+# Copyright 2013-2016 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The root module for the project
 module GitPivotalTrackerIntegration
+
+  class FinishCommand
+
+    def run(args, options)
+    end
+
+  end
+
 end

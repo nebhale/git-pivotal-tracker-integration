@@ -1,5 +1,4 @@
-.yardoc
+.idea/tasks.xml
+.idea/workspace.xml
 Gemfile.lock
-coverage
-doc
 pkg

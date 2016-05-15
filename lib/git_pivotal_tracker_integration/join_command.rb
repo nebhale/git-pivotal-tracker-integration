@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # Git Pivotal Tracker Integration
 # Copyright 2013-2016 the original author or authors.
 #
@@ -14,21 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+module GitPivotalTrackerIntegration
 
-require 'commander/import'
-require 'git_pivotal_tracker_integration/start_command'
-require 'git_pivotal_tracker_integration/version'
+  class JoinCommand
 
-program :name, 'Git Pivotal Tracker Integration'
-program :version, GitPivotalTrackerIntegration::VERSION
-program :description, 'Commands for integrating Pivotal Tracker into a Git workflow'
+    def run(args, options)
+    end
 
-command :start do |c|
-  c.name = 'git-start'
-  c.syntax = 'git start [ type | story-id ]'
-  c.description = 'Starts a Pivotal Tracker story'
+  end
 
-  c.action GitPivotalTrackerIntegration::StartCommand, :run
 end
-
-default_command :start

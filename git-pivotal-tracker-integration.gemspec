@@ -1,5 +1,5 @@
 # Git Pivotal Tracker Integration
-# Copyright (c) the original author or authors.
+# Copyright 2013-2016 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require 'git_pivotal_tracker_integration/version'
+
 Gem::Specification.new do |s|
   s.name        = 'git-pivotal-tracker-integration'
-  s.version     = '1.5.0.dev'
+  s.version     = GitPivotalTrackerIntegration::VERSION
   s.summary     = 'Git commands for integration with Pivotal Tracker'
   s.description = 'Provides a set of additional Git commands to help developers when working with Pivotal Tracker'
   s.authors     = ['Ben Hale']
@@ -23,20 +28,21 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/nebhale/git-pivotal-tracker-integration'
   s.license     = 'Apache-2.0'
 
-  s.files            = %w(LICENSE NOTICE README.md) + Dir['lib/**/*.rb'] + Dir['lib/**/*.sh'] + Dir['bin/*']
+  s.files            = %w(LICENSE NOTICE README.md) + Dir['lib/**/*.rb']
   s.executables      = Dir['bin/*'].map { |f| File.basename f }
   s.test_files       = Dir['spec/**/*_spec.rb']
 
-  s.required_ruby_version = '>= 1.8.7'
+  s.required_ruby_version = '>= 2.2.5'
 
-  s.add_dependency 'highline', '~> 1.6'
-  s.add_dependency 'pivotal-tracker', '~> 0.5'
+  s.add_dependency 'commander',   '~> 4.4'
+  s.add_dependency 'highline',    '~> 1.7'
+  s.add_dependency 'rest-client', '~> 1.8'
+  s.add_dependency 'rugged',      '~> 0.24'
 
-  s.add_development_dependency 'bundler', '~> 1.3'
-  s.add_development_dependency 'rake', '~> 10.0'
-  s.add_development_dependency 'redcarpet', '~> 2.2'
-  s.add_development_dependency 'rspec', '~> 2.13'
-  s.add_development_dependency 'simplecov', '~> 0.7'
-  s.add_development_dependency 'yard', '~> 0.8'
+  s.add_development_dependency 'bundler',       '~> 1.12'
+  s.add_development_dependency 'rake',          '~> 11.1'
+  s.add_development_dependency 'rspec',         '~> 3.4'
+  s.add_development_dependency 'rubocop',       '~> 0.39'
+  s.add_development_dependency 'rubocop-rspec', '~> 1.4'
 
 end

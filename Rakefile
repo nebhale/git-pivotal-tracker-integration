@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'bundler/gem_tasks'
+require 'rake/clean'
 
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
-require 'yard'
-YARD::Rake::YardocTask.new
+require 'rubocop/rake_task'
+RuboCop::RakeTask.new { |t| t.requires << 'rubocop-rspec' }
 
-require 'rake/clean'
-CLEAN.include %w(.yardoc coverage)
-CLOBBER.include %w(doc pkg)
+require 'bundler/gem_tasks'
 
-task :default => :spec
+task default: %w(rubocop spec)
