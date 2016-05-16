@@ -14,6 +14,7 @@
 # limitations under the License.
 
 require 'git_pivotal_tracker_integration/pivotal_tracker'
+require 'highline/import'
 require 'rugged'
 
 module GitPivotalTrackerIntegration

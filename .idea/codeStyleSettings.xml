@@ -5,6 +5,7 @@
       <value>
         <option name="RIGHT_MARGIN" value="200" />
         <codeStyleSettings language="ruby">
+          <option name="ALIGN_GROUP_FIELD_DECLARATIONS" value="true" />
           <option name="SPACE_WITHIN_BRACES" value="true" />
         </codeStyleSettings>
       </value>

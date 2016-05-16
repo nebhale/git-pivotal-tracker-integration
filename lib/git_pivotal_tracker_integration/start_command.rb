@@ -14,21 +14,52 @@
 # limitations under the License.
 
 require 'git_pivotal_tracker_integration/configuration'
+require 'highline/import'
 
 module GitPivotalTrackerIntegration
 
   class StartCommand
 
     def initialize
-      @configuration = Configuration.new
+      configuration    = Configuration.new
+      @pivotal_tracker = configuration.pivotal_tracker
+      @project_id      = configuration.project_id
     end
 
-    def run(args, options)
-      project_id = @configuration.project_id
-
-      puts @configuration.pivotal_tracker.stories(project_id)
+    def run(args, _)
+      puts story args.first
     end
 
+    def story(filter)
+      if filter.nil?
+        chose_story @pivotal_tracker.stories(@project_id)
+      elsif filter.integer?
+        @pivotal_tracker.story @project_id, filter.to_i
+      else
+        chose_story @pivotal_tracker.stories(@project_id, filter)
+      end
+    end
+
+    private
+
+    def chose_story(stories)
+      choose do |menu|
+        menu.prompt = 'Choose story to start: '
+
+        stories.each do |story|
+          menu.choice('%-7s %s' % [story['story_type'].upcase, story['name']]) { story }
+        end
+      end
+    end
+
+  end
+
+end
+
+class String
+
+  def integer?
+    to_i.to_s == self
   end
 
 end

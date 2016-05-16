@@ -27,13 +27,30 @@ module GitPivotalTrackerIntegration
       get '/projects', fields: 'id,name'
     end
 
-    def stories(project_id)
-      get "/projects/#{project_id}/stories", fields: 'comments,description,id,name,story_type', limit: 5, with_state: 'unstarted'
+    def stories(project_id, story_type = nil)
+      filter = "current_state:#{CANDIDATE_STATES.join(',')} "
+
+      if story_type.nil?
+        filter += "story_type:#{STORY_TYPES.join(',')}"
+      else
+        raise "'#{story_type}' is not a valid story type.  Must be one of #{STORY_TYPES.join(', ')}" unless STORY_TYPES.include? story_type.downcase
+        filter += "story_type:#{story_type.downcase}"
+      end
+
+      get "/projects/#{project_id}/stories", fields: 'comments,description,id,name,story_type', limit: 5, filter: filter
     end
+
+    def story(project_id, story_id)
+      get "/projects/#{project_id}/stories/#{story_id}", fields: 'comments,description,id,name,story_type'
+    end
+
+    CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze
 
     ROOT = 'https://www.pivotaltracker.com/services/v5'.freeze
 
-    private_constant :ROOT
+    STORY_TYPES = %w(feature bug chore).freeze
+
+    private_constant :CANDIDATE_STATES, :ROOT, :STORY_TYPES
 
     private
 
