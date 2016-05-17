@@ -27,28 +27,66 @@ module GitPivotalTrackerIntegration
     end
 
     def run(args, _)
-      puts story args.first
+      story  = story args.first
+      branch = branch story
+
+      # create branch
+      # add hook
+      # start tracker
+    end
+
+    LABEL_WIDTH = 13.freeze
+
+    VALUE_WIDTH = (HighLine.new.output_cols - LABEL_WIDTH).freeze
+
+    private_constant :LABEL_WIDTH, :VALUE_WIDTH
+
+    private
+
+    def branch(story)
+      choose_branch story
+    end
+
+    def choose_branch(story)
+      puts
+      puts [format_value('Title: ', story['name']),
+            format_value('Description: ', story['description'])].join("\n")
+
+      puts
+      "#{story['id']}-#{ask("Enter branch name (#{story['id']}-<branch-name>): ")}"
+    end
+
+    def choose_story(stories)
+      puts
+      choose do |menu|
+        menu.prompt = 'Choose story to start: '
+        stories.each { |story| menu.choice(format_choice(story)) { story } }
+      end
+    end
+
+    def format_choice(story)
+      '%-7s %s' % [story['story_type'].upcase, story['name']]
+    end
+
+    def format_value(label, value)
+      return "%#{LABEL_WIDTH}s\n" % [label] if value.nil?
+
+      value.scan(/\S.{0,#{VALUE_WIDTH - 2}}\S(?=\s|$)|\S+/).map.with_index do |line, index|
+        if index == 0
+          "%#{LABEL_WIDTH}s%s" % [label, line]
+        else
+          "%#{LABEL_WIDTH}s%s" % ['', line]
+        end
+      end.join("\n")
     end
 
     def story(filter)
       if filter.nil?
-        chose_story @pivotal_tracker.stories(@project_id)
+        choose_story @pivotal_tracker.stories(@project_id)
       elsif filter.integer?
         @pivotal_tracker.story @project_id, filter.to_i
       else
-        chose_story @pivotal_tracker.stories(@project_id, filter)
-      end
-    end
-
-    private
-
-    def chose_story(stories)
-      choose do |menu|
-        menu.prompt = 'Choose story to start: '
-
-        stories.each do |story|
-          menu.choice('%-7s %s' % [story['story_type'].upcase, story['name']]) { story }
-        end
+        choose_story @pivotal_tracker.stories(@project_id, filter)
       end
     end
 

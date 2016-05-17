@@ -40,10 +40,12 @@ module GitPivotalTrackerIntegration
     private
 
     def choose_api_token
+      puts
       ask('Pivotal API Token (found at https://www.pivotaltracker.com/profile): ').strip
     end
 
     def choose_project_id
+      puts
       choose do |menu|
         menu.prompt = 'Choose project associated with this repository: '
 

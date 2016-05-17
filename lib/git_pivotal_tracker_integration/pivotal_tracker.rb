@@ -37,11 +37,11 @@ module GitPivotalTrackerIntegration
         filter += "story_type:#{story_type.downcase}"
       end
 
-      get "/projects/#{project_id}/stories", fields: 'comments,description,id,name,story_type', limit: 5, filter: filter
+      get "/projects/#{project_id}/stories", fields: 'description,id,name,story_type', limit: 5, filter: filter
     end
 
     def story(project_id, story_id)
-      get "/projects/#{project_id}/stories/#{story_id}", fields: 'comments,description,id,name,story_type'
+      get "/projects/#{project_id}/stories/#{story_id}", fields: 'description,id,name,story_type'
     end
 
     CANDIDATE_STATES = %w(rejected unstarted unscheduled).freeze
