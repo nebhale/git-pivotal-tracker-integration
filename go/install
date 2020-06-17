@@ -1,0 +1,12 @@
+#!/bin/bash
+# This script installs the v2gpti gem.
+
+V2GPTI_FOLDER="/usr/local/v2gpti"
+mkdir $V2GPTI_FOLDER
+git clone  git@github.com:v2dev/V2GPTI.git $V2GPTI_FOLDER
+cd $V2GPTI_FOLDER
+bundle gem v2gpti
+bundle update
+sudo rake --trace install
+sudo rm -rf $V2GPTI_FOLDER
+exit

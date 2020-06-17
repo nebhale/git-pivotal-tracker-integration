@@ -13,52 +13,66 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'git-pivotal-tracker-integration/version-update/version_update'
+module GitPivotalTrackerIntegration
+  module VersionUpdate
 
-# A version updater for dealing with _typical_ Gradle projects.  This updater
-# assumes that the version of the current project is stored within a
-# +gradle.properties+ file in the root of the repository.  This properties
-# file should have an entry with a key of +version+ and version number as the key.
-class GitPivotalTrackerIntegration::VersionUpdate::Gradle
+    # A version updater for dealing with _typical_ Gradle projects.  This updater
+    # assumes that the version of the current project is stored within a
+    # +gradle.properties+ file in the root of the repository.  This properties
+    # file should have an entry with a key of +version+ and version number as the key.
+    class Gradle
 
-  # Creates an instance of this updater
-  #
-  # @param [String] root The root of the repository
-  def initialize(root)
-    @gradle_properties = File.expand_path 'gradle.properties', root
-
-    if File.exist? @gradle_properties
-      groups = nil
-      File.open(@gradle_properties, 'r') do |file|
-        groups = file.read().scan(/version[=:](.*)/)
+      # Creates an instance of this updater
+      #
+      # @param [String] root The root of the repository
+      def initialize(root)
+        @gradle_file = File.expand_path 'app/build.gradle', root
       end
-      @version = groups[0] ? groups[0][0]: nil
+
+      # Update the version of the project
+      #
+      # @param [String] new_version the version to update the project to
+      # @return [void]
+      def update_dev_version(new_version)
+        update_version_in_sec('DEV', new_version, 'SNAPSHOT')
+      end
+
+      def update_qa_version(new_version)
+        update_version_in_sec('QA', new_version, 'SNAPSHOT')
+      end
+
+      def update_uat_version(new_version)
+        update_version_in_sec('UAT', qa_version_code, new_version)
+      end
+
+      def update_prod_version(new_version)
+        update_version_in_sec('PROD', qa_version_code, new_version)
+      end
+
+      private
+
+      def update_version_in_sec(section, new_code, new_version)
+        content     = File.read(@gradle_file)
+
+        new_content = update_version(content, section, 'Code', new_code)  #update versionCode
+        new_content = update_version(new_content, section, 'Name', "\"#{new_version}\"") #update versionName
+
+        File.open(@gradle_file, 'w') { |file| file.write(new_content) }
+      end
+
+      def qa_version_code
+        content     = File.read(@gradle_file)
+        match       = content.match(/productFlavors.*?QA.*?versionCode( )*=?( )*(.*?\s)/m)
+        match[3].strip
+      end
+
+      def update_version(file_content, section, type, new_value)
+        file_content.gsub(/productFlavors.*?#{section}.*?version#{type}( )*=?( )*(.*?\s)/m) do |match|
+          match.gsub($3.strip, new_value)
+        end
+      end
+
     end
-  end
 
-  # Whether this updater supports updating this project
-  #
-  # @return [Boolean] +true+ if a valid version number was found on
-  #   initialization, +false+ otherwise
-  def supports?
-    !@version.nil?
   end
-
-  # The current version of the project
-  #
-  # @return [String] the current version of the project
-  def current_version
-    @version
-  end
-
-  # Update the version of the project
-  #
-  # @param [String] new_version the version to update the project to
-  # @return [void]
-  def update_version(new_version)
-    contents = File.read(@gradle_properties)
-    contents = contents.gsub(/(version[=:])#{@version}/, "\\1#{new_version}")
-    File.open(@gradle_properties, 'w') { |file| file.write(contents) }
-  end
-
 end

@@ -1,0 +1,3 @@
+[submodule "tracker_api"]
+	path = tracker_api
+	url = git@github.com:v2dev/tracker_api.git

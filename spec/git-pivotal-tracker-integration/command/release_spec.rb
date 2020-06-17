@@ -18,7 +18,7 @@ require 'git-pivotal-tracker-integration/command/configuration'
 require 'git-pivotal-tracker-integration/command/release'
 require 'git-pivotal-tracker-integration/util/git'
 require 'git-pivotal-tracker-integration/util/story'
-require 'pivotal-tracker'
+
 
 describe GitPivotalTrackerIntegration::Command::Release do
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Git Pivotal Tracker Integration
 # Copyright (c) 2013 the original author or authors.
 #
@@ -13,8 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'git_pivotal_tracker_integration'
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+STORY_ID=$(git config branch.$CURRENT_BRANCH.pivotal-story-id)
 
-# A module encapsulating the commands for the project
-module GitPivotalTrackerIntegration::Command
-end
+if [[ $2 != "commit" && -n $STORY_ID ]]; then
+ ORIG_MSG_FILE="$1"
+ TEMP="/tmp/git-$RANDOM"
+
+ (printf "\n\n[#$STORY_ID]" ; cat "$1") > "$TEMP"
+ cat "$TEMP" > "$ORIG_MSG_FILE"
+fi

@@ -13,24 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'git-pivotal-tracker-integration/util/util'
+module GitPivotalTrackerIntegration
+  module Util
 
-# Utilities for dealing with the shell
-class GitPivotalTrackerIntegration::Util::Shell
+    # Utilities for dealing with the shell
+    class Shell
 
-  # Executes a command
-  #
-  # @param [String] command the command to execute
-  # @param [Boolean] abort_on_failure whether to +Kernel#abort+ with +FAIL+ as
-  #   the message when the command's +Status#existstatus+ is not +0+
-  # @return [String] the result of the command
-  def self.exec(command, abort_on_failure = true)
-    result = `#{command}`
-    if $?.exitstatus != 0 && abort_on_failure
-      abort 'FAIL'
+      # Executes a command
+      #
+      # @param [String] command the command to execute
+      # @param [Boolean] abort_on_failure whether to +Kernel#abort+ with +FAIL+ as
+      #   the message when the command's +Status#existstatus+ is not +0+
+      # @return [String] the result of the command
+      def self.exec(command, abort_on_failure = true)
+        result = `#{command}`
+        if $?.exitstatus != 0 && abort_on_failure
+          abort "FAIL on command:#{command}"
+        end
+
+        result
+      end
+
     end
-
-    result
   end
-
 end
