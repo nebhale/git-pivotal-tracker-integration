@@ -64,13 +64,48 @@ class GitPivotalTrackerIntegration::Command::Configuration
     project_id
   end
 
+  # Returns the Pivotal Tracker project for this repository.  If it is not
+  # configured yet, prompts the user for the value.
+  #
+  # @return [PivotalTracker::Project] The repository's Pivotal Tracker project
+  def project
+    PivotalTracker::Project.find project_id
+  end
+
+  # Returns the Pivotal Tracker user id for this repository.  If this id
+  # has not been configuration, prompts the user for the value.  The value is
+  # checked for in the _inherited_ Git configuration, but is stored in the
+  # _local_ Git configuration so that it is specific to this repository.
+  #
+  # @return [String] The repository's Pivotal Tracker user id
+  def user
+    user = GitPivotalTrackerIntegration::Util::Git.get_config KEY_USER, :inherited
+
+    if user.empty?
+      user = choose do |menu|
+        menu.prompt = 'Choose your user name associated with this repository: '
+
+        PivotalTracker::Project.all.map{ |p| p.memberships.all.map(&:name) }.flatten.uniq.each do |owner|
+          menu.choice(owner) { owner }
+        end
+      end
+
+      GitPivotalTrackerIntegration::Util::Git.set_config KEY_USER, user.inspect, :local
+    end
+
+    user
+  end
+
   # Returns the story associated with the current development branch
   #
-  # @param [PivotalTracker::Project] project the project the story belongs to
   # @return [PivotalTracker::Story] the story associated with the current development branch
-  def story(project)
+  def story
     story_id = GitPivotalTrackerIntegration::Util::Git.get_config KEY_STORY_ID, :branch
-    project.stories.find story_id.to_i
+    if story_id.empty?
+      abort("You need to be on started story branch to do this!")
+    else
+      project.stories.find(story_id)
+    end
   end
 
   # Stores the story associated with the current development branch
@@ -84,6 +119,8 @@ class GitPivotalTrackerIntegration::Command::Configuration
   private
 
   KEY_API_TOKEN = 'pivotal.api-token'.freeze
+
+  KEY_USER = 'pivotal.user'.freeze
 
   KEY_PROJECT_ID = 'pivotal.project-id'.freeze
 

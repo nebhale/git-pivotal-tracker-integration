@@ -16,24 +16,20 @@
 require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
+require 'git-pivotal-tracker-integration/util/label'
+require 'pivotal-tracker'
 
-# The class that encapsulates finishing a Pivotal Tracker Story
-class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegration::Command::Base
+MODES = %w(add remove list once)
 
-  # Finishes a Pivotal Tracker story by doing the following steps:
-  # * Check that the pending merge will be trivial
-  # * Merge the development branch into the root branch
-  # * Delete the development branch
-  # * Push changes to remote
-  #
+# The class that encapsulates starting a Pivotal Tracker Story
+class GitPivotalTrackerIntegration::Command::Label < GitPivotalTrackerIntegration::Command::Base
+
+  # Adds labels for active story.
   # @return [void]
-  def run(argument)
-    no_complete = argument =~ /--no-complete/
-    no_delete = argument =~ /--no-delete/
+  def run(mode, *labels)
+    story = @configuration.story
+    abort "You need to specify mode first [#{MODES}], e.g. 'git label add to_qa'" unless MODES.include? mode
 
-    GitPivotalTrackerIntegration::Util::Git.trivial_merge?
-    GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story, no_complete, no_delete)
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    GitPivotalTrackerIntegration::Util::Label.send(mode, story, *labels)
   end
-
 end

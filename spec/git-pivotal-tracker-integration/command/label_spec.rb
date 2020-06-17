@@ -15,12 +15,11 @@
 
 require 'spec_helper'
 require 'git-pivotal-tracker-integration/command/configuration'
-require 'git-pivotal-tracker-integration/command/start'
+require 'git-pivotal-tracker-integration/command/label'
 require 'git-pivotal-tracker-integration/util/git'
-require 'git-pivotal-tracker-integration/util/story'
 require 'pivotal-tracker'
 
-describe GitPivotalTrackerIntegration::Command::Start do
+describe GitPivotalTrackerIntegration::Command::Label do
 
   before do
     $stdout = StringIO.new
@@ -32,24 +31,14 @@ describe GitPivotalTrackerIntegration::Command::Start do
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:api_token)
     GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:project_id)
     PivotalTracker::Project.should_receive(:find).and_return(@project)
-    @start = GitPivotalTrackerIntegration::Command::Start.new
+    @label = GitPivotalTrackerIntegration::Command::Label.new
   end
 
   it 'should run' do
-    GitPivotalTrackerIntegration::Util::Story.should_receive(:select_story).with(@project, 'test_filter').and_return(@story)
-    GitPivotalTrackerIntegration::Util::Story.should_receive(:pretty_print)
-    @story.should_receive(:id).twice.and_return(12345678)
-    @story.should_receive(:story_type).twice.and_return('type')
-    @start.should_receive(:ask).and_return('development_branch')
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:create_branch).with('type/12345678-development_branch')
-    GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story=)
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:add_hook)
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('user.name').and_return('test_owner')
-    @story.should_receive(:update).with(
-      :current_state => 'started',
-      :owned_by => 'test_owner'
-    )
+    GitPivotalTrackerIntegration::Command::Configuration.any_instance.should_receive(:story).and_return(@story)
 
-    @start.run 'test_filter'
+    GitPivotalTrackerIntegration::Util::Label.should_receive(:send).with('add', @story, 'on_qa')
+
+    @label.run('add', 'on_qa')
   end
 end

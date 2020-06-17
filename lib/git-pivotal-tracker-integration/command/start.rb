@@ -50,7 +50,7 @@ class GitPivotalTrackerIntegration::Command::Start < GitPivotalTrackerIntegratio
   private
 
   def development_branch_name(story)
-    branch_name = "#{story.id}-" + ask("Enter branch name (#{story.id}-<branch-name>): ")
+    branch_name = "#{story.story_type}/#{story.id}-" + ask("Enter branch name (#{story.story_type}/#{story.id}-<branch-name>): ")
     puts
     branch_name
   end

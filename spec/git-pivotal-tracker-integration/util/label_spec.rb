@@ -14,10 +14,10 @@
 # limitations under the License.
 
 require 'spec_helper'
-require 'git-pivotal-tracker-integration/util/story'
+require 'git-pivotal-tracker-integration/util/label'
 require 'pivotal-tracker'
 
-describe GitPivotalTrackerIntegration::Util::Story do
+describe GitPivotalTrackerIntegration::Util::Label do
 
   before do
     $stdout = StringIO.new
@@ -29,22 +29,57 @@ describe GitPivotalTrackerIntegration::Util::Story do
     @menu = double('menu')
   end
 
-  it 'should pretty print story information' do
-    story = double('story')
-    story.should_receive(:name)
-    story.should_receive(:description).and_return("description-1\ndescription-2")
-    PivotalTracker::Note.should_receive(:all).and_return([
-      PivotalTracker::Note.new(:noted_at => Date.new, :text => 'note-1')
-    ])
+  it 'should add labels to story' do
+    old_labels = 'other_label'
+    @story.should_receive(:labels).and_return(old_labels)
+    @story.should_receive(:update).with(:labels => ["other_label", "on_qa"]).and_return(true)
+    @story.should_receive(:name)
 
-    GitPivotalTrackerIntegration::Util::Story.pretty_print story
+    GitPivotalTrackerIntegration::Util::Label.add(@story, 'on_qa')
+  end
 
-    expect($stdout.string).to eq(
-      "      Title: \n" +
-      "Description: description-1\n" +
-      "             description-2\n" +
-      "     Note 1: note-1\n" +
-      "\n")
+  it 'should add unique labels to story' do
+    PivotalTracker::Project.should_receive(:find).and_return(@project)
+    project_id = 123
+    other_story = double(:other_story)
+    @story.should_receive(:project_id).and_return(project_id)
+    @project.should_receive(:stories).and_return(@stories)
+    @stories.should_receive(:all).and_return([@story, other_story])
+    @story.should_receive(:name).exactly(4).times.and_return('name')
+    other_story.should_receive(:name).exactly(2).times.and_return('other_name')
+    @story.should_receive(:labels).and_return('other_label')
+    other_story.should_receive(:labels).exactly(3).times.and_return('on_qa')
+    other_story.should_receive(:update).and_return(true)
+    @story.should_receive(:update).with(:labels => ["other_label", "on_qa"]).and_return(true)
+    GitPivotalTrackerIntegration::Util::Label.once(@story, 'on_qa')
+  end
+
+  it 'should abort when cannot add labels to story' do
+    old_labels = 'other_label'
+    @story.should_receive(:labels).and_return(old_labels)
+    @story.should_receive(:update).with(:labels => ["other_label", "on_qa"]).and_return(false)
+    lambda { GitPivotalTrackerIntegration::Util::Label.add(@story, 'on_qa') }.should raise_error SystemExit
+  end
+
+  it 'should abort when cannot remove labels from story' do
+    old_labels = 'other_label,on_qa'
+    @story.should_receive(:labels).and_return(old_labels)
+    @story.should_receive(:update).with(:labels => ["other_label"]).and_return(false)
+    lambda { GitPivotalTrackerIntegration::Util::Label.remove(@story, 'on_qa') }.should raise_error SystemExit
+  end
+
+
+
+
+
+
+
+
+
+
+  it 'should pretty print story labels' do
+    @story.should_receive(:labels).and_return('label1,label2')
+    GitPivotalTrackerIntegration::Util::Label.list @story
   end
 
   it 'should not pretty print description or notes if there are none (empty)' do

@@ -16,24 +16,29 @@
 require 'git-pivotal-tracker-integration/command/base'
 require 'git-pivotal-tracker-integration/command/command'
 require 'git-pivotal-tracker-integration/util/git'
+require 'git-pivotal-tracker-integration/util/story'
+require 'pivotal-tracker'
 
-# The class that encapsulates finishing a Pivotal Tracker Story
-class GitPivotalTrackerIntegration::Command::Finish < GitPivotalTrackerIntegration::Command::Base
+# The class that encapsulates assigning current Pivotal Tracker Story to a user
+class GitPivotalTrackerIntegration::Command::Mark < GitPivotalTrackerIntegration::Command::Base
+  STATES = %w(unstarted started finished delivered rejected accepted)
 
-  # Finishes a Pivotal Tracker story by doing the following steps:
-  # * Check that the pending merge will be trivial
-  # * Merge the development branch into the root branch
-  # * Delete the development branch
-  # * Push changes to remote
-  #
+  # Assigns story to user.
   # @return [void]
-  def run(argument)
-    no_complete = argument =~ /--no-complete/
-    no_delete = argument =~ /--no-delete/
+  def run(state)
+    state = choose_state if state.nil? or !STATES.include?(state)
 
-    GitPivotalTrackerIntegration::Util::Git.trivial_merge?
-    GitPivotalTrackerIntegration::Util::Git.merge(@configuration.story, no_complete, no_delete)
-    GitPivotalTrackerIntegration::Util::Git.push GitPivotalTrackerIntegration::Util::Git.branch_name
+    GitPivotalTrackerIntegration::Util::Story.mark(@configuration.story, state)
   end
 
+  private
+
+  def choose_state
+    choose do |menu|
+      menu.prompt = 'Choose story state from above list: '
+      STATES.each do |state|
+        menu.choice(state)
+      end
+    end
+  end
 end

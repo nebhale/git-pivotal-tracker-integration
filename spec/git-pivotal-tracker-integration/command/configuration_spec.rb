@@ -44,17 +44,18 @@ describe GitPivotalTrackerIntegration::Command::Configuration do
     expect(api_token).to eq('test_api_token')
   end
 
-  it 'should not prompt the user for the project id if it is already configured' do
+  it 'should not prompt the user for the project if it is already configured' do
+    project = double('project')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.project-id', :inherited).and_return('test_project_id')
+    PivotalTracker::Project.should_receive(:find).with('test_project_id').and_return(project)
 
-    project_id = @configuration.project_id
-
-    expect(project_id).to eq('test_project_id')
+    expect(@configuration.project).to eq(project)
   end
 
-  it 'should prompt the user for the API token if it is not configured' do
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.project-id', :inherited).and_return('')
+  it 'should prompt the user for the project if it is not configured' do
+    project = double('project')
     menu = double('menu')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.project-id', :inherited).and_return('')
     menu.should_receive(:prompt=)
     PivotalTracker::Project.should_receive(:all).and_return([
       PivotalTracker::Project.new(:id => 'id-2', :name => 'name-2'),
@@ -63,10 +64,32 @@ describe GitPivotalTrackerIntegration::Command::Configuration do
     menu.should_receive(:choice).with('name-2')
     @configuration.should_receive(:choose) { |&arg| arg.call menu }.and_return('test_project_id')
     GitPivotalTrackerIntegration::Util::Git.should_receive(:set_config).with('pivotal.project-id', 'test_project_id', :local)
+    PivotalTracker::Project.should_receive(:find).with('test_project_id').and_return(project)
 
-    project_id = @configuration.project_id
+    expect(@configuration.project).to eq(project)
+  end
 
-    expect(project_id).to eq('test_project_id')
+  it 'should not prompt the user for his Pivotal Tracker user name if it is already configured' do
+    user = 'User Name'
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.user', :inherited).and_return(user)
+
+    expect(@configuration.user).to eq(user)
+  end
+
+  it 'should prompt the user for his Pivotal Tracker user name if it is not configured' do
+    user = 'User Name'
+    menu = double('menu')
+    projects = [double('project')]
+    users = [[user]]
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal.user', :inherited).and_return('')
+    menu.should_receive(:prompt=)
+    PivotalTracker::Project.should_receive(:all).and_return(projects)
+    projects.should_receive(:map).and_return(users)
+    menu.should_receive(:choice).with(user)
+    @configuration.should_receive(:choose) { |&arg| arg.call menu }.and_return(user)
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:set_config).with('pivotal.user', user.inspect, :local)
+
+    expect(@configuration.user).to eq(user)
   end
 
   it 'should persist the story when requested' do
@@ -76,16 +99,21 @@ describe GitPivotalTrackerIntegration::Command::Configuration do
   end
 
   it 'should return a story when requested' do
+    story_id = '12345678'
     project = double('project')
     stories = double('stories')
     story = double('story')
-    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal-story-id', :branch).and_return('12345678')
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal-story-id', :branch).and_return(story_id)
+    @configuration.should_receive(:project).and_return(project)
     project.should_receive(:stories).and_return(stories)
-    stories.should_receive(:find).with(12345678).and_return(story)
+    stories.should_receive(:find).with(story_id).and_return(story)
 
-    result = @configuration.story project
+    expect(@configuration.story).to be(story)
+  end
 
-    expect(result).to be(story)
+  it 'should abort when story is requested but no branch is started' do
+    GitPivotalTrackerIntegration::Util::Git.should_receive(:get_config).with('pivotal-story-id', :branch).and_return("")
+    lambda { @configuration.story }.should raise_error SystemExit
   end
 
 end

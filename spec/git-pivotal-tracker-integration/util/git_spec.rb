@@ -187,7 +187,7 @@ describe GitPivotalTrackerIntegration::Util::Git do
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge --quiet --no-ff -m \"Merge development_branch to master\n\n[Completes #12345678]\" development_branch")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git branch --quiet -D development_branch')
 
-    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), nil
+    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), nil, nil
   end
 
   it 'should suppress Completes statement' do
@@ -197,7 +197,7 @@ describe GitPivotalTrackerIntegration::Util::Git do
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with("git merge --quiet --no-ff -m \"Merge development_branch to master\n\n[#12345678]\" development_branch")
     GitPivotalTrackerIntegration::Util::Shell.should_receive(:exec).with('git branch --quiet -D development_branch')
 
-    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), true
+    GitPivotalTrackerIntegration::Util::Git.merge PivotalTracker::Story.new(:id => 12345678), true, nil
   end
 
   it 'should push changes without refs' do

@@ -68,7 +68,7 @@ class GitPivotalTrackerIntegration::Util::Git
     end
 
     if print_messages; print "Creating and checking out #{name}... " end
-    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -b #{name}"
+    GitPivotalTrackerIntegration::Util::Shell.exec "git checkout --quiet -B #{name}"
     set_config KEY_ROOT_BRANCH, root_branch, :branch
     set_config KEY_ROOT_REMOTE, root_remote, :branch
     if print_messages; puts 'OK'
@@ -133,8 +133,9 @@ class GitPivotalTrackerIntegration::Util::Git
   #
   # @param [PivotalTracker::Story] story the story associated with the current branch
   # @param [Boolean] no_complete whether to suppress the +Completes+ statement in the commit message
+  # @param [Boolean] no_delete whether to delete development branch
   # @return [void]
-  def self.merge(story, no_complete)
+  def self.merge(story, no_complete, no_delete)
     development_branch = branch_name
     root_branch = get_config KEY_ROOT_BRANCH, :branch
 
@@ -143,9 +144,11 @@ class GitPivotalTrackerIntegration::Util::Git
     GitPivotalTrackerIntegration::Util::Shell.exec "git merge --quiet --no-ff -m \"Merge #{development_branch} to #{root_branch}\n\n[#{no_complete ? '' : 'Completes '}##{story.id}]\" #{development_branch}"
     puts 'OK'
 
-    print "Deleting #{development_branch}... "
-    GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
-    puts 'OK'
+    unless no_delete
+      print "Deleting #{development_branch}... "
+      GitPivotalTrackerIntegration::Util::Shell.exec "git branch --quiet -D #{development_branch}"
+      puts 'OK'
+    end
   end
 
   # Push changes to the remote of the current branch

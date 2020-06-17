@@ -43,6 +43,24 @@ class GitPivotalTrackerIntegration::Util::Story
     puts
   end
 
+  # Assign story to pivotal tracker member.
+  #
+  # @param [PivotalTracker::Story] story to be assigned
+  # @param [PivotalTracker::Member] assigned user
+  # @return [void]
+  def self.assign(story, username)
+    puts "Story assigned to #{username}" if story.update({ :owned_by => username })
+  end
+
+  # Marks Pivotal Tracker story with given state
+  #
+  # @param [PivotalTracker::Story] story to be assigned
+  # @param [PivotalTracker::Member] assigned user
+  # @return [void]
+  def self.mark(story, state)
+    puts "Changed state to #{state}" if story.update({ :current_state => state })
+  end
+
   # Selects a Pivotal Tracker story by doing the following steps:
   #
   # @param [PivotalTracker::Project] project the project to select stories from
@@ -95,14 +113,13 @@ class GitPivotalTrackerIntegration::Util::Story
 
   def self.find_story(project, type, limit)
     criteria = {
-      :current_state => CANDIDATE_STATES,
-      :limit => limit
+      :current_state => CANDIDATE_STATES
     }
     if type
       criteria[:story_type] = type
     end
 
-    candidates = project.stories.all criteria
+    candidates = project.stories.all(criteria).sort_by{ |s| s.owned_by == @user ? 1 : 0 }.slice(0..limit)
     if candidates.length == 1
       story = candidates[0]
     else
@@ -110,7 +127,8 @@ class GitPivotalTrackerIntegration::Util::Story
         menu.prompt = 'Choose story to start: '
 
         candidates.each do |story|
-          name = type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
+          name = story.owned_by ? '[%s] ' % story.owned_by : ''
+          name += type ? story.name : '%-7s %s' % [story.story_type.upcase, story.name]
           menu.choice(name) { story }
         end
       end
@@ -120,5 +138,4 @@ class GitPivotalTrackerIntegration::Util::Story
 
     story
   end
-
 end

@@ -111,8 +111,8 @@ If it doesn't exist already, a `prepare-commit-msg` commit hook is added to your
 #
 ```
 
-### `git finish [--no-complete]`
-This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can be run in two ways.  First it can be run without the `--no-complete` option.
+### `git finish [--no-complete | --no-delete]`
+This command finishes a story by merging and cleaning up its branch and then pushing the changes to a remote server.  This command can be run in two ways.  First it can be run without any options.
 
 ```plain
 $ git finish
@@ -146,6 +146,8 @@ Merge 12345678-lorem-ipsum to master
 
 After merging, the development branch is deleted and the changes are pushed to the remote repository.
 
+The third way is with the `--no-delete` option specified. In this case `finish` performs the same actions except the working branch is not deleted.
+
 ### `git release [story-id]`
 This command creates a release for a story.  It does this by updating the version string in the project and creating a tag.  This command can be run in two ways.  First it can be run specifying the release that you want to create.
 
@@ -174,5 +176,60 @@ Pushing to origin... OK
 Once these have been entered, the version string for the current project is updated to the release version and a tag is created.  Then the version string for the current project is updated to the next development version and a new commit along the original branch is created.  Finally the tag and changes are pushed to the remote sever.
 
 Version update is currently supported for the following kinds of projects.  If you do not see a project type that you would like supported, please open an issue or submit a pull request.
+
+### `git assign [username]`
+This command assigns current story to another member of Pivotal Tracker project.  This command can be run in two ways.  First it can be run with specific username of project's member. If username consists of more than one world use braces as in example.
+
+```plain
+$ git assign 'Mark Twain'
+```
+
+The other way the command can be run without specifying anything.  In this case, you will be able to choose from all project members.
+
+```plain
+$ git assign
+
+1. Mark Twain
+2. Edgar Alan Poe
+Choose an user from above list:
+```
+
+### `git label [mode] label1 ... labeln`
+This command manages story labels, there are four modes you can use:
+* add - appends new labels to story
+* once - appends new labels to story and removes it's occurences from every other story in project
+* remove - removes labels from story
+* list - lists labels attached to current story
+
+```plain
+$ git label list
+```
+
+You have to specify mode and at least on label if you are using add, once or remove modes.
+
+```plain
+$ git label add on_qa
+```
+
+### `git mark [state]`
+This command marks current story with specified state. You can add desired state as follows:
+
+```plain
+$ git mark finished
+```
+
+The other way the command can be run without specifying anything.  In this case, you will be able to choose from all possible states.
+
+```plain
+$ git mark
+
+1. unstarted
+2. started
+3. finished
+4. delivered
+5. rejected
+6. accepted
+Choose story state from above list:
+```
 
 * Gradle
